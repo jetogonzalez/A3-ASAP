@@ -59,7 +59,7 @@ export function CardPreview({
           </div>
         ) : (
           <div className="flex h-full flex-col items-center justify-center gap-2 p-6 text-center">
-            <p className={`font-display italic ${compact ? "text-lg" : "text-3xl"}`}>Pliego</p>
+            <p className={`font-display italic ${compact ? "text-lg" : "text-3xl"}`}>ASAP</p>
             <p className="text-xs uppercase tracking-[0.18em] text-ink-soft">Couche 300 g</p>
           </div>
         )}

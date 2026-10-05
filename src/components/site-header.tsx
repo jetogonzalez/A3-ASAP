@@ -33,7 +33,7 @@ export function SiteHeader() {
           <label className="sr-only" htmlFor="buscar">
             Buscar productos
           </label>
-          <div className="flex h-11 items-center rounded-full border border-line bg-paper-deep pr-1 pl-4 focus-within:border-ink">
+          <div className="focus-shell flex h-11 items-center rounded-full border border-line bg-paper-deep pr-1 pl-4 transition-colors has-[input:focus-visible]:border-pick has-[input:focus-visible]:ring-2 has-[input:focus-visible]:ring-pick-line">
             <input
               id="buscar"
               name="q"

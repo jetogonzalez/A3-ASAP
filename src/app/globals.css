@@ -11,6 +11,16 @@
   --press-deep: #0a6230;
   --moss: #0d7a3b;
   --moss-soft: #e7f5ec;
+  /* Azul: solo marca lo que el usuario eligió. El verde queda para la marca y los precios incluidos. */
+  --pick: #1557d6;
+  --pick-deep: #0f44a8;
+  --pick-soft: #eaf1fd;
+  /* Azules tenues para el hover: insinúan la selección sin competir con ella. */
+  --pick-line: #cddcf6;
+  --pick-wash: #f5f9ff;
+  /* Ámbar solo para etiquetas informativas, para que no se confundan con una selección. */
+  --flag: #fdf0d2;
+  --flag-ink: #8a5300;
   color-scheme: light;
 }
 
@@ -25,6 +35,13 @@
   --color-press-deep: var(--press-deep);
   --color-moss: var(--moss);
   --color-moss-soft: var(--moss-soft);
+  --color-pick: var(--pick);
+  --color-pick-deep: var(--pick-deep);
+  --color-pick-soft: var(--pick-soft);
+  --color-pick-line: var(--pick-line);
+  --color-pick-wash: var(--pick-wash);
+  --color-flag: var(--flag);
+  --color-flag-ink: var(--flag-ink);
   --font-sans: var(--font-outfit), "Avenir Next", "Segoe UI", sans-serif;
   --font-display: var(--font-outfit), "Avenir Next", "Segoe UI", sans-serif;
 }
@@ -58,8 +75,19 @@ details[open] > summary .disclosure-mark {
 }
 
 :focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: 3px;
+  outline: 2px solid var(--pick);
+  outline-offset: 2px;
+}
+
+/*
+ * Dos casos donde el anillo del navegador no sirve: los radios que escondemos con
+ * .sr-only (el anillo saldría del tamaño de un punto) y los campos que llenan un
+ * contenedor redondeado. En ambos lo pinta el elemento de afuera, que sí tiene la forma.
+ */
+.sr-only:focus-visible,
+.focus-shell input:focus-visible,
+.focus-shell textarea:focus-visible {
+  outline: none;
 }
 
 @keyframes price-tick {

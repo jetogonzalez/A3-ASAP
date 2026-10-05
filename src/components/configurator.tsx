@@ -46,6 +46,27 @@ export function Configurator({
   const priced = useMemo(() => quote(config), [config]);
   const addons = addonCents(config.sizeId, config.quantity);
   const size = SIZES[config.sizeId];
+  /* Base para comparar el precio por unidad de cada tirada. */
+  const smallestRun = useMemo(() => quote({ ...config, quantity: QUANTITIES[0] }), [config]);
+
+  /*
+   * En escritorio el resumen vive al final de una columna larga, así que mientras
+   * eliges acabados no ves ningún total. La barra de abajo lo sostiene y se retira
+   * sola cuando el resumen de verdad entra en pantalla.
+   */
+  const summaryRef = useRef<HTMLDivElement>(null);
+  const [summaryOnScreen, setSummaryOnScreen] = useState(false);
+
+  useEffect(() => {
+    const node = summaryRef.current;
+    if (!node) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setSummaryOnScreen(entry.isIntersecting),
+      { rootMargin: "0px 0px -96px 0px" },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     if (!file || !isPreviewImage(file)) {
@@ -116,7 +137,12 @@ export function Configurator({
     <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
       <div className="space-y-8">
       <div>
-        <div id="muestra" className="flex min-h-[340px] scroll-mt-28 items-center justify-center rounded-[28px] bg-paper-deep/70 px-8 py-12">
+        <div
+          id="muestra"
+          className={`relative flex min-h-[340px] scroll-mt-28 items-center justify-center rounded-[28px] bg-paper-deep/70 px-8 pt-12 ${
+            config.sides === 2 ? "pb-24" : "pb-12"
+          }`}
+        >
           <CardPreview
             config={config}
             face={face}
@@ -126,15 +152,12 @@ export function Configurator({
                 : null
             }
           />
-        </div>
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-ink-soft">
-          <p>
-            {size.sizeLabel} · {config.paper}
-            {config.rounded ? " · puntas redondeadas" : ""}
-            {config.uv ? " · el rectángulo claro es el UV" : ""}
-          </p>
           {config.sides === 2 ? (
-            <div className="flex rounded-full bg-paper-deep p-1" role="group" aria-label="Cara de la muestra">
+            <div
+              className="absolute bottom-4 left-1/2 flex -translate-x-1/2 rounded-full bg-sheet p-1 shadow-sm ring-1 ring-line"
+              role="group"
+              aria-label="Cara de la muestra"
+            >
               {(
                 [
                   ["front", "Frente"],
@@ -146,17 +169,23 @@ export function Configurator({
                   type="button"
                   onClick={() => setFace(value)}
                   aria-pressed={face === value}
-                  className={`min-h-10 cursor-pointer rounded-full px-3 text-sm ${
-                    face === value ? "bg-sheet text-ink shadow-sm" : "text-ink-soft"
+                  className={`min-h-9 cursor-pointer rounded-full px-4 text-sm transition-colors ${
+                    face === value ? "bg-pick-soft font-semibold text-pick-deep" : "text-ink-soft hover:text-ink"
                   }`}
                 >
                   {label}
                 </button>
               ))}
             </div>
-          ) : (
-            <p>Un lado</p>
-          )}
+          ) : null}
+        </div>
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-ink-soft">
+          <p>
+            {size.sizeLabel} · {config.paper}
+            {config.rounded ? " · puntas redondeadas" : ""}
+            {config.uv ? " · el rectángulo claro es el UV" : ""}
+          </p>
+          <p>{config.sides === 2 ? "Dos lados" : "Un lado"}</p>
         </div>
       </div>
       <ArtworkPanel
@@ -183,48 +212,213 @@ export function Configurator({
       </div>
 
       <div className="space-y-8 pb-28 lg:pb-0">
-        <OptionGroup legend="Formato">
-          <div className="grid gap-2 sm:grid-cols-2">
+        <OptionGroup legend="Tamaño" value={size.sizeLabel} hint="Las dos medidas que imprimimos hoy. El dibujo está a escala.">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {SIZE_IDS.map((id) => (
-              <Choice
+              <Tile
                 key={id}
                 name="tamano"
                 checked={config.sizeId === id}
                 onChange={() => patch({ sizeId: id })}
                 title={SIZES[id].name}
                 detail={SIZES[id].sizeLabel}
+                tag={id === "85x55" ? "Más vendida" : undefined}
+                glyph={<SizeGlyph square={id === "55x55"} />}
               />
             ))}
           </div>
         </OptionGroup>
 
-        <OptionGroup legend="Cantidad" hint="El precio de cada fila ya incluye los acabados que elegiste.">
-          <div className="grid gap-2" role="radiogroup" aria-label="Cantidad">
+        <OptionGroup legend="Tipo de papel" value={config.paper === "mate" ? "Mate" : "Brillante"} hint="Couche 300 g. Ya está incluido en la impresión.">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <Tile
+              name="papel"
+              checked={config.paper === "mate"}
+              onChange={() => patch({ paper: "mate" })}
+              title="Mate"
+              detail="Incluido"
+              tag="Más vendido"
+              glyph={<PaperGlyph glossy={false} />}
+            />
+            <Tile
+              name="papel"
+              checked={config.paper === "brillante"}
+              onChange={() => patch({ paper: "brillante" })}
+              title="Brillante"
+              detail="Incluido"
+              glyph={<PaperGlyph glossy />}
+            />
+          </div>
+        </OptionGroup>
+
+        <OptionGroup
+          legend="Laminado"
+          value={
+            config.laminate === "none"
+              ? "Sin laminado"
+              : config.laminate === "mate"
+                ? "Laminado mate"
+                : "Laminado brillante"
+          }
+          hint={`Capa extra a doble cara. Mismo cargo para mate o brillante: ${formatUsd(addons.laminate)}.`}
+        >
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <Tile
+              name="laminado"
+              checked={config.laminate === "none"}
+              onChange={() => patch({ laminate: "none" })}
+              title="Sin laminado"
+              detail="Incluido"
+              glyph={<NoneGlyph />}
+            />
+            {(["mate", "brillante"] as Finish[]).map((finish) => (
+              <Tile
+                key={finish}
+                name="laminado"
+                checked={config.laminate === finish}
+                onChange={() => patch({ laminate: finish satisfies Laminate })}
+                title={finish === "mate" ? "Laminado mate" : "Laminado brillante"}
+                detail={`+ ${formatUsd(addons.laminate)}`}
+                tag={finish === "mate" ? "Más vendido" : undefined}
+                glyph={<LaminateGlyph glossy={finish === "brillante"} />}
+              />
+            ))}
+          </div>
+        </OptionGroup>
+
+        <OptionGroup
+          legend="Brillo UV"
+          value={config.uv ? "UV selectivo" : "Sin UV"}
+          hint={`Barniz brillante solo sobre las zonas que marques. Cargo fijo de taller: ${formatUsd(addons.uv)}.`}
+        >
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <Tile
+              name="uv"
+              checked={!config.uv}
+              onChange={() => patch({ uv: false })}
+              title="Sin UV"
+              detail="Incluido"
+              glyph={<NoneGlyph />}
+            />
+            <Tile
+              name="uv"
+              checked={config.uv}
+              onChange={() => patch({ uv: true })}
+              title="UV selectivo"
+              detail={`+ ${formatUsd(addons.uv)}`}
+              glyph={<UvGlyph />}
+            />
+          </div>
+        </OptionGroup>
+
+        <OptionGroup
+          legend="Opción de impresión"
+          value={config.sides === 1 ? "A una cara" : "A doble cara"}
+          hint="Las dos opciones no se suman: eliges una y el precio cambia."
+        >
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <Tile
+              name="lados"
+              checked={config.sides === 1}
+              onChange={() => patch({ sides: 1 })}
+              title="A una cara"
+              detail="Solo el frente"
+              glyph={<SidesGlyph double={false} />}
+            />
+            <Tile
+              name="lados"
+              checked={config.sides === 2}
+              onChange={() => patch({ sides: 2 })}
+              title="A doble cara"
+              detail="Frente y reverso"
+              tag="Más vendido"
+              glyph={<SidesGlyph double />}
+            />
+          </div>
+        </OptionGroup>
+
+        <OptionGroup legend="Esquinas" value={config.rounded ? "Redondeadas" : "Rectas"}>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <Tile
+              name="puntas"
+              checked={!config.rounded}
+              onChange={() => patch({ rounded: false })}
+              title="Rectas"
+              detail="Incluido"
+              glyph={<CornerGlyph rounded={false} />}
+            />
+            <Tile
+              name="puntas"
+              checked={config.rounded}
+              onChange={() => patch({ rounded: true })}
+              title="Redondeadas"
+              detail={`+ ${formatUsd(addons.corners)}`}
+              glyph={<CornerGlyph rounded />}
+            />
+          </div>
+        </OptionGroup>
+
+        <OptionGroup
+          legend="Cantidad"
+          value={`${config.quantity.toLocaleString("es-EC")} u.`}
+          hint={`El precio de cada fila ya incluye los acabados que elegiste. El porcentaje compara el precio por tarjeta contra pedir ${QUANTITIES[0]} unidades, que con estos acabados salen en ${formatUsd(smallestRun.unitCents)} c/u.`}
+        >
+          <div className="grid gap-2 sm:grid-cols-2" role="radiogroup" aria-label="Cantidad">
             {QUANTITIES.map((quantity) => {
               const row = quote({ ...config, quantity });
+              const checked = config.quantity === quantity;
+              const recommended = quantity === 250;
+              /*
+               * Cuánto baja el precio por unidad frente a la tirada más chica. Se calcula
+               * sobre el total, no sobre unitCents: a estos precios el redondeo al centavo
+               * dejaba 500 y 1.000 con el mismo porcentaje.
+               */
+              const saving = Math.round(
+                (1 - row.totalCents / quantity / (smallestRun.totalCents / QUANTITIES[0])) * 100,
+              );
               return (
                 <label
                   key={quantity}
-                  className={`flex min-h-14 cursor-pointer items-center justify-between gap-3 rounded-2xl border px-4 py-3 ${
-                    config.quantity === quantity
-                      ? "border-ink bg-ink text-paper"
-                      : "border-line bg-sheet hover:border-ink/30"
+                  /*
+                   * La etiqueta de esquina va encima del hueco de arriba, sin empujar el
+                   * contenido: así todas las filas miden lo mismo, con o sin etiqueta.
+                   */
+                  className={`relative flex min-h-16 cursor-pointer items-center justify-between gap-3 overflow-hidden rounded-2xl border-2 px-4 py-3 transition-colors has-[:focus-visible]:border-pick has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-pick-line ${
+                    checked
+                      ? "border-pick bg-pick-soft"
+                      : "border-line bg-sheet hover:border-pick-line hover:bg-pick-wash"
                   }`}
                 >
-                  <span className="flex items-center gap-3">
+                  {recommended ? <CornerTag>Más vendida</CornerTag> : null}
+                  <span className="flex min-w-0 items-center gap-3">
                     <input
                       type="radio"
                       name="cantidad"
                       value={quantity}
-                      checked={config.quantity === quantity}
+                      checked={checked}
                       onChange={() => patch({ quantity })}
-                      className="h-4 w-4 accent-current"
+                      className="h-4 w-4 shrink-0 accent-pick"
                     />
-                    <span className="font-medium">{quantity.toLocaleString("es-EC")} u.</span>
+                    <span
+                      className={`whitespace-nowrap ${
+                        checked ? "font-semibold text-pick-deep" : "font-medium"
+                      }`}
+                    >
+                      {quantity.toLocaleString("es-EC")} u.
+                    </span>
+                    {saving >= 5 ? <SavingTag percent={saving} onPick={checked} /> : null}
                   </span>
-                  <span className="text-right">
-                    <span className="block font-medium">{formatUsd(row.totalCents)}</span>
-                    <span className={`block text-xs ${config.quantity === quantity ? "text-paper/75" : "text-ink-soft"}`}>
+                  <span className="shrink-0 text-right">
+                    <span
+                      className={`block tabular-nums ${
+                        checked ? "font-semibold text-pick-deep" : "font-medium"
+                      }`}
+                    >
+                      {formatUsd(row.totalCents)}
+                    </span>
+                    <span
+                      className={`block text-xs tabular-nums ${checked ? "text-pick-deep/80" : "text-ink-soft"}`}
+                    >
                       {formatUsd(row.unitCents)} c/u
                     </span>
                   </span>
@@ -234,121 +428,64 @@ export function Configurator({
           </div>
         </OptionGroup>
 
-        <OptionGroup legend="Impresión">
-          <div className="grid gap-2 sm:grid-cols-2">
-            <Choice
-              name="lados"
-              checked={config.sides === 1}
-              onChange={() => patch({ sides: 1 })}
-              title="1 lado"
-              detail="Solo el frente"
-            />
-            <Choice
-              name="lados"
-              checked={config.sides === 2}
-              onChange={() => patch({ sides: 2 })}
-              title="2 lados"
-              detail="Frente y reverso"
-            />
-          </div>
-        </OptionGroup>
-
-        <OptionGroup legend="Papel" hint="Mate o brillante. Ya está incluido en la impresión.">
-          <div className="grid gap-2 sm:grid-cols-2">
-            <Choice
-              name="papel"
-              checked={config.paper === "mate"}
-              onChange={() => patch({ paper: "mate" })}
-              title="Mate"
-              detail="Incluido"
-            />
-            <Choice
-              name="papel"
-              checked={config.paper === "brillante"}
-              onChange={() => patch({ paper: "brillante" })}
-              title="Brillante"
-              detail="Incluido"
-            />
-          </div>
-        </OptionGroup>
-
-        <OptionGroup legend="Laminado" hint={`Capa extra. Mismo cargo para mate o brillante: ${formatUsd(addons.laminate)}.`} >
-          <div className="grid gap-2">
-            <Choice
-              name="laminado"
-              checked={config.laminate === "none"}
-              onChange={() => patch({ laminate: "none" })}
-              title="Sin laminado"
-              detail={formatUsd(0)}
-            />
-            {(["mate", "brillante"] as Finish[]).map((finish) => (
-              <Choice
-                key={finish}
-                name="laminado"
-                checked={config.laminate === finish}
-                onChange={() => patch({ laminate: finish satisfies Laminate })}
-                title={finish === "mate" ? "Laminado mate" : "Laminado brillante"}
-                detail={`+ ${formatUsd(addons.laminate)}`}
-              />
-            ))}
-          </div>
-        </OptionGroup>
-
-        <OptionGroup legend="Acabados">
-          <ToggleRow
-            checked={config.uv}
-            onChange={(uv) => patch({ uv })}
-            title="UV selectivo"
-            detail={`Cargo fijo de taller · + ${formatUsd(addons.uv)}`}
-          />
-          <ToggleRow
-            checked={config.rounded}
-            onChange={(rounded) => patch({ rounded })}
-            title="Puntas redondeadas"
-            detail={`+ ${formatUsd(addons.corners)}`}
-          />
-        </OptionGroup>
-
         <DeliveryChoices
           orderedAt={orderedAt}
           selected={config.delivery}
           hasArtwork={Boolean(file || editing?.artwork)}
           onChange={(delivery) => patch({ delivery })}
         />
-        <QuoteSummary
-          config={config}
-          priced={priced}
-          sizeName={size.name}
-          sizeLabel={size.sizeLabel}
-          pending={pending}
-          editing={Boolean(editing)}
-          disabled={pending || Boolean(editId && !cart.ready)}
-          error={error}
-          onCommit={commit}
-        />
+        <div ref={summaryRef}>
+          <QuoteSummary
+            config={config}
+            priced={priced}
+            sizeName={size.name}
+            sizeLabel={size.sizeLabel}
+            pending={pending}
+            editing={Boolean(editing)}
+            disabled={pending || Boolean(editId && !cart.ready)}
+            error={error}
+            onCommit={commit}
+          />
+        </div>
       </div>
     </div>
 
-    <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-paper/95 px-5 py-3 backdrop-blur-md lg:hidden">
+    <div
+      className={`fixed inset-x-0 bottom-0 z-30 border-t border-line bg-paper/95 px-5 py-3 backdrop-blur-md ${
+        summaryOnScreen ? "lg:hidden" : ""
+      }`}
+    >
         {error ? (
           <p role="alert" className="mx-auto mb-2 max-w-6xl text-sm text-red-800">
             {error}
           </p>
         ) : null}
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 pb-[env(safe-area-inset-bottom)]">
-          <div>
-            <p className="text-xs text-ink-soft">
+          <div className="min-w-0">
+            <p className="truncate text-xs text-ink-soft">
               {config.quantity.toLocaleString("es-EC")} tarjetas · {formatUsd(priced.unitCents)} c/u
+              <span className="hidden lg:inline">
+                {" "}
+                · {size.name}, {size.sizeLabel} · {config.sides === 1 ? "un lado" : "dos lados"} · papel{" "}
+                {config.paper}
+              </span>
             </p>
-            <p className="font-display text-2xl leading-none tabular-nums">{formatUsd(priced.totalCents)}</p>
+            <p
+              key={priced.totalCents}
+              className="price-tick font-display text-2xl leading-none tabular-nums"
+              aria-live="polite"
+            >
+              {formatUsd(priced.totalCents)}
+            </p>
           </div>
           <button
             type="button"
             onClick={commit}
             disabled={pending || Boolean(editId && !cart.ready)}
-            className="min-h-12 cursor-pointer rounded-full bg-press px-5 text-sm font-medium text-white disabled:opacity-60"
+            className="min-h-12 shrink-0 cursor-pointer rounded-full bg-press px-5 text-sm font-medium text-white transition hover:bg-press-deep disabled:opacity-60"
           >
             {pending ? "Guardando…" : editing ? "Actualizar" : "Agregar"}
+            <span className="hidden lg:inline">{pending || editing ? "" : " al pedido"}</span>
           </button>
         </div>
       </div>
@@ -378,23 +515,31 @@ function DeliveryChoices({
         {DELIVERY_OPTIONS.map((option) => {
           const window = deliveryWindow(orderedAt, option.id);
           const checked = selected === option.id;
+          /* La entrega más rápida es la que cuesta: ahí sí vale señalarla. */
+          const fastest = option.id === DELIVERY_OPTIONS[DELIVERY_OPTIONS.length - 1].id;
           return (
             <label
               key={option.id}
-              className={`flex min-h-16 cursor-pointer items-center justify-between gap-3 rounded-2xl border-2 bg-sheet px-4 py-3 ${
-                checked ? "border-press" : "border-line hover:border-ink/30"
+              /* Todas con el mismo alto: la etiqueta se superpone, no empuja. */
+              className={`relative flex min-h-20 cursor-pointer items-center justify-between gap-3 overflow-hidden rounded-2xl border-2 px-4 pb-3 pt-7 transition-colors ${
+                checked
+                  ? "border-pick bg-pick-soft"
+                  : "border-line bg-sheet hover:border-pick-line hover:bg-pick-wash"
               }`}
             >
+              {fastest ? <CornerTag>La más rápida</CornerTag> : null}
               <span className="flex items-start gap-3">
                 <input
                   type="radio"
                   name="entrega"
                   checked={checked}
                   onChange={() => onChange(option.id)}
-                  className="mt-1 h-4 w-4 accent-press"
+                  className="mt-1 h-4 w-4 accent-pick"
                 />
                 <span>
-                  <span className="block font-medium">Entre el {formatLongDate(window.earliest)}</span>
+                  <span className={checked ? "font-semibold" : "font-medium"}>
+                    Entre el {formatLongDate(window.earliest)}
+                  </span>
                   <span className="mt-0.5 block text-sm text-ink-soft">
                     A más tardar el {formatLongDate(window.latest)}
                   </span>
@@ -472,12 +617,12 @@ function ArtworkPanel({
         }}
         className={`mt-4 flex min-h-36 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 px-5 py-6 text-center transition-colors ${
           dragOver
-            ? "border-solid border-blue-700 bg-blue-100"
+            ? "border-solid border-pick bg-pick-soft"
             : invalid
               ? "border-dashed border-red-500 bg-red-50"
               : ready
-                ? "border-solid border-press bg-moss-soft"
-                : "border-dashed border-blue-600 bg-blue-50 hover:border-blue-700 hover:bg-blue-100"
+                ? "border-solid border-pick bg-pick-soft"
+                : "border-dashed border-pick-line bg-pick-wash hover:border-pick hover:bg-pick-soft"
         }`}
       >
         <input
@@ -527,8 +672,8 @@ function ArtworkPanel({
                 type="button"
                 aria-pressed={imageFaces[side]}
                 onClick={() => onPlace(side)}
-                className={`min-h-11 cursor-pointer rounded-full border px-4 text-sm font-medium ${
-                  imageFaces[side] ? "border-ink bg-ink text-paper" : "border-line bg-sheet"
+                className={`min-h-11 cursor-pointer rounded-full border-2 bg-sheet px-4 text-sm font-medium ${
+                  imageFaces[side] ? "border-pick bg-pick-soft text-pick-deep" : "border-line bg-sheet"
                 }`}
               >
                 {label}
@@ -549,7 +694,7 @@ function ArtworkPanel({
           <span className="mt-0.5 block text-sm leading-5 text-ink-soft">Se abre en otra pestaña. Exporta el PDF y súbelo aquí.</span>
         </span>
       </a>
-      <a href={href} className="mt-3 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-press-deep underline-offset-4 hover:underline">
+      <a href={href} className="mt-3 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-pick-deep underline-offset-4 hover:underline">
         <PdfIcon />
         Plantilla {sizeName}, {sizeLabel}
         {rounded ? ", con puntas redondeadas" : ""}
@@ -559,7 +704,7 @@ function ArtworkPanel({
 }
 
 function DropGlyph({ dragOver, invalid, ready }: { dragOver: boolean; invalid: boolean; ready: boolean }) {
-  const tone = dragOver ? "text-blue-700" : invalid ? "text-red-600" : ready ? "text-press" : "text-blue-600";
+  const tone = dragOver || ready ? "text-pick-deep" : invalid ? "text-red-600" : "text-pick";
   return (
     <span className={`flex size-10 items-center justify-center rounded-full bg-sheet ${tone}`} aria-hidden="true">
       {ready && !dragOver ? (
@@ -692,7 +837,7 @@ function DesignNotes() {
           {TEMPLATES.map((template, index) => (
             <div key={template.href} className={`grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-4 py-3 ${index % 2 === 0 ? "bg-sheet" : "bg-paper-deep"}`}>
               <span className="text-ink">{template.name}</span>
-              <a href={template.href} className="inline-flex items-center gap-1.5 font-medium text-press-deep underline-offset-4 hover:underline">
+              <a href={template.href} className="inline-flex items-center gap-1.5 font-medium text-pick-deep underline-offset-4 hover:underline">
                 <PdfIcon />
                 PDF
               </a>
@@ -862,77 +1007,214 @@ function QuoteSummary({
 
 function OptionGroup({
   legend,
+  value,
   hint,
   children,
 }: {
   legend: string;
+  value?: string;
   hint?: string;
   children: React.ReactNode;
 }) {
   return (
     <fieldset>
-      <legend className="text-sm font-medium">{legend}</legend>
+      <legend className="text-sm font-medium">
+        {legend}
+        {value ? <span className="font-semibold text-pick-deep">: {value}</span> : null}
+      </legend>
       {hint ? <p className="mt-1 mb-3 text-sm leading-6 text-ink-soft">{hint}</p> : <div className="mb-3" />}
       {children}
     </fieldset>
   );
 }
 
-function Choice({
+/** Etiqueta de esquina. Ámbar porque el azul ya significa "esto elegiste" y el verde, "ahorro". */
+function CornerTag({ children }: { children: string }) {
+  return (
+    <span className="absolute left-0 top-0 rounded-br-xl bg-flag px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-flag-ink">
+      {children}
+    </span>
+  );
+}
+
+/*
+ * El relleno verde se ve sucio sobre la fila azul elegida, así que ahí la pastilla
+ * pasa a blanca: el ahorro sigue en verde pero deja de pelear con el fondo.
+ */
+function SavingTag({ percent, onPick }: { percent: number; onPick: boolean }) {
+  return (
+    <span
+      className={`inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-xs font-semibold text-press-deep ${
+        onPick ? "bg-sheet" : "bg-moss-soft"
+      }`}
+    >
+      Ahorras {percent} %
+    </span>
+  );
+}
+
+function CheckMark() {
+  return (
+    <span
+      className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-pick text-white"
+      aria-hidden="true"
+    >
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+        <path d="M2.5 6.2 4.8 8.5 9.5 3.8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </span>
+  );
+}
+
+function Tile({
   name,
   checked,
   onChange,
   title,
   detail,
+  glyph,
+  tag,
 }: {
   name: string;
   checked: boolean;
   onChange: () => void;
   title: string;
   detail: string;
+  glyph: React.ReactNode;
+  tag?: string;
 }) {
   return (
     <label
-      className={`flex min-h-14 cursor-pointer items-center justify-between gap-3 rounded-2xl border px-4 py-3 ${
-        checked ? "border-ink bg-ink text-paper" : "border-line bg-sheet hover:border-ink/30"
-      }`}
+      className={`relative flex cursor-pointer flex-col items-center gap-1 overflow-hidden rounded-2xl border-2 px-3 pb-4 text-center transition-colors has-[:focus-visible]:border-pick has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-pick-line ${
+        tag ? "pt-7" : "pt-4"
+      } ${checked ? "border-pick bg-pick-soft" : "border-line bg-sheet hover:border-pick-line hover:bg-pick-wash"}`}
     >
-      <span className="flex items-center gap-3">
-        <input type="radio" name={name} checked={checked} onChange={onChange} className="h-4 w-4 accent-current" />
-        <span className="font-medium">{title}</span>
+      <input type="radio" name={name} checked={checked} onChange={onChange} className="sr-only" />
+      {tag ? <CornerTag>{tag}</CornerTag> : null}
+      {checked ? <CheckMark /> : null}
+      <span
+        className={`flex h-16 items-center justify-center ${checked ? "text-pick-deep" : "text-ink-soft"}`}
+        style={{ "--glyph-bg": checked ? "var(--pick-soft)" : "var(--sheet)" } as React.CSSProperties}
+        aria-hidden="true"
+      >
+        {glyph}
       </span>
-      <span className={`text-sm ${checked ? "text-paper/80" : "text-ink-soft"}`}>{detail}</span>
+      <span className={`mt-1 text-sm leading-5 ${checked ? "font-semibold text-pick-deep" : "font-medium"}`}>
+        {title}
+      </span>
+      <span className={`text-sm leading-5 ${checked ? "text-pick-deep/80" : "text-ink-soft"}`}>{detail}</span>
     </label>
   );
 }
 
-function ToggleRow({
-  checked,
-  onChange,
-  title,
-  detail,
-}: {
-  checked: boolean;
-  onChange: (value: boolean) => void;
-  title: string;
-  detail: string;
-}) {
+/** Rectángulo a escala: el lado largo de la clásica mide 60 px y la cuadrada baja a 39. */
+function SizeGlyph({ square }: { square: boolean }) {
+  const width = square ? 39 : 60;
+  const height = 39;
   return (
-    <label
-      className={`mb-2 flex min-h-14 cursor-pointer items-center justify-between gap-3 rounded-2xl border px-4 py-3 last:mb-0 ${
-        checked ? "border-ink bg-ink text-paper" : "border-line bg-sheet hover:border-ink/30"
-      }`}
-    >
-      <span>
-        <span className="block font-medium">{title}</span>
-        <span className={`block text-sm ${checked ? "text-paper/75" : "text-ink-soft"}`}>{detail}</span>
-      </span>
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(event) => onChange(event.target.checked)}
-        className="h-5 w-5 accent-current"
+    <svg width="72" height="52" viewBox="0 0 72 52" fill="none">
+      <rect
+        x={(72 - width) / 2}
+        y={(52 - height) / 2}
+        width={width}
+        height={height}
+        rx="2"
+        stroke="currentColor"
+        strokeWidth="1.5"
       />
-    </label>
+    </svg>
+  );
+}
+
+function SidesGlyph({ double }: { double: boolean }) {
+  return (
+    <svg width="62" height="52" viewBox="0 0 62 52" fill="none">
+      <rect x="14" y="5" width="34" height="42" rx="2" stroke="currentColor" strokeWidth="1.5" />
+      <text x="20" y="20" fontSize="12" fill="currentColor">
+        1
+      </text>
+      {double ? (
+        <>
+          <path d="M48 26 28 47h20z" fill="var(--glyph-bg, var(--sheet))" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+          <text x="37" y="44" fontSize="12" fill="currentColor">
+            2
+          </text>
+        </>
+      ) : null}
+    </svg>
+  );
+}
+
+function PaperGlyph({ glossy }: { glossy: boolean }) {
+  return (
+    <svg width="62" height="52" viewBox="0 0 62 52" fill="none">
+      <rect x="13" y="7" width="36" height="38" rx="2" stroke="currentColor" strokeWidth="1.5" />
+      {glossy ? (
+        <path d="M20 38 42 14" stroke="currentColor" strokeWidth="7" strokeLinecap="round" opacity="0.25" />
+      ) : (
+        <path
+          d="M20 19h22M20 26h22M20 33h14"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          opacity="0.4"
+        />
+      )}
+    </svg>
+  );
+}
+
+function LaminateGlyph({ glossy }: { glossy: boolean }) {
+  return (
+    <svg width="62" height="52" viewBox="0 0 62 52" fill="none">
+      <rect x="8" y="12" width="34" height="34" rx="2" stroke="currentColor" strokeWidth="1.5" opacity="0.45" />
+      <rect x="18" y="6" width="34" height="34" rx="2" fill="var(--glyph-bg, var(--sheet))" stroke="currentColor" strokeWidth="1.5" />
+      {glossy ? (
+        <Sparkle x={35} y={23} size={9} />
+      ) : (
+        <path d="M44 32 52 40h-8z" fill="var(--glyph-bg, var(--sheet))" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+      )}
+    </svg>
+  );
+}
+
+function UvGlyph() {
+  return (
+    <svg width="62" height="52" viewBox="0 0 62 52" fill="none">
+      <rect x="13" y="7" width="36" height="38" rx="2" stroke="currentColor" strokeWidth="1.5" />
+      <rect x="21" y="17" width="20" height="18" rx="1.5" fill="currentColor" opacity="0.14" />
+      <Sparkle x={31} y={26} size={9} />
+    </svg>
+  );
+}
+
+function Sparkle({ x, y, size = 8 }: { x: number; y: number; size?: number }) {
+  return (
+    <path
+      d={`M${x} ${y - size}c1.3 ${size * 0.72} 2.4 ${size * 0.84} ${size} ${size}-${size * 0.72} 1.3-${size * 0.84} 2.4-${size} ${size}-1.3-${size * 0.72}-2.4-${size * 0.84}-${size}-${size} ${size * 0.72}-1.3 ${size * 0.84}-2.4 ${size}-${size}z`}
+      fill="currentColor"
+    />
+  );
+}
+
+function CornerGlyph({ rounded }: { rounded: boolean }) {
+  return (
+    <svg width="62" height="52" viewBox="0 0 62 52" fill="none">
+      <path d="M18 47V15h30" stroke="currentColor" strokeWidth="1.5" opacity="0.3" />
+      {rounded ? (
+        <path d="M18 45V28a13 13 0 0 1 13-13h16" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" />
+      ) : (
+        <path d="M18 45V15h29" stroke="currentColor" strokeWidth="3.5" strokeLinecap="square" />
+      )}
+    </svg>
+  );
+}
+
+function NoneGlyph() {
+  return (
+    <svg width="62" height="52" viewBox="0 0 62 52" fill="none">
+      <circle cx="31" cy="26" r="17" stroke="currentColor" strokeWidth="2.5" />
+      <path d="M19 38 43 14" stroke="currentColor" strokeWidth="2.5" />
+    </svg>
   );
 }

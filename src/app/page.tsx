@@ -33,7 +33,9 @@ export default function HomePage() {
             <Link
               href={familyHref(family)}
               className={`inline-flex min-h-10 items-center gap-2 rounded-full border px-3 text-sm ${
-                family.live ? "border-ink bg-ink text-white" : "border-line text-ink-soft hover:border-ink/30 hover:text-ink"
+                family.live
+                  ? "border-press bg-press text-white hover:bg-press-deep"
+                  : "border-line text-ink-soft hover:border-ink/30 hover:text-ink"
               }`}
             >
               {family.label}

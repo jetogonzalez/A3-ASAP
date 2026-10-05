@@ -306,14 +306,16 @@ function MethodOption({
 }) {
   return (
     <label
-      className={`flex min-h-14 cursor-pointer items-center justify-between gap-3 rounded-2xl border px-4 py-3 ${
-        checked ? "border-ink bg-ink text-paper" : "border-line bg-sheet"
+      className={`flex min-h-14 cursor-pointer items-center justify-between gap-3 rounded-2xl border-2 px-4 py-3 transition-colors ${
+        checked ? "border-pick bg-pick-soft" : "border-line bg-sheet hover:border-pick-line hover:bg-pick-wash"
       }`}
     >
-      <span>
-        <input type="radio" name={name} value={value} checked={checked} onChange={onChange} className="sr-only" />
-        <span className="block font-medium">{title}</span>
-        <span className={`block text-sm ${checked ? "text-paper/75" : "text-ink-soft"}`}>{detail}</span>
+      <span className="flex items-center gap-3">
+        <input type="radio" name={name} value={value} checked={checked} onChange={onChange} className="h-4 w-4 accent-pick" />
+        <span>
+          <span className={`block ${checked ? "font-semibold text-pick-deep" : "font-medium"}`}>{title}</span>
+          <span className={`block text-sm ${checked ? "text-pick-deep/80" : "text-ink-soft"}`}>{detail}</span>
+        </span>
       </span>
     </label>
   );
