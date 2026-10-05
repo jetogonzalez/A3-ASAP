@@ -24,7 +24,8 @@ export function isServicePlace(name: string): boolean {
   return SERVICE_PLACES.some((place) => place.name === name);
 }
 
-export type ShippingMethod = "retiro" | "envio";
+/* Solo entrega a domicilio: no hay retiro en el taller. */
+export type ShippingMethod = "envio";
 
 export type ShippingQuote = {
   cents: number;
@@ -38,15 +39,7 @@ export type ShippingQuote = {
 };
 
 /** La hoja de costos solo cubre la impresión. El envío se cotiza aparte. */
-export function shippingQuote(method: ShippingMethod): ShippingQuote {
-  if (method === "retiro") {
-    return {
-      cents: 0,
-      byWeight: false,
-      label: "Retiro en Quito",
-      detail: "Sin costo. Lista en 4 días hábiles.",
-    };
-  }
+export function shippingQuote(): ShippingQuote {
   return {
     cents: 0,
     byWeight: true,
@@ -56,6 +49,5 @@ export function shippingQuote(method: ShippingMethod): ShippingQuote {
 }
 
 export const SHIPPING_TABLE: Array<{ zone: string; price: string; time: string }> = [
-  { zone: "Retiro en Quito", price: "$0.00", time: "4 días hábiles" },
   { zone: "Quito y valles", price: "Según el peso", time: "4 días hábiles" },
 ];

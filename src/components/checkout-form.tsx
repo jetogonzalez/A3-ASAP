@@ -3,15 +3,15 @@
 import { startTransition, useActionState, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/components/cart-provider";
-import { SERVICE_PLACES, shippingQuote, type ShippingMethod } from "@/lib/ecuador";
+import { SERVICE_PLACES, shippingQuote } from "@/lib/ecuador";
 import { formatUsd } from "@/lib/money";
 import { quote } from "@/lib/pricing";
+import { DOCUMENT_TYPES, type DocumentType } from "@/lib/text";
 import { PAYMENT_LABELS, type PaymentMethod } from "@/lib/whatsapp";
 import { initialOrderState } from "@/lib/schema";
 import { placeOrder } from "@/server/actions";
 
-const fieldClass =
-  "mt-1.5 h-12 w-full rounded-xl border border-line bg-paper px-3.5 text-base text-ink outline-none transition-colors aria-invalid:border-alert aria-invalid:bg-alert-soft/60";
+const fieldClass = "field mt-1.5";
 const labelClass = "block text-sm font-medium";
 
 export function CheckoutForm() {
@@ -19,10 +19,12 @@ export function CheckoutForm() {
   const router = useRouter();
   const [state, action, pending] = useActionState(placeOrder, initialOrderState);
   const sent = useRef(false);
-  /* Nada viene marcado: cómo lo recibe y cómo paga los elige la persona. */
-  const [method, setMethod] = useState<ShippingMethod | null>(null);
+  /* El pago no viene marcado: lo elige la persona. */
   const [city, setCity] = useState("Quito");
   const [payment, setPayment] = useState<PaymentMethod | null>(null);
+  const [documentType, setDocumentType] = useState<DocumentType>("cedula");
+  const documentPlaceholder =
+    DOCUMENT_TYPES.find((type) => type.id === documentType)?.placeholder ?? "";
 
   useEffect(() => {
     if (!state.orderId || sent.current) return;
@@ -31,7 +33,7 @@ export function CheckoutForm() {
     router.push(`/pedido/${state.orderId}`);
   }, [state.orderId, cart, router]);
 
-  const shipping = shippingQuote(method ?? "envio");
+  const shipping = shippingQuote();
   const subtotal = useMemo(
     () => cart.items.reduce((sum, item) => sum + quote(item.configuration).totalCents, 0),
     [cart.items],
@@ -88,83 +90,113 @@ export function CheckoutForm() {
         ) : null}
 
         <Section title="Entrega">
-          <div className="grid gap-2 sm:grid-cols-2">
-            <MethodOption
-              name="shippingMethod"
-              value="envio"
-              checked={method === "envio"}
-              onChange={() => setMethod("envio")}
-              title="Envío en Quito y valles"
-              detail="A domicilio"
-            />
-            <MethodOption
-              name="shippingMethod"
-              value="retiro"
-              checked={method === "retiro"}
-              onChange={() => setMethod("retiro")}
-              title="Retiro en Quito"
-              detail="Sin costo"
-            />
-          </div>
-          {errors.shippingMethod ? (
-            <p className="mt-2 text-sm font-medium text-alert-deep">{errors.shippingMethod}</p>
-          ) : null}
-          {method === "envio" ? (
-            <div className="mt-4 grid gap-4 sm:grid-cols-2">
-              <p className="text-sm leading-6 text-ink-soft sm:col-span-2">
-                El costo del envío depende del peso del paquete. Te lo confirmamos por WhatsApp antes de que pagues.
-              </p>
-              <div className="sm:col-span-2">
-                <label className={labelClass} htmlFor="city">
-                  Sector
-                </label>
-                <select
-                  id="city"
-                  name="city"
-                  value={city}
-                  onChange={(event) => setCity(event.target.value)}
-                  className={fieldClass}
-                  aria-invalid={Boolean(errors.city)}
-                >
-                  <optgroup label="Quito">
-                    {SERVICE_PLACES.filter((place) => place.group === "Quito").map((place) => (
-                      <option key={place.name} value={place.name}>
-                        {place.name}
-                      </option>
-                    ))}
-                  </optgroup>
-                  <optgroup label="Valles">
-                    {SERVICE_PLACES.filter((place) => place.group === "Valles").map((place) => (
-                      <option key={place.name} value={place.name}>
-                        {place.name}
-                      </option>
-                    ))}
-                  </optgroup>
-                </select>
-                {errors.city ? <p className="mt-1 text-sm font-medium text-alert-deep">{errors.city}</p> : null}
-              </div>
-              <div className="sm:col-span-2">
-                <Field label="Dirección" name="address" error={errors.address} autoComplete="street-address" />
-              </div>
-              <div className="sm:col-span-2">
-                <Field label="Referencia" name="reference" error={errors.reference} optional />
-              </div>
+          {/* Todo va a domicilio: no hay que elegir nada, solo decir a dónde. */}
+          <p className="text-sm leading-6 text-ink-soft">
+            Entregamos en Quito y los valles. El costo depende del peso del paquete y te lo confirmamos por WhatsApp antes de que pagues.
+          </p>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <div className="sm:col-span-2">
+              <label className={labelClass} htmlFor="city">
+                Sector
+              </label>
+              <select
+                id="city"
+                name="city"
+                value={city}
+                onChange={(event) => setCity(event.target.value)}
+                className={fieldClass}
+                aria-invalid={Boolean(errors.city)}
+              >
+                <optgroup label="Quito">
+                  {SERVICE_PLACES.filter((place) => place.group === "Quito").map((place) => (
+                    <option key={place.name} value={place.name}>
+                      {place.name}
+                    </option>
+                  ))}
+                </optgroup>
+                <optgroup label="Valles">
+                  {SERVICE_PLACES.filter((place) => place.group === "Valles").map((place) => (
+                    <option key={place.name} value={place.name}>
+                      {place.name}
+                    </option>
+                  ))}
+                </optgroup>
+              </select>
+              {errors.city ? <p className="mt-1 text-sm font-medium text-alert-deep">{errors.city}</p> : null}
             </div>
-          ) : method === "retiro" ? (
-            <p className="mt-4 text-sm leading-6 text-ink-soft">
-              El retiro es en el taller, en Quito, sin costo. Te avisamos cuando la tanda está lista: 4 días hábiles.
-            </p>
-          ) : null}
+            <div className="sm:col-span-2">
+              <Field
+                label="Dirección"
+                name="address"
+                error={errors.address}
+                autoComplete="street-address"
+                placeholder="Av. Amazonas N34-120 y Atahualpa…"
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <Field
+                label="Referencia"
+                name="reference"
+                error={errors.reference}
+                optional
+                placeholder="Edificio Torre Azul, piso 3, oficina 2…"
+              />
+            </div>
+          </div>
         </Section>
 
         <Section title="Contacto">
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="sm:col-span-2">
-              <Field label="Nombre" name="name" error={errors.name} autoComplete="name" />
+            <Field label="Nombres" name="firstName" error={errors.firstName} autoComplete="given-name" placeholder="María Fernanda…" />
+            <Field label="Apellidos" name="lastName" error={errors.lastName} autoComplete="family-name" placeholder="Pérez Andrade…" />
+            <div>
+              <label className={labelClass} htmlFor="documentType">
+                Tipo de documento
+              </label>
+              <select
+                id="documentType"
+                name="documentType"
+                value={documentType}
+                onChange={(event) => setDocumentType(event.target.value as DocumentType)}
+                className={fieldClass}
+              >
+                {DOCUMENT_TYPES.map((type) => (
+                  <option key={type.id} value={type.id}>
+                    {type.label}
+                  </option>
+                ))}
+              </select>
             </div>
-            <Field label="Correo" name="email" type="email" error={errors.email} autoComplete="email" inputMode="email" />
-            <Field label="Teléfono" name="phone" type="tel" error={errors.phone} autoComplete="tel" inputMode="tel" placeholder="0991234567" />
+            {/* El formato cambia con el tipo, así que el ejemplo también. */}
+            <Field
+              label="Número de documento"
+              name="documentNumber"
+              error={errors.documentNumber}
+              inputMode={documentType === "pasaporte" ? "text" : "numeric"}
+              placeholder={`${documentPlaceholder}…`}
+            />
+            <Field
+              label="Correo"
+              name="email"
+              type="email"
+              error={errors.email}
+              autoComplete="email"
+              inputMode="email"
+              placeholder="maria@correo.com…"
+            />
+            <Field
+              label="Teléfono"
+              name="phone"
+              type="tel"
+              error={errors.phone}
+              autoComplete="tel"
+              inputMode="tel"
+              placeholder="0991234567…"
+            />
           </div>
+          <p className="mt-3 text-sm leading-6 text-ink-soft">
+            El documento es para la factura.
+          </p>
         </Section>
 
         <Section title="Pago">
@@ -198,13 +230,38 @@ export function CheckoutForm() {
           <label className={labelClass} htmlFor="notes">
             Indicación para el taller <span className="font-normal text-ink-soft">(opcional)</span>
           </label>
-          <textarea id="notes" name="notes" maxLength={400} rows={3} className={`${fieldClass} h-auto py-3`} />
+          <textarea
+            id="notes"
+            name="notes"
+            maxLength={400}
+            rows={3}
+            placeholder="El logo va centrado y en blanco…"
+            className={fieldClass}
+          />
         </Section>
 
         <div>
+          {/* El check del navegador salía negro y cuadrado. Este usa el verde de marca. */}
           <label className="flex min-h-11 cursor-pointer items-start gap-3 text-sm leading-6">
-            <input type="checkbox" name="terms" value="yes" className="mt-1 h-5 w-5 accent-ink" />
-            <span>Revisé el formato, la cantidad y el total del pedido.</span>
+            <span className="relative mt-0.5 grid size-5 shrink-0 place-items-center">
+              <input
+                type="checkbox"
+                name="terms"
+                value="yes"
+                className="peer control control-check"
+              />
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 12 12"
+                fill="none"
+                aria-hidden="true"
+                className="pointer-events-none absolute hidden text-white peer-checked:block"
+              >
+                <path d="M2.5 6.2 4.8 8.5 9.5 3.8" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </span>
+            <span>Revisé el formato, la cantidad y el total del pedido</span>
           </label>
           {errors.terms ? <p className="mt-1 text-sm font-medium text-alert-deep">{errors.terms}</p> : null}
         </div>
@@ -231,15 +288,13 @@ export function CheckoutForm() {
             </li>
           ))}
           <li className="flex justify-between gap-3 border-t border-line pt-3">
-            <span className="text-ink-soft">{method === null ? "Entrega" : shipping.label}</span>
-            <span className={shipping.byWeight || method === null ? "text-sm text-ink-soft" : ""}>
-              {method === null ? "Por elegir" : shipping.byWeight ? "Según el peso" : formatUsd(shipping.cents)}
-            </span>
+            <span className="text-ink-soft">{shipping.label}</span>
+            <span className="text-sm text-ink-soft">Según el peso</span>
           </li>
         </ul>
         <p className="mt-4 font-display text-4xl">{formatUsd(subtotal)}</p>
         <p className="mt-2 text-xs leading-5 text-ink-soft">
-          Es el total de la impresión, en USD. {method === "envio" ? "El envío se cotiza por peso y se suma en el chat." : method === "retiro" ? shipping.detail : "Elige cómo lo recibes para ver el plazo."}
+          Es el total de la impresión, en USD. El envío se cotiza por peso y se suma en el chat.
         </p>
       </aside>
     </form>
@@ -324,8 +379,8 @@ function MethodOption({
         checked ? "border-pick bg-pick-soft" : "border-line bg-sheet hover:border-pick-line hover:bg-pick-wash"
       }`}
     >
-      <span className="flex items-center gap-3">
-        <input type="radio" name={name} value={value} checked={checked} onChange={onChange} className="h-4 w-4 accent-pick" />
+      <span className="flex items-start gap-3">
+        <input type="radio" name={name} value={value} checked={checked} onChange={onChange} className="control control-radio mt-0.5" />
         <span>
           <span className={`block ${checked ? "font-semibold" : "font-medium"}`}>{title}</span>
           <span className="block text-sm text-ink-soft">{detail}</span>

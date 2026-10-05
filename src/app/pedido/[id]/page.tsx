@@ -101,6 +101,9 @@ export default async function ReceiptPage({ params }: ReceiptProps) {
             {order.customer.city}, {order.customer.province}
           </p>
           <p>{order.customer.phone}</p>
+          <p>
+            {order.customer.document.label} {order.customer.document.number}
+          </p>
           <p>{order.shipping.detail}</p>
         </Info>
         <Info title="Pago">

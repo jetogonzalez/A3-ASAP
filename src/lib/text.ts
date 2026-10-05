@@ -17,45 +17,61 @@ export function safeFilename(input: string): string {
   return cleaned || "arte";
 }
 
-export function luhnOk(num: string): boolean {
-  const digits = num.replace(/\s+/g, "");
-  if (!/^\d{13,19}$/.test(digits)) return false;
+export type DocumentType = "cedula" | "ruc" | "pasaporte";
+
+export const DOCUMENT_TYPES: Array<{ id: DocumentType; label: string; placeholder: string }> = [
+  { id: "cedula", label: "Cédula", placeholder: "1712345678" },
+  { id: "ruc", label: "RUC", placeholder: "1712345678001" },
+  { id: "pasaporte", label: "Pasaporte", placeholder: "AB123456" },
+];
+
+export function isDocumentType(value: string): value is DocumentType {
+  return DOCUMENT_TYPES.some((type) => type.id === value);
+}
+
+/*
+ * Cédula ecuatoriana: dos dígitos de provincia, un tercero menor a 6 para
+ * personas naturales y un dígito verificador al final, con el algoritmo del
+ * módulo 10 que usa el Registro Civil.
+ */
+export function cedulaOk(value: string): boolean {
+  const digits = value.replace(/\D/g, "");
+  if (!/^\d{10}$/.test(digits)) return false;
+  const province = Number(digits.slice(0, 2));
+  if (province < 1 || (province > 24 && province !== 30)) return false;
+  if (Number(digits[2]) > 5) return false;
+
   let sum = 0;
-  let alternate = false;
-  for (let index = digits.length - 1; index >= 0; index -= 1) {
-    let digit = digits.charCodeAt(index) - 48;
-    if (alternate) {
-      digit *= 2;
-      if (digit > 9) digit -= 9;
-    }
-    sum += digit;
-    alternate = !alternate;
+  for (let index = 0; index < 9; index += 1) {
+    const digit = Number(digits[index]);
+    const doubled = index % 2 === 0 ? digit * 2 : digit;
+    sum += doubled > 9 ? doubled - 9 : doubled;
   }
-  return sum % 10 === 0;
+  const check = (10 - (sum % 10)) % 10;
+  return check === Number(digits[9]);
 }
 
-export function cardBrand(num: string): string {
-  const digits = num.replace(/\s+/g, "");
-  if (/^4/.test(digits)) return "Visa";
-  if (/^3[47]/.test(digits)) return "American Express";
-  if (/^(5[1-5]|2[2-7])/.test(digits)) return "Mastercard";
-  return "Tarjeta";
+/*
+ * RUC: los 13 dígitos terminan en el código del establecimiento, que nunca es
+ * 000. Para personas naturales los primeros diez son una cédula válida; para
+ * sociedades y entidades públicas el verificador va en otra posición y no lo
+ * comprobamos, solo la forma.
+ */
+export function rucOk(value: string): boolean {
+  const digits = value.replace(/\D/g, "");
+  if (!/^\d{13}$/.test(digits)) return false;
+  if (digits.slice(10) === "000") return false;
+  const province = Number(digits.slice(0, 2));
+  if (province < 1 || (province > 24 && province !== 30)) return false;
+  const third = Number(digits[2]);
+  if (third < 6) return cedulaOk(digits.slice(0, 10));
+  return third === 6 || third === 9;
 }
 
-export function last4(num: string): string {
-  const digits = num.replace(/\D/g, "");
-  return digits.slice(-4);
-}
-
-export function expiryOk(value: string, now = new Date()): boolean {
-  const match = value.trim().match(/^(\d{2})\s*\/\s*(\d{2})$/);
-  if (!match) return false;
-  const month = Number(match[1]);
-  const year = 2000 + Number(match[2]);
-  if (month < 1 || month > 12) return false;
-  const expiry = year * 12 + month;
-  const current = now.getFullYear() * 12 + (now.getMonth() + 1);
-  return expiry >= current;
+export function documentOk(type: DocumentType, value: string): boolean {
+  if (type === "cedula") return cedulaOk(value);
+  if (type === "ruc") return rucOk(value);
+  return /^[A-Za-z0-9]{5,20}$/.test(value.replace(/\s/g, ""));
 }
 
 export function normalizePhone(input: string): string | null {

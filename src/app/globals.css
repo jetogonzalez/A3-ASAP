@@ -59,6 +59,116 @@ html {
   scroll-behavior: smooth;
 }
 
+/*
+ * Campos de formulario, siguiendo el sistema de eBay: en reposo llevan un
+ * relleno suave para que se vean llenables de un vistazo, y al enfocarlos el
+ * relleno se va y el borde se pone fuerte.
+ */
+.field {
+  width: 100%;
+  min-height: 3rem;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  background: var(--paper-deep);
+  padding: 0 0.875rem;
+  font-size: 1rem;
+  color: var(--ink);
+  outline: none;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.field::placeholder {
+  color: var(--ink-soft);
+}
+
+.field:hover {
+  border-color: color-mix(in srgb, var(--ink) 24%, transparent);
+}
+
+/*
+ * El propio borde marca el foco, así que el anillo azul del navegador sobra:
+ * juntos se veían tres líneas alrededor del campo.
+ */
+.field:focus,
+.field:focus-visible {
+  background: var(--sheet);
+  border-color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--ink);
+  outline: none;
+}
+
+.field[aria-invalid="true"] {
+  border-color: var(--alert);
+  background: var(--alert-soft);
+}
+
+.field[aria-invalid="true"]:focus {
+  background: var(--sheet);
+  box-shadow: inset 0 0 0 1px var(--alert);
+}
+
+/* La flecha del sistema cambia en cada navegador; esta es siempre la misma. */
+select.field {
+  appearance: none;
+  padding-right: 2.5rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1.5 6 6.5l5-5' stroke='%235c6570' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.875rem center;
+}
+
+textarea.field {
+  min-height: auto;
+  padding: 0.75rem 0.875rem;
+  line-height: 1.6;
+}
+
+/*
+ * Controles propios, siguiendo el sistema de eBay: 20 px es el tamaño base
+ * porque el de 16 px del navegador queda chico para el dedo, y `accent-color`
+ * deja que cada sistema operativo dibuje una forma distinta.
+ */
+.control {
+  appearance: none;
+  flex-shrink: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid var(--line);
+  background: var(--sheet);
+  cursor: pointer;
+  transition:
+    border-color 120ms ease,
+    border-width 120ms ease,
+    background-color 120ms ease;
+}
+
+.control:hover {
+  border-color: color-mix(in srgb, var(--ink) 28%, transparent);
+}
+
+.control-radio {
+  border-radius: 9999px;
+}
+
+/* El punto del centro es el propio borde engordado. */
+.control-radio:checked,
+.control-radio:checked:hover {
+  border-width: 0.375rem;
+  border-color: var(--pick);
+}
+
+.control-check {
+  border-radius: 0.375rem;
+}
+
+.control-check:checked,
+.control-check:checked:hover {
+  border-color: var(--press);
+  background: var(--press);
+}
+
 body {
   background: var(--paper);
   color: var(--ink);

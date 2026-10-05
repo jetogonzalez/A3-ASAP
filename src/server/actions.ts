@@ -4,7 +4,14 @@ import { headers } from "next/headers";
 import { isServicePlace, shippingQuote, type ShippingMethod } from "@/lib/ecuador";
 import { describeConfiguration, quote } from "@/lib/pricing";
 import { cartSchema, type OrderState } from "@/lib/schema";
-import { cleanText, normalizePhone, safeFilename } from "@/lib/text";
+import {
+  cleanText,
+  documentOk,
+  DOCUMENT_TYPES,
+  isDocumentType,
+  normalizePhone,
+  safeFilename,
+} from "@/lib/text";
 import { rateLimit } from "@/server/rate-limit";
 import { saveOrder, saveUpload, verifyUpload, type StoredOrder } from "@/server/store";
 
@@ -60,10 +67,12 @@ export async function placeOrder(_prev: OrderState, formData: FormData): Promise
     return { ok: false, fieldErrors: { cart: "Agrega al menos un producto antes de pagar." } };
   }
 
-  const name = readField(formData, "name", 80);
+  const firstName = readField(formData, "firstName", 60);
+  const lastName = readField(formData, "lastName", 60);
+  const documentTypeInput = readField(formData, "documentType", 20);
+  const documentNumber = readField(formData, "documentNumber", 20).toUpperCase();
   const email = readField(formData, "email", 120).toLowerCase();
   const phoneInput = readField(formData, "phone", 20);
-  const shippingMethod = readField(formData, "shippingMethod", 20);
   const citySelect = readField(formData, "city", 80);
   const address = readField(formData, "address", 160);
   const reference = readField(formData, "reference", 120);
@@ -71,31 +80,41 @@ export async function placeOrder(_prev: OrderState, formData: FormData): Promise
   const paymentMethod = readField(formData, "paymentMethod", 20);
 
   const fieldErrors: Record<string, string> = {};
-  if (!termsAccepted) fieldErrors.terms = "Confirma que revisaste el pedido.";
-  if (name.length < 3) fieldErrors.name = "Escribe tu nombre completo.";
+  if (!termsAccepted) fieldErrors.terms = "Confirma que revisaste el pedido";
+  if (firstName.length < 2) fieldErrors.firstName = "Escribe tus nombres";
+  if (lastName.length < 2) fieldErrors.lastName = "Escribe tus apellidos";
+
+  /* El documento va en la factura, así que se revisa aquí y no solo en el navegador. */
+  const documentType = isDocumentType(documentTypeInput) ? documentTypeInput : "cedula";
+  const documentLabel =
+    DOCUMENT_TYPES.find((type) => type.id === documentType)?.label ?? "Cédula";
+  if (!documentOk(documentType, documentNumber)) {
+    fieldErrors.documentNumber =
+      documentType === "cedula"
+        ? "La cédula no es válida, son 10 dígitos"
+        : documentType === "ruc"
+          ? "El RUC no es válido, son 13 dígitos y termina en 001"
+          : "Escribe el número del pasaporte";
+  }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 120) {
-    fieldErrors.email = "El correo no es válido.";
+    fieldErrors.email = "El correo no es válido";
   }
   const phone = normalizePhone(phoneInput);
-  if (!phone) fieldErrors.phone = "Usa un teléfono de Ecuador. Ejemplo: 0991234567.";
+  if (!phone) fieldErrors.phone = "Usa un teléfono de Ecuador, como 0991234567";
 
-  const method: ShippingMethod | null =
-    shippingMethod === "retiro" || shippingMethod === "envio" ? shippingMethod : null;
-  if (!method) fieldErrors.shippingMethod = "Elige cómo quieres recibirlo.";
-
+  /* Todo va a domicilio, así que el sector y la dirección siempre hacen falta. */
+  const method: ShippingMethod = "envio";
   let city = "";
-  if (method === "envio") {
-    if (!isServicePlace(citySelect)) fieldErrors.city = "Elige Quito o uno de los valles.";
-    else city = citySelect;
-    if (address.length < 5) fieldErrors.address = "Escribe la calle, número y sector.";
-  }
+  if (!isServicePlace(citySelect)) fieldErrors.city = "Elige Quito o uno de los valles";
+  else city = citySelect;
+  if (address.length < 5) fieldErrors.address = "Escribe la calle, número y sector";
 
   /*
    * El cobro se cierra por WhatsApp: aquí solo se guarda con qué va a pagar.
    * No hay pasarela ni datos de tarjeta de por medio.
    */
   const pay = paymentMethod === "transfer" || paymentMethod === "deuna" ? paymentMethod : null;
-  if (!pay) fieldErrors.paymentMethod = "Elige cómo vas a pagar.";
+  if (!pay) fieldErrors.paymentMethod = "Elige cómo vas a pagar";
   const paymentLabel = pay === "deuna" ? "Deuna" : "Transferencia bancaria";
 
   if (Object.keys(fieldErrors).length > 0) {
@@ -124,7 +143,7 @@ export async function placeOrder(_prev: OrderState, formData: FormData): Promise
     });
   }
 
-  const shipping = shippingQuote(method!);
+  const shipping = shippingQuote();
   const subtotalCents = items.reduce((sum, item) => sum + item.totalCents, 0);
   const id = crypto.randomUUID();
   const order: StoredOrder = {
@@ -133,15 +152,16 @@ export async function placeOrder(_prev: OrderState, formData: FormData): Promise
     createdAt: new Date().toISOString(),
     items,
     customer: {
-      name,
+      name: `${firstName} ${lastName}`,
+      document: { type: documentType, label: documentLabel, number: documentNumber },
       email,
       phone: phone!,
       province: "Pichincha",
-      city: method === "retiro" ? "Quito" : city,
-      address: method === "retiro" ? "Retiro en taller, Quito" : address,
-      reference: method === "retiro" ? "" : reference,
+      city,
+      address,
+      reference,
     },
-    shipping: { method: method!, ...shipping },
+    shipping: { method, ...shipping },
     payment: { method: pay!, label: paymentLabel },
     notes,
     subtotalCents,

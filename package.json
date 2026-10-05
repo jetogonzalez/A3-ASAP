@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "tsx --test src/lib/pricing.test.ts src/lib/delivery.test.ts"
+    "test": "tsx --test src/lib/pricing.test.ts src/lib/delivery.test.ts src/lib/text.test.ts"
   },
   "dependencies": {
     "next": "16.3.8",

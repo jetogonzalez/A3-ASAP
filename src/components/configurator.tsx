@@ -471,7 +471,7 @@ export function Configurator({
                       value={quantity}
                       checked={checked}
                       onChange={() => choose("cantidad", { quantity })}
-                      className="h-4 w-4 shrink-0 accent-pick"
+                      className="control control-radio"
                     />
                     <span
                       className={`whitespace-nowrap ${
@@ -619,7 +619,7 @@ function DeliveryChoices({
                   name="entrega"
                   checked={checked}
                   onChange={() => onChange(option.id)}
-                  className="mt-1 h-4 w-4 accent-pick"
+                  className="control control-radio mt-0.5"
                 />
                 <span>
                   <span className={checked ? "font-semibold" : "font-medium"}>
@@ -881,7 +881,7 @@ const QUESTIONS = [
   },
   {
     q: "¿A dónde se envían?",
-    a: "Por ahora solo a Quito y los valles. El envío se suma al pagar. También puedes retirar en Quito.",
+    a: "Por ahora solo a Quito y los valles. El costo depende del peso y te lo confirmamos por WhatsApp.",
   },
   {
     q: "¿Qué materiales hay?",

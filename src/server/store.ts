@@ -4,6 +4,8 @@ import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 
+import type { DocumentType } from "@/lib/text";
+
 const DATA_DIR = process.env.VERCEL ? path.join("/tmp", "asap-data") : path.join(process.cwd(), "data");
 const UPLOAD_DIR = path.join(DATA_DIR, "uploads");
 const ORDERS_FILE = path.join(DATA_DIR, "orders.json");
@@ -27,6 +29,7 @@ export type StoredOrder = {
   }>;
   customer: {
     name: string;
+    document: { type: DocumentType; label: string; number: string };
     email: string;
     phone: string;
     province: string;
@@ -34,7 +37,7 @@ export type StoredOrder = {
     address: string;
     reference: string;
   };
-  shipping: { method: "retiro" | "envio"; label: string; detail: string; cents: number };
+  shipping: { method: "envio"; label: string; detail: string; cents: number };
   payment: { method: "transfer" | "deuna"; label: string };
   notes: string;
   subtotalCents: number;
