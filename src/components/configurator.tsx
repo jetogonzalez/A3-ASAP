@@ -22,6 +22,37 @@ import { uploadArtwork } from "@/server/actions";
 
 const MAX_FILE = 8 * 1024 * 1024;
 
+/*
+ * El `behavior: "smooth"` del navegador llega de golpe. Esto baja lo mismo pero
+ * con una curva larga y suave, y se corta apenas la persona toca la rueda o la
+ * pantalla: si decide ir a otro lado, mandamos nosotros menos que ella.
+ */
+function glideTo(top: number): void {
+  const start = window.scrollY;
+  const distance = top - start;
+  const duration = Math.min(1100, Math.max(520, Math.abs(distance) * 1.25));
+  const startedAt = performance.now();
+  let cancelled = false;
+
+  const stop = () => {
+    cancelled = true;
+  };
+  const events = ["wheel", "touchstart", "keydown"] as const;
+  events.forEach((name) => window.addEventListener(name, stop, { passive: true, once: true }));
+
+  const step = (now: number) => {
+    if (cancelled) return;
+    const progress = Math.min(1, (now - startedAt) / duration);
+    /* easeInOutCubic: arranca y termina quieto, sin frenazo al final. */
+    const eased =
+      progress < 0.5 ? 4 * progress ** 3 : 1 - (-2 * progress + 2) ** 3 / 2;
+    window.scrollTo(0, start + distance * eased);
+    if (progress < 1) requestAnimationFrame(step);
+    else events.forEach((name) => window.removeEventListener(name, stop));
+  };
+  requestAnimationFrame(step);
+}
+
 /** Los pasos del configurador, en el orden en que se bajan. */
 const STEPS = ["tamano", "papel", "laminado", "uv", "lados", "puntas", "cantidad", "entrega"] as const;
 
@@ -120,7 +151,7 @@ export function Configurator({
       const top =
         next.getBoundingClientRect().top + window.scrollY - (header?.offsetHeight ?? 0) - 16;
       if (top <= window.scrollY + 8) return;
-      window.scrollTo({ top, behavior: "smooth" });
+      glideTo(top);
     }, 90);
   }
 
@@ -575,14 +606,13 @@ function DeliveryChoices({
           return (
             <label
               key={option.id}
-              /* Todas con el mismo alto: la etiqueta se superpone, no empuja. */
-              className={`relative flex min-h-20 cursor-pointer items-center justify-between gap-3 overflow-hidden rounded-2xl border-2 px-4 pb-3 pt-7 transition-colors ${
+              /* Mismo alto en todas y el contenido centrado: la etiqueta vive en la columna del precio. */
+              className={`relative flex min-h-20 cursor-pointer items-center justify-between gap-3 overflow-hidden rounded-2xl border-2 px-4 py-3 transition-colors ${
                 checked
                   ? "border-pick bg-pick-soft"
                   : "border-line bg-sheet hover:border-pick-line hover:bg-pick-wash"
               }`}
             >
-              {fastest ? <CornerTag>La más rápida</CornerTag> : null}
               <span className="flex items-start gap-3">
                 <input
                   type="radio"
@@ -600,8 +630,15 @@ function DeliveryChoices({
                   </span>
                 </span>
               </span>
-              <span className={`shrink-0 text-sm font-medium tabular-nums ${option.cents === 0 ? "text-press-deep" : ""}`}>
-                {option.cents === 0 ? "Incluido" : `+ ${formatUsd(option.cents)}`}
+              <span className="flex shrink-0 flex-col items-end gap-1">
+                {fastest ? (
+                  <span className="rounded-full bg-flag px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-flag-ink">
+                    La más rápida
+                  </span>
+                ) : null}
+                <span className={`text-sm font-medium tabular-nums ${option.cents === 0 ? "text-press-deep" : ""}`}>
+                  {option.cents === 0 ? "Incluido" : `+ ${formatUsd(option.cents)}`}
+                </span>
               </span>
             </label>
           );
