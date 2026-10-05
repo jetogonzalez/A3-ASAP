@@ -23,27 +23,31 @@ export function whatsappHref(message: string): string {
 export function orderMessage({
   number,
   name,
+  printing,
+  shipping,
   total,
   payment,
-  shipping,
   items,
 }: {
   number: string;
   name: string;
+  printing: string;
+  shipping: string;
   total: string;
   payment: PaymentMethod;
-  shipping: string;
   items: string[];
 }): string {
+  /* El total ya viene cerrado desde la web: el chat solo sirve para pagar. */
   return [
     `Hola, soy ${name}. Acabo de hacer el pedido ${number} en la web.`,
     "",
     ...items.map((item) => `• ${item}`),
     "",
-    `Impresión: ${total}`,
-    `Entrega: ${shipping}`,
+    `Impresión: ${printing}`,
+    `Envío: ${shipping}`,
+    `Total: ${total}`,
     `Voy a pagar con ${PAYMENT_LABELS[payment]}.`,
     "",
-    "¿Me confirman el costo del envío y los datos para pagar?",
+    "¿Me pasan los datos para pagar?",
   ].join("\n");
 }

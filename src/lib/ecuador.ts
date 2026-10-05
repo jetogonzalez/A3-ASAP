@@ -29,25 +29,31 @@ export type ShippingMethod = "envio";
 
 export type ShippingQuote = {
   cents: number;
-  /**
-   * El envío de Quito y los valles depende del peso del paquete, así que no se
-   * puede cerrar en la web: se cotiza al confirmar el pedido y no entra al total.
-   */
-  byWeight: boolean;
+  grams: number;
   label: string;
   detail: string;
 };
 
-/** La hoja de costos solo cubre la impresión. El envío se cotiza aparte. */
-export function shippingQuote(): ShippingQuote {
+/* Tarifa de mensajería en Quito y los valles: un primer kilo y recargo por kilo empezado. */
+const FIRST_KILO_CENTS = 350;
+const EXTRA_KILO_CENTS = 75;
+
+/**
+ * El envío se cobra por peso, y el peso lo calcula la web a partir del papel y
+ * la cantidad. Así la persona ve el costo antes de pagar, sin tener que
+ * preguntarlo.
+ */
+export function shippingQuote(grams: number): ShippingQuote {
+  const kilos = Math.max(1, Math.ceil(grams / 1000));
   return {
-    cents: 0,
-    byWeight: true,
+    cents: FIRST_KILO_CENTS + EXTRA_KILO_CENTS * (kilos - 1),
+    grams,
     label: "Envío en Quito y valles",
-    detail: "El costo depende del peso del paquete. Te lo confirmamos al cerrar el pedido.",
+    detail: "Llega en 4 días hábiles.",
   };
 }
 
 export const SHIPPING_TABLE: Array<{ zone: string; price: string; time: string }> = [
-  { zone: "Quito y valles", price: "Según el peso", time: "4 días hábiles" },
+  { zone: "Quito y valles · hasta 1 kg", price: "$3.50", time: "4 días hábiles" },
+  { zone: "Cada kilo adicional", price: "+ $0.75", time: "4 días hábiles" },
 ];

@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { isServicePlace, shippingQuote, type ShippingMethod } from "@/lib/ecuador";
 import { describeConfiguration, quote } from "@/lib/pricing";
 import { cartSchema, type OrderState } from "@/lib/schema";
+import { cartGrams } from "@/lib/weight";
 import {
   cleanText,
   documentOk,
@@ -143,7 +144,7 @@ export async function placeOrder(_prev: OrderState, formData: FormData): Promise
     });
   }
 
-  const shipping = shippingQuote();
+  const shipping = shippingQuote(cartGrams(cart.data.map((item) => item.configuration)));
   const subtotalCents = items.reduce((sum, item) => sum + item.totalCents, 0);
   const id = crypto.randomUUID();
   const order: StoredOrder = {

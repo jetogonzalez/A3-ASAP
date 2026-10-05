@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { formatWeight } from "@/lib/weight";
 import { formatUsd } from "@/lib/money";
 import { orderMessage, whatsappHref } from "@/lib/whatsapp";
 import { getOrder } from "@/server/store";
@@ -29,9 +30,10 @@ export default async function ReceiptPage({ params }: ReceiptProps) {
     orderMessage({
       number: order.number,
       name: order.customer.name,
-      total: formatUsd(order.subtotalCents),
+      printing: formatUsd(order.subtotalCents),
+      shipping: `${formatUsd(order.shipping.cents)} · ${formatWeight(order.shipping.grams)}`,
+      total: formatUsd(order.totalCents),
       payment: order.payment.method,
-      shipping: order.shipping.label,
       items: order.items.map((item) => `${item.description} — ${formatUsd(item.totalCents)}`),
     }),
   );
@@ -46,7 +48,7 @@ export default async function ReceiptPage({ params }: ReceiptProps) {
       <div className="mt-6 rounded-[24px] border border-press/25 bg-moss-soft p-5">
         <h2 className="font-medium">Falta un paso: confirmar por WhatsApp</h2>
         <p className="mt-1 text-sm leading-6 text-ink-soft">
-          Ahí te pasamos los datos para pagar con {order.payment.label} y el costo del envío según el peso. El mensaje va escrito, solo tienes que enviarlo.
+          Ahí te pasamos los datos para pagar con {order.payment.label}. El mensaje va escrito, solo tienes que enviarlo.
         </p>
         <a
           href={chat}
@@ -85,7 +87,7 @@ export default async function ReceiptPage({ params }: ReceiptProps) {
         <Row label="Impresión" value={formatUsd(order.subtotalCents)} />
         <Row
           label={order.shipping.label}
-          value={order.shipping.cents === 0 && order.shipping.detail.includes("peso") ? "Según el peso" : formatUsd(order.shipping.cents)}
+          value={formatUsd(order.shipping.cents)}
         />
         <div className="flex items-end justify-between gap-4 border-t border-line pt-3">
           <dt>Total</dt>
@@ -104,7 +106,9 @@ export default async function ReceiptPage({ params }: ReceiptProps) {
           <p>
             {order.customer.document.label} {order.customer.document.number}
           </p>
-          <p>{order.shipping.detail}</p>
+          <p>
+            {order.shipping.detail} El paquete pesa {formatWeight(order.shipping.grams)}.
+          </p>
         </Info>
         <Info title="Pago">
           <p>{order.payment.label}</p>

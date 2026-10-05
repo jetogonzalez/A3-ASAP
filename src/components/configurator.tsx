@@ -881,7 +881,7 @@ const QUESTIONS = [
   },
   {
     q: "¿A dónde se envían?",
-    a: "Por ahora solo a Quito y los valles. El costo depende del peso y te lo confirmamos por WhatsApp.",
+    a: "Por ahora solo a Quito y los valles. El envío se cobra por peso y el total ya lo verás al pagar: $3.50 el primer kilo y $0.75 por cada kilo adicional.",
   },
   {
     q: "¿Qué materiales hay?",

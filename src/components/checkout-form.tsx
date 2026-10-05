@@ -4,6 +4,7 @@ import { startTransition, useActionState, useEffect, useMemo, useRef, useState }
 import { useRouter } from "next/navigation";
 import { useCart } from "@/components/cart-provider";
 import { SERVICE_PLACES, shippingQuote } from "@/lib/ecuador";
+import { cartGrams, formatWeight } from "@/lib/weight";
 import { formatUsd } from "@/lib/money";
 import { quote } from "@/lib/pricing";
 import { DOCUMENT_TYPES, type DocumentType } from "@/lib/text";
@@ -33,11 +34,16 @@ export function CheckoutForm() {
     router.push(`/pedido/${state.orderId}`);
   }, [state.orderId, cart, router]);
 
-  const shipping = shippingQuote();
   const subtotal = useMemo(
     () => cart.items.reduce((sum, item) => sum + quote(item.configuration).totalCents, 0),
     [cart.items],
   );
+  /* El peso sale del papel y la cantidad, así que el envío se puede mostrar aquí mismo. */
+  const shipping = useMemo(
+    () => shippingQuote(cartGrams(cart.items.map((item) => item.configuration))),
+    [cart.items],
+  );
+  const total = subtotal + shipping.cents;
   const errors = state.fieldErrors ?? {};
 
   if (!cart.ready) return <p className="text-ink-soft">Cargando el pedido…</p>;
@@ -92,7 +98,7 @@ export function CheckoutForm() {
         <Section title="Entrega">
           {/* Todo va a domicilio: no hay que elegir nada, solo decir a dónde. */}
           <p className="text-sm leading-6 text-ink-soft">
-            Entregamos en Quito y los valles. El costo depende del peso del paquete y te lo confirmamos por WhatsApp antes de que pagues.
+            Entregamos en Quito y los valles. El envío cuesta {formatUsd(shipping.cents)} porque tu paquete pesa {formatWeight(shipping.grams)}: {formatUsd(350)} el primer kilo y {formatUsd(75)} por cada kilo adicional.
           </p>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <div className="sm:col-span-2">
@@ -201,7 +207,7 @@ export function CheckoutForm() {
 
         <Section title="Pago">
           <p className="mb-3 text-sm leading-6 text-ink-soft">
-            El pago se cierra por WhatsApp. Al confirmar te abrimos el chat con el resumen listo, ahí te pasamos los datos y el costo del envío.
+            El pago se cierra por WhatsApp. Al confirmar te abrimos el chat con el resumen y el total ya calculado, ahí te pasamos los datos de la cuenta.
           </p>
           <div className="grid gap-2 sm:grid-cols-2">
             <MethodOption
@@ -272,7 +278,7 @@ export function CheckoutForm() {
           aria-busy={pending}
           className="inline-flex min-h-12 cursor-pointer items-center justify-center rounded-full bg-press px-6 font-medium text-white hover:bg-press-deep disabled:cursor-wait disabled:opacity-60"
         >
-          {pending ? "Guardando pedido…" : `Continuar por WhatsApp · ${formatUsd(subtotal)}`}
+          {pending ? "Guardando pedido…" : `Continuar por WhatsApp · ${formatUsd(total)}`}
         </button>
       </div>
 
@@ -288,13 +294,16 @@ export function CheckoutForm() {
             </li>
           ))}
           <li className="flex justify-between gap-3 border-t border-line pt-3">
-            <span className="text-ink-soft">{shipping.label}</span>
-            <span className="text-sm text-ink-soft">Según el peso</span>
+            <span className="text-ink-soft">
+              {shipping.label}
+              <span className="block text-xs">{formatWeight(shipping.grams)}</span>
+            </span>
+            <span>{formatUsd(shipping.cents)}</span>
           </li>
         </ul>
-        <p className="mt-4 font-display text-4xl">{formatUsd(subtotal)}</p>
+        <p className="mt-4 font-display text-4xl">{formatUsd(total)}</p>
         <p className="mt-2 text-xs leading-5 text-ink-soft">
-          Es el total de la impresión, en USD. El envío se cotiza por peso y se suma en el chat.
+          Es el total en USD, con el envío ya incluido. El peso sale del papel y la cantidad que pediste.
         </p>
       </aside>
     </form>

@@ -12,7 +12,7 @@ export default function ShippingPage() {
       <p className="text-xs uppercase tracking-[0.18em] text-ink-soft">Quito y valles</p>
       <h1 className="mt-3 font-display text-5xl leading-[0.95]">Envío</h1>
       <p className="mt-4 leading-7 text-ink-soft">
-        Por ahora llegamos a Quito y a los valles: Cumbayá, Tumbaco, Los Chillos y alrededores. Todo va a domicilio y se cobra según el peso del paquete, así que te pasamos el valor al confirmar el pedido.
+        Por ahora llegamos a Quito y a los valles: Cumbayá, Tumbaco, Los Chillos y alrededores. Todo va a domicilio y se cobra por peso, y el peso lo calcula la web con el papel y la cantidad que elegiste: el valor del envío ya aparece en el total antes de que pagues.
       </p>
       <table className="mt-8 w-full border-collapse text-left text-sm">
         <caption className="sr-only">Envío en Quito y los valles</caption>
@@ -34,7 +34,7 @@ export default function ShippingPage() {
         </tbody>
       </table>
       <p className="mt-6 text-sm leading-6 text-ink-soft">
-        Producción estimada de las tarjetas: 4 días hábiles antes de salir del taller. Mientras más tarjetas pidas, más pesa la caja y más cuesta llevarla; por eso el envío se cotiza al cerrar el pedido.
+        Producción estimada de las tarjetas: 4 días hábiles antes de salir del taller. Para que te hagas una idea, mil tarjetas clásicas laminadas pesan 1,58 kg y cien pesan 231 g.
       </p>
     </div>
   );
