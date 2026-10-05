@@ -13,7 +13,12 @@ export function CardPreview({
 }) {
   const size = SIZES[config.sizeId];
   const square = config.sizeId === "55x55";
-  const glossy = config.paper === "brillante" || config.laminate !== "none";
+  /*
+   * El laminado manda sobre el papel: uno mate apaga el brillo del couche
+   * brillante. Antes se pintaban los dos y la muestra quedaba rarísima.
+   */
+  const glossy =
+    config.laminate === "brillante" || (config.laminate === "none" && config.paper === "brillante");
 
   return (
     <div
@@ -64,16 +69,28 @@ export function CardPreview({
           </div>
         )}
         {glossy ? (
-          <span className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,transparent_32%,rgba(255,255,255,0.42)_48%,transparent_64%)]" />
-        ) : null}
-        {config.laminate === "mate" ? (
-          <span className="pointer-events-none absolute inset-0 bg-[rgba(88,72,48,0.06)]" />
-        ) : null}
-        {config.uv ? (
+          /* Un reflejo, no una franja pintada: en screen levanta la luz sin blanquear el arte. */
           <span
-            className="pointer-events-none absolute bottom-4 right-4 h-9 w-14 rounded-sm bg-[linear-gradient(145deg,rgba(255,255,255,0.2),rgba(255,255,255,0.92)_45%,rgba(255,255,255,0.25))] ring-1 ring-ink/15"
+            className="pointer-events-none absolute inset-0 mix-blend-screen bg-[linear-gradient(112deg,transparent_40%,rgba(255,255,255,0.26)_48%,rgba(255,255,255,0.08)_53%,transparent_62%)]"
             aria-hidden="true"
           />
+        ) : null}
+        {config.laminate === "mate" ? (
+          <span className="pointer-events-none absolute inset-0 bg-[rgba(88,72,48,0.05)]" aria-hidden="true" />
+        ) : null}
+        {config.uv ? (
+          /*
+           * El barniz no es una pastilla blanca pegada: se nota por el reflejo.
+           * Van dos capas porque el truco cambia según el fondo: sobre papel claro
+           * se ve el tinte gris; sobre un arte oscuro, el brillo en screen.
+           */
+          <span
+            className="pointer-events-none absolute bottom-[13%] right-[11%] h-[21%] w-[29%] overflow-hidden rounded-[2px] ring-1 ring-ink/10"
+            aria-hidden="true"
+          >
+            <span className="absolute inset-0 bg-[linear-gradient(135deg,rgba(90,95,110,0.12),rgba(90,95,110,0.02)_46%,rgba(90,95,110,0.11))]" />
+            <span className="absolute inset-0 mix-blend-screen bg-[linear-gradient(135deg,rgba(255,255,255,0.05),rgba(255,255,255,0.36)_46%,rgba(255,255,255,0.07))]" />
+          </span>
         ) : null}
       </article>
     </div>

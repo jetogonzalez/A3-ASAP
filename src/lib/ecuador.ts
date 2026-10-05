@@ -28,30 +28,34 @@ export type ShippingMethod = "retiro" | "envio";
 
 export type ShippingQuote = {
   cents: number;
+  /**
+   * El envío de Quito y los valles depende del peso del paquete, así que no se
+   * puede cerrar en la web: se cotiza al confirmar el pedido y no entra al total.
+   */
+  byWeight: boolean;
   label: string;
   detail: string;
 };
 
-/**
- * Tarifas de demostración. No vienen de la hoja de costos.
- * El producto sí: la hoja solo cubre la impresión.
- */
+/** La hoja de costos solo cubre la impresión. El envío se cotiza aparte. */
 export function shippingQuote(method: ShippingMethod): ShippingQuote {
   if (method === "retiro") {
     return {
       cents: 0,
+      byWeight: false,
       label: "Retiro en Quito",
       detail: "Sin costo. Lista en 4 días hábiles.",
     };
   }
   return {
-    cents: 350,
+    cents: 0,
+    byWeight: true,
     label: "Envío en Quito y valles",
-    detail: "Tarifa de demostración · 4 días hábiles.",
+    detail: "El costo depende del peso del paquete. Te lo confirmamos al cerrar el pedido.",
   };
 }
 
 export const SHIPPING_TABLE: Array<{ zone: string; price: string; time: string }> = [
   { zone: "Retiro en Quito", price: "$0.00", time: "4 días hábiles" },
-  { zone: "Quito y valles", price: "$3.50", time: "4 días hábiles" },
+  { zone: "Quito y valles", price: "Según el peso", time: "4 días hábiles" },
 ];

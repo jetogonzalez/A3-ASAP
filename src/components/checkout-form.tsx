@@ -6,11 +6,12 @@ import { useCart } from "@/components/cart-provider";
 import { SERVICE_PLACES, shippingQuote, type ShippingMethod } from "@/lib/ecuador";
 import { formatUsd } from "@/lib/money";
 import { quote } from "@/lib/pricing";
+import { PAYMENT_LABELS, type PaymentMethod } from "@/lib/whatsapp";
 import { initialOrderState } from "@/lib/schema";
 import { placeOrder } from "@/server/actions";
 
 const fieldClass =
-  "mt-1.5 h-12 w-full rounded-xl border border-line bg-paper px-3.5 text-base text-ink outline-none";
+  "mt-1.5 h-12 w-full rounded-xl border border-line bg-paper px-3.5 text-base text-ink outline-none transition-colors aria-invalid:border-alert aria-invalid:bg-alert-soft/60";
 const labelClass = "block text-sm font-medium";
 
 export function CheckoutForm() {
@@ -18,9 +19,10 @@ export function CheckoutForm() {
   const router = useRouter();
   const [state, action, pending] = useActionState(placeOrder, initialOrderState);
   const sent = useRef(false);
-  const [method, setMethod] = useState<ShippingMethod>("envio");
+  /* Nada viene marcado: cómo lo recibe y cómo paga los elige la persona. */
+  const [method, setMethod] = useState<ShippingMethod | null>(null);
   const [city, setCity] = useState("Quito");
-  const [payment, setPayment] = useState<"transfer" | "card">("transfer");
+  const [payment, setPayment] = useState<PaymentMethod | null>(null);
 
   useEffect(() => {
     if (!state.orderId || sent.current) return;
@@ -29,7 +31,7 @@ export function CheckoutForm() {
     router.push(`/pedido/${state.orderId}`);
   }, [state.orderId, cart, router]);
 
-  const shipping = shippingQuote(method);
+  const shipping = shippingQuote(method ?? "envio");
   const subtotal = useMemo(
     () => cart.items.reduce((sum, item) => sum + quote(item.configuration).totalCents, 0),
     [cart.items],
@@ -71,12 +73,16 @@ export function CheckoutForm() {
         <input type="hidden" name="cart" value={JSON.stringify(cart.items)} />
 
         {state.message ? (
-          <p role="alert" className="rounded-2xl border border-press/30 bg-[#f8ebe6] px-4 py-3 text-sm text-press">
+          <p
+            role="alert"
+            className="flex items-start gap-2.5 rounded-2xl border border-alert-line bg-alert-soft px-4 py-3 text-sm font-medium text-alert-deep"
+          >
+            <AlertIcon />
             {state.message}
           </p>
         ) : null}
         {errors.cart ? (
-          <p role="alert" className="text-sm text-press">
+          <p role="alert" className="text-sm font-medium text-alert-deep">
             {errors.cart}
           </p>
         ) : null}
@@ -100,8 +106,14 @@ export function CheckoutForm() {
               detail="Sin costo"
             />
           </div>
+          {errors.shippingMethod ? (
+            <p className="mt-2 text-sm font-medium text-alert-deep">{errors.shippingMethod}</p>
+          ) : null}
           {method === "envio" ? (
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              <p className="text-sm leading-6 text-ink-soft sm:col-span-2">
+                El costo del envío depende del peso del paquete. Te lo confirmamos por WhatsApp antes de que pagues.
+              </p>
               <div className="sm:col-span-2">
                 <label className={labelClass} htmlFor="city">
                   Sector
@@ -129,7 +141,7 @@ export function CheckoutForm() {
                     ))}
                   </optgroup>
                 </select>
-                {errors.city ? <p className="mt-1 text-sm text-press">{errors.city}</p> : null}
+                {errors.city ? <p className="mt-1 text-sm font-medium text-alert-deep">{errors.city}</p> : null}
               </div>
               <div className="sm:col-span-2">
                 <Field label="Dirección" name="address" error={errors.address} autoComplete="street-address" />
@@ -138,11 +150,11 @@ export function CheckoutForm() {
                 <Field label="Referencia" name="reference" error={errors.reference} optional />
               </div>
             </div>
-          ) : (
+          ) : method === "retiro" ? (
             <p className="mt-4 text-sm leading-6 text-ink-soft">
-              El retiro es en el taller de demostración, en Quito. Te avisamos cuando la tanda está lista: 4 días hábiles.
+              El retiro es en el taller, en Quito, sin costo. Te avisamos cuando la tanda está lista: 4 días hábiles.
             </p>
-          )}
+          ) : null}
         </Section>
 
         <Section title="Contacto">
@@ -155,9 +167,9 @@ export function CheckoutForm() {
           </div>
         </Section>
 
-        <Section title="Pago de demostración">
+        <Section title="Pago">
           <p className="mb-3 text-sm leading-6 text-ink-soft">
-            No hay banco conectado. La transferencia es ficticia. Si usas tarjeta, comprobamos el número y guardamos solo los últimos 4 dígitos.
+            El pago se cierra por WhatsApp. Al confirmar te abrimos el chat con el resumen listo, ahí te pasamos los datos y el costo del envío.
           </p>
           <div className="grid gap-2 sm:grid-cols-2">
             <MethodOption
@@ -165,32 +177,20 @@ export function CheckoutForm() {
               value="transfer"
               checked={payment === "transfer"}
               onChange={() => setPayment("transfer")}
-              title="Transferencia"
-              detail="Cuenta de prueba"
+              title={PAYMENT_LABELS.transfer}
+              detail="Te pasamos la cuenta por el chat"
             />
             <MethodOption
               name="paymentMethod"
-              value="card"
-              checked={payment === "card"}
-              onChange={() => setPayment("card")}
-              title="Tarjeta"
-              detail="Simulación"
+              value="deuna"
+              checked={payment === "deuna"}
+              onChange={() => setPayment("deuna")}
+              title={PAYMENT_LABELS.deuna}
+              detail="Te enviamos el código para pagar"
             />
           </div>
-          {payment === "card" ? (
-            <div className="mt-4 grid gap-4 sm:grid-cols-2">
-              <div className="sm:col-span-2">
-                <Field label="Número" name="cardNumber" error={errors.cardNumber} inputMode="numeric" autoComplete="cc-number" placeholder="4242 4242 4242 4242" />
-              </div>
-              <Field label="Nombre en la tarjeta" name="cardName" error={errors.cardName} autoComplete="cc-name" />
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="Vence" name="cardExpiry" error={errors.cardExpiry} autoComplete="cc-exp" placeholder="MM/AA" />
-                <Field label="CVC" name="cardCvc" error={errors.cardCvc} inputMode="numeric" autoComplete="cc-csc" placeholder="123" />
-              </div>
-              <p className="sm:col-span-2 text-xs leading-5 text-ink-soft">
-                Prueba con 4242 4242 4242 4242, una fecha futura y cualquier CVC de 3 dígitos.
-              </p>
-            </div>
+          {errors.paymentMethod ? (
+            <p className="mt-2 text-sm font-medium text-alert-deep">{errors.paymentMethod}</p>
           ) : null}
         </Section>
 
@@ -204,9 +204,9 @@ export function CheckoutForm() {
         <div>
           <label className="flex min-h-11 cursor-pointer items-start gap-3 text-sm leading-6">
             <input type="checkbox" name="terms" value="yes" className="mt-1 h-5 w-5 accent-ink" />
-            <span>Revisé el formato, la cantidad y el total. Entiendo que este pedido es una demostración local.</span>
+            <span>Revisé el formato, la cantidad y el total del pedido.</span>
           </label>
-          {errors.terms ? <p className="mt-1 text-sm text-press">{errors.terms}</p> : null}
+          {errors.terms ? <p className="mt-1 text-sm font-medium text-alert-deep">{errors.terms}</p> : null}
         </div>
 
         <button
@@ -215,7 +215,7 @@ export function CheckoutForm() {
           aria-busy={pending}
           className="inline-flex min-h-12 cursor-pointer items-center justify-center rounded-full bg-press px-6 font-medium text-white hover:bg-press-deep disabled:cursor-wait disabled:opacity-60"
         >
-          {pending ? "Guardando pedido…" : `Confirmar · ${formatUsd(subtotal + shipping.cents)}`}
+          {pending ? "Guardando pedido…" : `Continuar por WhatsApp · ${formatUsd(subtotal)}`}
         </button>
       </div>
 
@@ -231,14 +231,28 @@ export function CheckoutForm() {
             </li>
           ))}
           <li className="flex justify-between gap-3 border-t border-line pt-3">
-            <span className="text-ink-soft">{shipping.label}</span>
-            <span>{formatUsd(shipping.cents)}</span>
+            <span className="text-ink-soft">{method === null ? "Entrega" : shipping.label}</span>
+            <span className={shipping.byWeight || method === null ? "text-sm text-ink-soft" : ""}>
+              {method === null ? "Por elegir" : shipping.byWeight ? "Según el peso" : formatUsd(shipping.cents)}
+            </span>
           </li>
         </ul>
-        <p className="mt-4 font-display text-4xl">{formatUsd(subtotal + shipping.cents)}</p>
-        <p className="mt-2 text-xs leading-5 text-ink-soft">{shipping.detail} Precios de impresión en USD.</p>
+        <p className="mt-4 font-display text-4xl">{formatUsd(subtotal)}</p>
+        <p className="mt-2 text-xs leading-5 text-ink-soft">
+          Es el total de la impresión, en USD. {method === "envio" ? "El envío se cotiza por peso y se suma en el chat." : method === "retiro" ? shipping.detail : "Elige cómo lo recibes para ver el plazo."}
+        </p>
       </aside>
     </form>
+  );
+}
+
+function AlertIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true" className="mt-0.5 shrink-0">
+      <circle cx="9" cy="9" r="7.4" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M9 5.4v4.4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <circle cx="9" cy="12.4" r="0.95" fill="currentColor" />
+    </svg>
   );
 }
 
@@ -281,7 +295,7 @@ function Field({
         {...props}
       />
       {error ? (
-        <p id={`${id}-error`} className="mt-1 text-sm text-press">
+        <p id={`${id}-error`} className="mt-1 text-sm font-medium text-alert-deep">
           {error}
         </p>
       ) : null}
@@ -313,8 +327,8 @@ function MethodOption({
       <span className="flex items-center gap-3">
         <input type="radio" name={name} value={value} checked={checked} onChange={onChange} className="h-4 w-4 accent-pick" />
         <span>
-          <span className={`block ${checked ? "font-semibold text-pick-deep" : "font-medium"}`}>{title}</span>
-          <span className={`block text-sm ${checked ? "text-pick-deep/80" : "text-ink-soft"}`}>{detail}</span>
+          <span className={`block ${checked ? "font-semibold" : "font-medium"}`}>{title}</span>
+          <span className="block text-sm text-ink-soft">{detail}</span>
         </span>
       </span>
     </label>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { formatUsd } from "@/lib/money";
+import { orderMessage, whatsappHref } from "@/lib/whatsapp";
 import { getOrder } from "@/server/store";
 
 export const dynamic = "force-dynamic";
@@ -24,11 +25,39 @@ export default async function ReceiptPage({ params }: ReceiptProps) {
     timeStyle: "short",
   }).format(new Date(order.createdAt));
 
+  const chat = whatsappHref(
+    orderMessage({
+      number: order.number,
+      name: order.customer.name,
+      total: formatUsd(order.subtotalCents),
+      payment: order.payment.method,
+      shipping: order.shipping.label,
+      items: order.items.map((item) => `${item.description} — ${formatUsd(item.totalCents)}`),
+    }),
+  );
+
   return (
     <div className="mx-auto w-full max-w-3xl px-5 py-12 md:px-8 md:py-16">
-      <p className="text-xs uppercase tracking-[0.18em] text-moss">Pedido guardado en este equipo</p>
+      <p className="text-xs uppercase tracking-[0.18em] text-moss">Pedido guardado</p>
       <h1 className="mt-3 font-display text-5xl">{order.number}</h1>
       <p className="mt-3 text-ink-soft">{placed}</p>
+
+      {/* El pedido todavía no está cerrado: se confirma en el chat. Por eso manda este bloque. */}
+      <div className="mt-6 rounded-[24px] border border-press/25 bg-moss-soft p-5">
+        <h2 className="font-medium">Falta un paso: confirmar por WhatsApp</h2>
+        <p className="mt-1 text-sm leading-6 text-ink-soft">
+          Ahí te pasamos los datos para pagar con {order.payment.label} y el costo del envío según el peso. El mensaje va escrito, solo tienes que enviarlo.
+        </p>
+        <a
+          href={chat}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-4 inline-flex min-h-12 items-center gap-2 rounded-full bg-press px-5 text-sm font-semibold text-white hover:bg-press-deep"
+        >
+          <WhatsappIcon />
+          Abrir el chat con el pedido {order.number}
+        </a>
+      </div>
 
       <div className="mt-8 space-y-4">
         {order.items.map((item, index) => (
@@ -54,7 +83,10 @@ export default async function ReceiptPage({ params }: ReceiptProps) {
 
       <dl className="mt-6 space-y-2 rounded-[24px] bg-paper-deep/80 p-5 text-sm">
         <Row label="Impresión" value={formatUsd(order.subtotalCents)} />
-        <Row label={order.shipping.label} value={formatUsd(order.shipping.cents)} />
+        <Row
+          label={order.shipping.label}
+          value={order.shipping.cents === 0 && order.shipping.detail.includes("peso") ? "Según el peso" : formatUsd(order.shipping.cents)}
+        />
         <div className="flex items-end justify-between gap-4 border-t border-line pt-3">
           <dt>Total</dt>
           <dd className="font-display text-4xl">{formatUsd(order.totalCents)}</dd>
@@ -73,13 +105,9 @@ export default async function ReceiptPage({ params }: ReceiptProps) {
         </Info>
         <Info title="Pago">
           <p>{order.payment.label}</p>
-          {order.payment.method === "transfer" ? (
-            <p className="mt-2 text-ink-soft">
-              Cuenta de demostración: Banco Pliego · 0000000000. No es una cuenta real. Usa {order.number} como referencia.
-            </p>
-          ) : (
-            <p className="mt-2 text-ink-soft">No guardamos el número completo ni el código de seguridad.</p>
-          )}
+          <p className="mt-2">
+            Se confirma por WhatsApp. Usa {order.number} como referencia cuando pagues.
+          </p>
         </Info>
       </div>
 
@@ -91,6 +119,14 @@ export default async function ReceiptPage({ params }: ReceiptProps) {
         Armar otro pedido
       </Link>
     </div>
+  );
+}
+
+function WhatsappIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor" aria-hidden="true" className="shrink-0">
+      <path d="M9 1.5a7.4 7.4 0 0 0-6.35 11.22L1.5 16.5l3.9-1.1A7.4 7.4 0 1 0 9 1.5Zm0 1.6a5.8 5.8 0 1 1-3 10.77l-.27-.17-2.1.6.6-2.05-.18-.28A5.8 5.8 0 0 1 9 3.1Zm-2.5 2.6c-.14 0-.36.05-.55.26-.19.2-.72.7-.72 1.7s.74 1.97.84 2.1c.1.14 1.42 2.26 3.5 3.08 1.74.68 2.1.55 2.47.51.38-.03 1.2-.48 1.37-.96.17-.47.17-.88.12-.96-.05-.09-.19-.14-.4-.24-.2-.1-1.19-.59-1.38-.65-.18-.07-.32-.1-.45.1-.14.2-.52.65-.64.78-.12.14-.23.15-.43.05-.2-.1-.85-.31-1.62-1-.6-.53-1-1.19-1.12-1.39-.11-.2-.01-.3.09-.4.09-.09.2-.23.3-.35.1-.12.13-.2.2-.34.06-.13.03-.25-.02-.35-.05-.1-.44-1.09-.61-1.49-.16-.38-.32-.33-.44-.34h-.5Z" />
+    </svg>
   );
 }
 

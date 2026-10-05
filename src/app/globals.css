@@ -21,6 +21,11 @@
   /* Ámbar solo para etiquetas informativas, para que no se confundan con una selección. */
   --flag: #fdf0d2;
   --flag-ink: #8a5300;
+  /* Rojo de error. Antes los avisos usaban el verde de marca y no se leían como error. */
+  --alert: #c62a1d;
+  --alert-deep: #8e1b11;
+  --alert-soft: #fdecea;
+  --alert-line: #f2c4bf;
   color-scheme: light;
 }
 
@@ -42,6 +47,10 @@
   --color-pick-wash: var(--pick-wash);
   --color-flag: var(--flag);
   --color-flag-ink: var(--flag-ink);
+  --color-alert: var(--alert);
+  --color-alert-deep: var(--alert-deep);
+  --color-alert-soft: var(--alert-soft);
+  --color-alert-line: var(--alert-line);
   --font-sans: var(--font-outfit), "Avenir Next", "Segoe UI", sans-serif;
   --font-display: var(--font-outfit), "Avenir Next", "Segoe UI", sans-serif;
 }
@@ -120,7 +129,7 @@ details[open] > summary .disclosure-mark {
     opacity: 0;
   }
   25% {
-    opacity: 0.85;
+    opacity: 0.7;
   }
   100% {
     transform: translateX(240%) skewX(-16deg);
@@ -133,7 +142,8 @@ details[open] > summary .disclosure-mark {
 }
 
 .artwork-sheen {
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.72), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+  mix-blend-mode: screen;
   animation: artwork-sheen 980ms ease-out 160ms both;
 }
 

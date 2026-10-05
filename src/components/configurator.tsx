@@ -84,6 +84,26 @@ export function Configurator({
     if (partial.sides === 1) setFace("front");
   }
 
+  /*
+   * Elegir también avanza: la página baja sola al siguiente paso, como en las
+   * tiendas donde configuras un producto. Solo baja, nunca sube, y respeta a
+   * quien pidió menos movimiento en el sistema.
+   */
+  function choose(step: string, partial: Partial<Configuration>) {
+    patch(partial);
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    window.setTimeout(() => {
+      const steps = Array.from(document.querySelectorAll<HTMLElement>("[data-step]"));
+      const next = steps[steps.findIndex((node) => node.dataset.step === step) + 1];
+      if (!next) return;
+      const header = document.querySelector("header");
+      const top =
+        next.getBoundingClientRect().top + window.scrollY - (header?.offsetHeight ?? 0) - 16;
+      if (top <= window.scrollY + 8) return;
+      window.scrollTo({ top, behavior: "smooth" });
+    }, 90);
+  }
+
   function takeFile(next: File | null) {
     setError(null);
     if (!next) {
@@ -134,8 +154,13 @@ export function Configurator({
 
   return (
     <>
+    {/*
+      * En el teléfono las opciones van antes que la descripción: lo que la persona
+      * viene a hacer es armar su tarjeta, no leer la ficha. En escritorio la grilla
+      * devuelve la ficha a su sitio, debajo de la muestra.
+      */}
     <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
-      <div className="space-y-8">
+      <div className="space-y-8 lg:col-start-1 lg:row-start-1">
       <div>
         <div
           id="muestra"
@@ -208,18 +233,17 @@ export function Configurator({
           setFace(side);
         }}
       />
-      <DesignNotes />
       </div>
 
-      <div className="space-y-8 pb-28 lg:pb-0">
-        <OptionGroup legend="Tamaño" value={size.sizeLabel} hint="Las dos medidas que imprimimos hoy. El dibujo está a escala.">
+      <div className="space-y-8 pb-28 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:pb-0">
+        <OptionGroup step="tamano" legend="Tamaño" value={size.sizeLabel} hint="Las dos medidas que imprimimos hoy. El dibujo está a escala.">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {SIZE_IDS.map((id) => (
               <Tile
                 key={id}
                 name="tamano"
                 checked={config.sizeId === id}
-                onChange={() => patch({ sizeId: id })}
+                onChange={() => choose("tamano", { sizeId: id })}
                 title={SIZES[id].name}
                 detail={SIZES[id].sizeLabel}
                 tag={id === "85x55" ? "Más vendida" : undefined}
@@ -229,12 +253,12 @@ export function Configurator({
           </div>
         </OptionGroup>
 
-        <OptionGroup legend="Tipo de papel" value={config.paper === "mate" ? "Mate" : "Brillante"} hint="Couche 300 g. Ya está incluido en la impresión.">
+        <OptionGroup step="papel" legend="Tipo de papel" value={config.paper === "mate" ? "Mate" : "Brillante"} hint="Couche 300 g. Ya está incluido en la impresión.">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             <Tile
               name="papel"
               checked={config.paper === "mate"}
-              onChange={() => patch({ paper: "mate" })}
+              onChange={() => choose("papel", { paper: "mate" })}
               title="Mate"
               detail="Incluido"
               tag="Más vendido"
@@ -243,7 +267,7 @@ export function Configurator({
             <Tile
               name="papel"
               checked={config.paper === "brillante"}
-              onChange={() => patch({ paper: "brillante" })}
+              onChange={() => choose("papel", { paper: "brillante" })}
               title="Brillante"
               detail="Incluido"
               glyph={<PaperGlyph glossy />}
@@ -252,6 +276,7 @@ export function Configurator({
         </OptionGroup>
 
         <OptionGroup
+          step="laminado"
           legend="Laminado"
           value={
             config.laminate === "none"
@@ -266,7 +291,7 @@ export function Configurator({
             <Tile
               name="laminado"
               checked={config.laminate === "none"}
-              onChange={() => patch({ laminate: "none" })}
+              onChange={() => choose("laminado", { laminate: "none" })}
               title="Sin laminado"
               detail="Incluido"
               glyph={<NoneGlyph />}
@@ -276,7 +301,7 @@ export function Configurator({
                 key={finish}
                 name="laminado"
                 checked={config.laminate === finish}
-                onChange={() => patch({ laminate: finish satisfies Laminate })}
+                onChange={() => choose("laminado", { laminate: finish satisfies Laminate })}
                 title={finish === "mate" ? "Laminado mate" : "Laminado brillante"}
                 detail={`+ ${formatUsd(addons.laminate)}`}
                 tag={finish === "mate" ? "Más vendido" : undefined}
@@ -287,6 +312,7 @@ export function Configurator({
         </OptionGroup>
 
         <OptionGroup
+          step="uv"
           legend="Brillo UV"
           value={config.uv ? "UV selectivo" : "Sin UV"}
           hint={`Barniz brillante solo sobre las zonas que marques. Cargo fijo de taller: ${formatUsd(addons.uv)}.`}
@@ -295,7 +321,7 @@ export function Configurator({
             <Tile
               name="uv"
               checked={!config.uv}
-              onChange={() => patch({ uv: false })}
+              onChange={() => choose("uv", { uv: false })}
               title="Sin UV"
               detail="Incluido"
               glyph={<NoneGlyph />}
@@ -303,7 +329,7 @@ export function Configurator({
             <Tile
               name="uv"
               checked={config.uv}
-              onChange={() => patch({ uv: true })}
+              onChange={() => choose("uv", { uv: true })}
               title="UV selectivo"
               detail={`+ ${formatUsd(addons.uv)}`}
               glyph={<UvGlyph />}
@@ -312,6 +338,7 @@ export function Configurator({
         </OptionGroup>
 
         <OptionGroup
+          step="lados"
           legend="Opción de impresión"
           value={config.sides === 1 ? "A una cara" : "A doble cara"}
           hint="Las dos opciones no se suman: eliges una y el precio cambia."
@@ -320,7 +347,7 @@ export function Configurator({
             <Tile
               name="lados"
               checked={config.sides === 1}
-              onChange={() => patch({ sides: 1 })}
+              onChange={() => choose("lados", { sides: 1 })}
               title="A una cara"
               detail="Solo el frente"
               glyph={<SidesGlyph double={false} />}
@@ -328,7 +355,7 @@ export function Configurator({
             <Tile
               name="lados"
               checked={config.sides === 2}
-              onChange={() => patch({ sides: 2 })}
+              onChange={() => choose("lados", { sides: 2 })}
               title="A doble cara"
               detail="Frente y reverso"
               tag="Más vendido"
@@ -337,12 +364,12 @@ export function Configurator({
           </div>
         </OptionGroup>
 
-        <OptionGroup legend="Esquinas" value={config.rounded ? "Redondeadas" : "Rectas"}>
+        <OptionGroup step="puntas" legend="Esquinas" value={config.rounded ? "Redondeadas" : "Rectas"}>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             <Tile
               name="puntas"
               checked={!config.rounded}
-              onChange={() => patch({ rounded: false })}
+              onChange={() => choose("puntas", { rounded: false })}
               title="Rectas"
               detail="Incluido"
               glyph={<CornerGlyph rounded={false} />}
@@ -350,7 +377,7 @@ export function Configurator({
             <Tile
               name="puntas"
               checked={config.rounded}
-              onChange={() => patch({ rounded: true })}
+              onChange={() => choose("puntas", { rounded: true })}
               title="Redondeadas"
               detail={`+ ${formatUsd(addons.corners)}`}
               glyph={<CornerGlyph rounded />}
@@ -359,6 +386,7 @@ export function Configurator({
         </OptionGroup>
 
         <OptionGroup
+          step="cantidad"
           legend="Cantidad"
           value={`${config.quantity.toLocaleString("es-EC")} u.`}
           hint={`El precio de cada fila ya incluye los acabados que elegiste. El porcentaje compara el precio por tarjeta contra pedir ${QUANTITIES[0]} unidades, que con estos acabados salen en ${formatUsd(smallestRun.unitCents)} c/u.`}
@@ -396,12 +424,12 @@ export function Configurator({
                       name="cantidad"
                       value={quantity}
                       checked={checked}
-                      onChange={() => patch({ quantity })}
+                      onChange={() => choose("cantidad", { quantity })}
                       className="h-4 w-4 shrink-0 accent-pick"
                     />
                     <span
                       className={`whitespace-nowrap ${
-                        checked ? "font-semibold text-pick-deep" : "font-medium"
+                        checked ? "font-semibold" : "font-medium"
                       }`}
                     >
                       {quantity.toLocaleString("es-EC")} u.
@@ -411,13 +439,13 @@ export function Configurator({
                   <span className="shrink-0 text-right">
                     <span
                       className={`block tabular-nums ${
-                        checked ? "font-semibold text-pick-deep" : "font-medium"
+                        checked ? "font-semibold" : "font-medium"
                       }`}
                     >
                       {formatUsd(row.totalCents)}
                     </span>
                     <span
-                      className={`block text-xs tabular-nums ${checked ? "text-pick-deep/80" : "text-ink-soft"}`}
+                      className="block text-xs tabular-nums text-ink-soft"
                     >
                       {formatUsd(row.unitCents)} c/u
                     </span>
@@ -432,9 +460,9 @@ export function Configurator({
           orderedAt={orderedAt}
           selected={config.delivery}
           hasArtwork={Boolean(file || editing?.artwork)}
-          onChange={(delivery) => patch({ delivery })}
+          onChange={(delivery) => choose("entrega", { delivery })}
         />
-        <div ref={summaryRef}>
+        <div ref={summaryRef} data-step="resumen" className="scroll-mt-4">
           <QuoteSummary
             config={config}
             priced={priced}
@@ -448,6 +476,10 @@ export function Configurator({
           />
         </div>
       </div>
+
+      <div className="lg:col-start-1 lg:row-start-2">
+        <DesignNotes />
+      </div>
     </div>
 
     <div
@@ -456,7 +488,7 @@ export function Configurator({
       }`}
     >
         {error ? (
-          <p role="alert" className="mx-auto mb-2 max-w-6xl text-sm text-red-800">
+          <p role="alert" className="mx-auto mb-2 max-w-6xl text-sm font-medium text-alert-deep">
             {error}
           </p>
         ) : null}
@@ -505,7 +537,7 @@ function DeliveryChoices({
   onChange: (delivery: DeliveryId) => void;
 }) {
   return (
-    <fieldset>
+    <fieldset data-step="entrega" className="scroll-mt-4">
       <legend className="text-sm font-medium">Fecha de entrega estimada</legend>
       <p className="mt-1 mb-3 text-sm leading-6 text-ink-soft">
         Por ahora el envío es solo en Quito y los valles. Adelantar la producción tiene un recargo de demostración y se suma al pagar.
@@ -604,120 +636,140 @@ function ArtworkPanel({
     <section id="tu-diseno" aria-label="Tu diseño" className="scroll-mt-28 rounded-[28px] border border-line bg-sheet p-5">
       <h2 className="text-lg font-semibold tracking-tight">Tu diseño</h2>
       <p className="mt-1 text-sm leading-6 text-ink-soft">PDF, PNG o JPG de hasta 8 MB.</p>
-      <label
-        onDragOver={(event) => {
-          event.preventDefault();
-          onDragOver();
+      {/* El input vive fuera de la zona de arrastre porque "Cambiar" también lo abre. */}
+      <input
+        id="archivo"
+        ref={inputRef}
+        type="file"
+        accept="application/pdf,image/png,image/jpeg,.pdf,.png,.jpeg,.jpg"
+        className="sr-only"
+        onChange={(event) => {
+          onFile(event.target.files?.[0] ?? null);
+          event.target.value = "";
         }}
-        onDragLeave={onDragLeave}
-        onDrop={(event) => {
-          event.preventDefault();
-          onDragLeave();
-          onFile(event.dataTransfer.files?.[0] ?? null);
-        }}
-        className={`mt-4 flex min-h-36 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 px-5 py-6 text-center transition-colors ${
-          dragOver
-            ? "border-solid border-pick bg-pick-soft"
-            : invalid
-              ? "border-dashed border-red-500 bg-red-50"
-              : ready
-                ? "border-solid border-pick bg-pick-soft"
-                : "border-dashed border-pick-line bg-pick-wash hover:border-pick hover:bg-pick-soft"
-        }`}
-      >
-        <input
-          ref={inputRef}
-          type="file"
-          accept="application/pdf,image/png,image/jpeg,.pdf,.png,.jpg,.jpeg"
-          className="sr-only"
-          onChange={(event) => {
-            onFile(event.target.files?.[0] ?? null);
-            event.target.value = "";
-          }}
-        />
-        <DropGlyph dragOver={dragOver} invalid={invalid} ready={ready} />
-        <span className="mt-3 max-w-full truncate text-sm font-semibold text-ink">{title}</span>
-        <span className={`mt-1 text-sm ${invalid ? "text-red-800" : "text-ink-soft"}`}>{hint}</span>
-      </label>
-      {ready ? (
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          <button
-            type="button"
-            onClick={() => inputRef.current?.click()}
-            className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full border border-line bg-sheet px-4 text-sm font-medium hover:border-ink"
-          >
-            Recargar
-          </button>
-          <button
-            type="button"
-            onClick={() => onFile(null)}
-            className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full border border-line bg-sheet px-4 text-sm font-medium text-red-800 hover:border-red-800"
-          >
-            Eliminar
-          </button>
-        </div>
-      ) : null}
-      {file && isPreviewImage(file) ? (
-        <div className="mt-3">
-          <p className="text-sm text-ink-soft">Colocar esta imagen en</p>
-          <div className="mt-2 grid grid-cols-2 gap-2" role="group" aria-label="Dónde va la imagen">
-            {(
-              [
-                ["front", "Frente"],
-                ["back", "Reverso"],
-              ] as const
-            ).map(([side, label]) => (
-              <button
-                key={side}
-                type="button"
-                aria-pressed={imageFaces[side]}
-                onClick={() => onPlace(side)}
-                className={`min-h-11 cursor-pointer rounded-full border-2 bg-sheet px-4 text-sm font-medium ${
-                  imageFaces[side] ? "border-pick bg-pick-soft text-pick-deep" : "border-line bg-sheet"
-                }`}
-              >
-                {label}
-              </button>
-            ))}
+      />
+      {ready && !dragOver ? (
+        /* Con el archivo puesto deja de ser una caja para soltar: es una lista de lo que ya está listo. */
+        <div className="mt-4 divide-y divide-line overflow-hidden rounded-2xl border border-line">
+          <div className="flex items-center gap-3 px-4 py-3">
+            <FileCheck />
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-sm font-semibold">{file?.name ?? savedName}</span>
+              <span className="block text-sm text-ink-soft">{hint}</span>
+            </span>
+            <button
+              type="button"
+              onClick={() => inputRef.current?.click()}
+              className="min-h-11 shrink-0 cursor-pointer px-1 text-sm font-medium text-pick-deep underline-offset-4 hover:underline"
+            >
+              Cambiar
+            </button>
+            <button
+              type="button"
+              onClick={() => onFile(null)}
+              className="min-h-11 shrink-0 cursor-pointer px-1 text-sm font-medium text-alert-deep underline-offset-4 hover:underline"
+            >
+              Eliminar
+            </button>
           </div>
+          {file && isPreviewImage(file) ? (
+            <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+              <span className="text-sm text-ink-soft">Colocar la imagen en</span>
+              <div className="flex gap-2" role="group" aria-label="Dónde va la imagen">
+                {(
+                  [
+                    ["front", "Frente"],
+                    ["back", "Reverso"],
+                  ] as const
+                ).map(([side, label]) => (
+                  <button
+                    key={side}
+                    type="button"
+                    aria-pressed={imageFaces[side]}
+                    onClick={() => onPlace(side)}
+                    className={`min-h-9 cursor-pointer rounded-full border px-3.5 text-sm font-medium transition-colors ${
+                      imageFaces[side]
+                        ? "border-pick bg-pick-soft text-pick-deep"
+                        : "border-line bg-sheet text-ink-soft hover:border-pick-line hover:bg-pick-wash"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
         </div>
-      ) : null}
-      <a
-        href="https://www.canva.com/es_419/crear/tarjetas-de-presentacion/"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="mt-3 flex items-center gap-3 rounded-2xl border border-ink/10 bg-sheet px-3.5 py-3 shadow-[0_8px_24px_-18px_rgba(26,29,33,0.9)] transition hover:border-ink/25"
-      >
-        <img src="/canva.png" alt="" width={40} height={40} className="size-10 shrink-0 rounded-full" />
-        <span className="min-w-0 text-left">
-          <span className="block text-sm font-semibold text-ink">Diseñar en Canva</span>
-          <span className="mt-0.5 block text-sm leading-5 text-ink-soft">Se abre en otra pestaña. Exporta el PDF y súbelo aquí.</span>
-        </span>
-      </a>
-      <a href={href} className="mt-3 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-pick-deep underline-offset-4 hover:underline">
-        <PdfIcon />
-        Plantilla {sizeName}, {sizeLabel}
-        {rounded ? ", con puntas redondeadas" : ""}
-      </a>
+      ) : (
+        <label
+          htmlFor="archivo"
+          onDragOver={(event) => {
+            event.preventDefault();
+            onDragOver();
+          }}
+          onDragLeave={onDragLeave}
+          onDrop={(event) => {
+            event.preventDefault();
+            onDragLeave();
+            onFile(event.dataTransfer.files?.[0] ?? null);
+          }}
+          className={`mt-4 flex min-h-36 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 px-5 py-6 text-center transition-colors ${
+            dragOver
+              ? "border-solid border-pick bg-pick-soft"
+              : invalid
+                ? "border-dashed border-alert bg-alert-soft"
+                : "border-dashed border-pick-line bg-pick-wash hover:border-pick hover:bg-pick-soft"
+          }`}
+        >
+          <DropGlyph dragOver={dragOver} invalid={invalid} />
+          <span className="mt-3 max-w-full truncate text-sm font-semibold text-ink">{title}</span>
+          <span className={`mt-1 text-sm ${invalid ? "font-medium text-alert-deep" : "text-ink-soft"}`}>{hint}</span>
+        </label>
+      )}
+      <div className="mt-5 border-t border-line pt-4">
+        <p className="text-sm font-medium">¿Todavía no tienes el arte?</p>
+        <a
+          href="https://www.canva.com/es_419/crear/tarjetas-de-presentacion/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-2.5 flex items-center gap-3 rounded-2xl border border-ink/10 bg-sheet px-3.5 py-3 shadow-[0_8px_24px_-18px_rgba(26,29,33,0.9)] transition hover:border-ink/25"
+        >
+          <img src="/canva.png" alt="" width={40} height={40} className="size-10 shrink-0 rounded-full" />
+          <span className="min-w-0 text-left">
+            <span className="block text-sm font-semibold text-ink">Diseñar en Canva</span>
+            <span className="mt-0.5 block text-sm leading-5 text-ink-soft">Se abre en otra pestaña. Exporta el PDF y súbelo aquí.</span>
+          </span>
+        </a>
+        <a href={href} className="mt-2 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-pick-deep underline-offset-4 hover:underline">
+          <PdfIcon />
+          Plantilla {sizeName}, {sizeLabel}
+          {rounded ? ", con puntas redondeadas" : ""}
+        </a>
+      </div>
     </section>
   );
 }
 
-function DropGlyph({ dragOver, invalid, ready }: { dragOver: boolean; invalid: boolean; ready: boolean }) {
-  const tone = dragOver || ready ? "text-pick-deep" : invalid ? "text-red-600" : "text-pick";
+/* Verde: el archivo ya está, es una confirmación, no una selección. */
+function FileCheck() {
+  return (
+    <span className="grid size-9 shrink-0 place-items-center rounded-full bg-press text-white" aria-hidden="true">
+      <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
+        <path d="M4.5 9.2 7.4 12 13.5 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </span>
+  );
+}
+
+function DropGlyph({ dragOver, invalid }: { dragOver: boolean; invalid: boolean }) {
+  const tone = dragOver ? "text-pick-deep" : invalid ? "text-alert" : "text-pick";
   return (
     <span className={`flex size-10 items-center justify-center rounded-full bg-sheet ${tone}`} aria-hidden="true">
-      {ready && !dragOver ? (
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <path d="M4.5 9.2 7.4 12 13.5 6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      ) : (
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <path d="M9 12.5V4.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-          <path d="M6 7.2 9 4.2l3 3" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M4 14.2h10" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-        </svg>
-      )}
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+        <path d="M9 12.5V4.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+        <path d="M6 7.2 9 4.2l3 3" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M4 14.2h10" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+      </svg>
     </span>
   );
 }
@@ -807,7 +859,7 @@ function DesignNotes() {
         <ul className="mt-5 space-y-3">
           {["Impresión digital a color", "Couche 300 g, mate o brillante", "Envío en Quito y los valles"].map((item) => (
             <li key={item} className="flex items-center gap-3 text-ink">
-              <PlusMark />
+              <FeatureCheck />
               {item}
             </li>
           ))}
@@ -909,11 +961,12 @@ function Chevron() {
   );
 }
 
-function PlusMark() {
+/* Visto, no un más: el círculo con cruz parecía un botón para desplegar algo. */
+function FeatureCheck() {
   return (
     <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" className="shrink-0 text-press">
-      <circle cx="9" cy="9" r="8" fill="none" stroke="currentColor" strokeWidth="1.4" />
-      <path d="M9 5.2v7.6M5.2 9h7.6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+      <circle cx="9" cy="9" r="8" fill="currentColor" />
+      <path d="M5.4 9.2 7.9 11.7 12.6 6.6" fill="none" stroke="var(--sheet)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -987,7 +1040,7 @@ function QuoteSummary({
           <span className="font-medium">Se calcula al pagar</span>
         </div>
         {error ? (
-          <p role="alert" className="mt-3 hidden text-sm text-red-800 lg:block">
+          <p role="alert" className="mt-3 hidden text-sm font-medium text-alert-deep lg:block">
             {error}
           </p>
         ) : null}
@@ -1006,18 +1059,20 @@ function QuoteSummary({
 }
 
 function OptionGroup({
+  step,
   legend,
   value,
   hint,
   children,
 }: {
+  step: string;
   legend: string;
   value?: string;
   hint?: string;
   children: React.ReactNode;
 }) {
   return (
-    <fieldset>
+    <fieldset data-step={step} className="scroll-mt-4">
       <legend className="text-sm font-medium">
         {legend}
         {value ? <span className="font-semibold text-pick-deep">: {value}</span> : null}
@@ -1093,16 +1148,23 @@ function Tile({
       {tag ? <CornerTag>{tag}</CornerTag> : null}
       {checked ? <CheckMark /> : null}
       <span
-        className={`flex h-16 items-center justify-center ${checked ? "text-pick-deep" : "text-ink-soft"}`}
+        className={`flex h-16 items-center justify-center ${checked ? "text-ink" : "text-ink-soft"}`}
         style={{ "--glyph-bg": checked ? "var(--pick-soft)" : "var(--sheet)" } as React.CSSProperties}
         aria-hidden="true"
       >
         {glyph}
       </span>
-      <span className={`mt-1 text-sm leading-5 ${checked ? "font-semibold text-pick-deep" : "font-medium"}`}>
+      <span className={`mt-1 text-sm leading-5 ${checked ? "font-semibold" : "font-medium"}`}>
         {title}
       </span>
-      <span className={`text-sm leading-5 ${checked ? "text-pick-deep/80" : "text-ink-soft"}`}>{detail}</span>
+      {/* El verde es el color del dinero en el sitio, así que "Incluido" se lee solo. */}
+      <span
+        className={`text-sm leading-5 ${
+          detail === "Incluido" ? "font-medium text-press-deep" : "text-ink-soft"
+        }`}
+      >
+        {detail}
+      </span>
     </label>
   );
 }

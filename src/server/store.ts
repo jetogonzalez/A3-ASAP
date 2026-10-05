@@ -35,7 +35,7 @@ export type StoredOrder = {
     reference: string;
   };
   shipping: { method: "retiro" | "envio"; label: string; detail: string; cents: number };
-  payment: { method: "transfer" | "card"; label: string };
+  payment: { method: "transfer" | "deuna"; label: string };
   notes: string;
   subtotalCents: number;
   totalCents: number;

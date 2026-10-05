@@ -62,7 +62,7 @@ export default function HomePage() {
           </p>
           <p className="mt-4 text-lg font-semibold">Desde {formatUsd(fromPrice("85x55"))}</p>
           <span className="mt-4 inline-flex min-h-11 items-center self-start text-sm font-semibold text-press">
-            Configurar tarjetas
+            Empezar el pedido
           </span>
         </div>
       </Link>

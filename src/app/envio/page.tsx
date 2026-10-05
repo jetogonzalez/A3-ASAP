@@ -3,7 +3,7 @@ import { SHIPPING_TABLE } from "@/lib/ecuador";
 
 export const metadata: Metadata = {
   title: "Envío",
-  description: "Tarifas de demostración para Quito y los valles.",
+  description: "Envío y retiro en Quito y los valles.",
 };
 
 export default function ShippingPage() {
@@ -12,10 +12,10 @@ export default function ShippingPage() {
       <p className="text-xs uppercase tracking-[0.18em] text-ink-soft">Quito y valles</p>
       <h1 className="mt-3 font-display text-5xl leading-[0.95]">Envío y retiro</h1>
       <p className="mt-4 leading-7 text-ink-soft">
-        Por ahora el envío llega a Quito y a los valles: Cumbayá, Tumbaco, Los Chillos y alrededores. El retiro es en Quito. La tarifa es de demostración y se suma al pagar.
+        Por ahora el envío llega a Quito y a los valles: Cumbayá, Tumbaco, Los Chillos y alrededores. El retiro es en Quito, sin costo. El envío a domicilio se cobra según el peso del paquete, así que te pasamos el valor al confirmar el pedido.
       </p>
       <table className="mt-8 w-full border-collapse text-left text-sm">
-        <caption className="sr-only">Tarifas de envío de demostración en Quito y los valles</caption>
+        <caption className="sr-only">Envío y retiro en Quito y los valles</caption>
         <thead>
           <tr className="border-b border-line text-ink-soft">
             <th scope="col" className="py-2 pr-4 font-medium">Zona</th>
@@ -34,7 +34,7 @@ export default function ShippingPage() {
         </tbody>
       </table>
       <p className="mt-6 text-sm leading-6 text-ink-soft">
-        Producción estimada de las tarjetas: 4 días hábiles antes de salir del taller. El retiro es en Quito.
+        Producción estimada de las tarjetas: 4 días hábiles antes de salir del taller. Mientras más tarjetas pidas, más pesa la caja y más cuesta llevarla; por eso el envío se cotiza al cerrar el pedido.
       </p>
     </div>
   );
