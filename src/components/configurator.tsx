@@ -22,6 +22,20 @@ import { uploadArtwork } from "@/server/actions";
 
 const MAX_FILE = 8 * 1024 * 1024;
 
+/** Los pasos del configurador, en el orden en que se bajan. */
+const STEPS = ["tamano", "papel", "laminado", "uv", "lados", "puntas", "cantidad", "entrega"] as const;
+
+const STEP_NAMES: Record<string, string> = {
+  tamano: "el tamaño",
+  papel: "el papel",
+  laminado: "el laminado",
+  uv: "el brillo UV",
+  lados: "el tipo de impresión",
+  puntas: "el tipo de esquina",
+  cantidad: "la cantidad",
+  entrega: "la entrega",
+};
+
 export function Configurator({
   initial,
   editId,
@@ -35,7 +49,13 @@ export function Configurator({
   const cart = useCart();
   const editing = editId ? cart.items.find((item) => item.id === editId) : undefined;
   const [config, setConfig] = useState<Configuration>(editing?.configuration ?? initial);
-  const [face, setFace] = useState<"front" | "back">("front");
+  /*
+   * Nada arranca marcado: la tarjeta de la muestra usa valores por defecto, pero
+   * cada grupo se ve vacío hasta que la persona elige. Al editar algo del carrito
+   * ya está todo decidido, así que ahí sí viene completo.
+   */
+  const [picked, setPicked] = useState<Set<string>>(() => new Set(editing ? STEPS : []));
+  const missing = STEPS.filter((step) => !picked.has(step));
   const [imageFaces, setImageFaces] = useState<{ front: boolean; back: boolean }>({ front: true, back: false });
   const [file, setFile] = useState<File | null>(null);
   const [artworkUrl, setArtworkUrl] = useState<string | null>(null);
@@ -81,7 +101,6 @@ export function Configurator({
   function patch(partial: Partial<Configuration>) {
     setError(null);
     setConfig((current) => ({ ...current, ...partial }));
-    if (partial.sides === 1) setFace("front");
   }
 
   /*
@@ -91,6 +110,7 @@ export function Configurator({
    */
   function choose(step: string, partial: Partial<Configuration>) {
     patch(partial);
+    setPicked((current) => (current.has(step) ? current : new Set(current).add(step)));
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     window.setTimeout(() => {
       const steps = Array.from(document.querySelectorAll<HTMLElement>("[data-step]"));
@@ -104,12 +124,16 @@ export function Configurator({
     }, 90);
   }
 
+  /* Marcado solo si ya pasó por ahí: antes de eso ningún recuadro se ve elegido. */
+  function on(step: string, value: boolean): boolean {
+    return picked.has(step) && value;
+  }
+
   function takeFile(next: File | null) {
     setError(null);
     if (!next) {
       setFile(null);
       setImageFaces({ front: true, back: false });
-      setFace("front");
       return;
     }
     const allowed = ["application/pdf", "image/png", "image/jpeg"];
@@ -128,6 +152,7 @@ export function Configurator({
   }
 
   async function commit() {
+    if (missing.length > 0) return;
     setPending(true);
     setError(null);
     try {
@@ -162,46 +187,35 @@ export function Configurator({
     <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
       <div className="space-y-8 lg:col-start-1 lg:row-start-1">
       <div>
+        {/*
+          * Las dos caras a la vez. Con un interruptor Frente/Reverso había que
+          * descubrir que existía una segunda cara; así se ve de una.
+          */}
         <div
           id="muestra"
-          className={`relative flex min-h-[340px] scroll-mt-28 items-center justify-center rounded-[28px] bg-paper-deep/70 px-8 pt-12 ${
-            config.sides === 2 ? "pb-24" : "pb-12"
-          }`}
+          className="flex min-h-[340px] scroll-mt-28 flex-col items-center justify-center gap-6 rounded-[28px] bg-paper-deep/70 px-8 py-12 sm:flex-row sm:gap-5"
         >
-          <CardPreview
-            config={config}
-            face={face}
-            artworkUrl={
-              artworkUrl && (face === "front" ? imageFaces.front : config.sides === 2 && imageFaces.back)
-                ? artworkUrl
-                : null
-            }
-          />
+          <figure className="flex w-full min-w-0 flex-1 flex-col items-center gap-2.5">
+            <CardPreview
+              config={config}
+              face="front"
+              pair={config.sides === 2}
+              artworkUrl={artworkUrl && imageFaces.front ? artworkUrl : null}
+            />
+            {config.sides === 2 ? (
+              <figcaption className="text-sm text-ink-soft">Frente</figcaption>
+            ) : null}
+          </figure>
           {config.sides === 2 ? (
-            <div
-              className="absolute bottom-4 left-1/2 flex -translate-x-1/2 rounded-full bg-sheet p-1 shadow-sm ring-1 ring-line"
-              role="group"
-              aria-label="Cara de la muestra"
-            >
-              {(
-                [
-                  ["front", "Frente"],
-                  ["back", "Reverso"],
-                ] as const
-              ).map(([value, label]) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => setFace(value)}
-                  aria-pressed={face === value}
-                  className={`min-h-9 cursor-pointer rounded-full px-4 text-sm transition-colors ${
-                    face === value ? "bg-pick-soft font-semibold text-pick-deep" : "text-ink-soft hover:text-ink"
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
+            <figure className="flex w-full min-w-0 flex-1 flex-col items-center gap-2.5">
+              <CardPreview
+                config={config}
+                face="back"
+                pair
+                artworkUrl={artworkUrl && imageFaces.back ? artworkUrl : null}
+              />
+              <figcaption className="text-sm text-ink-soft">Reverso</figcaption>
+            </figure>
           ) : null}
         </div>
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-ink-soft">
@@ -229,20 +243,19 @@ export function Configurator({
         onPlace={(side) => {
           const turningOn = !imageFaces[side];
           setImageFaces((current) => ({ ...current, [side]: !current[side] }));
-          if (side === "back" && turningOn) patch({ sides: 2 });
-          setFace(side);
+          if (side === "back" && turningOn) choose("lados", { sides: 2 });
         }}
       />
       </div>
 
       <div className="space-y-8 pb-28 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:pb-0">
-        <OptionGroup step="tamano" legend="Tamaño" value={size.sizeLabel} hint="Las dos medidas que imprimimos hoy. El dibujo está a escala.">
+        <OptionGroup step="tamano" legend="Tamaño" value={picked.has("tamano") ? size.sizeLabel : undefined} hint="Las dos medidas que imprimimos hoy. El dibujo está a escala.">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {SIZE_IDS.map((id) => (
               <Tile
                 key={id}
                 name="tamano"
-                checked={config.sizeId === id}
+                checked={on("tamano", config.sizeId === id)}
                 onChange={() => choose("tamano", { sizeId: id })}
                 title={SIZES[id].name}
                 detail={SIZES[id].sizeLabel}
@@ -253,11 +266,11 @@ export function Configurator({
           </div>
         </OptionGroup>
 
-        <OptionGroup step="papel" legend="Tipo de papel" value={config.paper === "mate" ? "Mate" : "Brillante"} hint="Couche 300 g. Ya está incluido en la impresión.">
+        <OptionGroup step="papel" legend="Tipo de papel" value={picked.has("papel") ? (config.paper === "mate" ? "Mate" : "Brillante") : undefined} hint="Couche 300 g. Ya está incluido en la impresión.">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             <Tile
               name="papel"
-              checked={config.paper === "mate"}
+              checked={on("papel", config.paper === "mate")}
               onChange={() => choose("papel", { paper: "mate" })}
               title="Mate"
               detail="Incluido"
@@ -266,7 +279,7 @@ export function Configurator({
             />
             <Tile
               name="papel"
-              checked={config.paper === "brillante"}
+              checked={on("papel", config.paper === "brillante")}
               onChange={() => choose("papel", { paper: "brillante" })}
               title="Brillante"
               detail="Incluido"
@@ -279,18 +292,20 @@ export function Configurator({
           step="laminado"
           legend="Laminado"
           value={
-            config.laminate === "none"
-              ? "Sin laminado"
-              : config.laminate === "mate"
-                ? "Laminado mate"
-                : "Laminado brillante"
+            !picked.has("laminado")
+              ? undefined
+              : config.laminate === "none"
+                ? "Sin laminado"
+                : config.laminate === "mate"
+                  ? "Laminado mate"
+                  : "Laminado brillante"
           }
           hint={`Capa extra a doble cara. Mismo cargo para mate o brillante: ${formatUsd(addons.laminate)}.`}
         >
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             <Tile
               name="laminado"
-              checked={config.laminate === "none"}
+              checked={on("laminado", config.laminate === "none")}
               onChange={() => choose("laminado", { laminate: "none" })}
               title="Sin laminado"
               detail="Incluido"
@@ -300,7 +315,7 @@ export function Configurator({
               <Tile
                 key={finish}
                 name="laminado"
-                checked={config.laminate === finish}
+                checked={on("laminado", config.laminate === finish)}
                 onChange={() => choose("laminado", { laminate: finish satisfies Laminate })}
                 title={finish === "mate" ? "Laminado mate" : "Laminado brillante"}
                 detail={`+ ${formatUsd(addons.laminate)}`}
@@ -314,13 +329,13 @@ export function Configurator({
         <OptionGroup
           step="uv"
           legend="Brillo UV"
-          value={config.uv ? "UV selectivo" : "Sin UV"}
+          value={picked.has("uv") ? (config.uv ? "UV selectivo" : "Sin UV") : undefined}
           hint={`Barniz brillante solo sobre las zonas que marques. Cargo fijo de taller: ${formatUsd(addons.uv)}.`}
         >
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             <Tile
               name="uv"
-              checked={!config.uv}
+              checked={on("uv", !config.uv)}
               onChange={() => choose("uv", { uv: false })}
               title="Sin UV"
               detail="Incluido"
@@ -328,7 +343,7 @@ export function Configurator({
             />
             <Tile
               name="uv"
-              checked={config.uv}
+              checked={on("uv", config.uv)}
               onChange={() => choose("uv", { uv: true })}
               title="UV selectivo"
               detail={`+ ${formatUsd(addons.uv)}`}
@@ -340,13 +355,13 @@ export function Configurator({
         <OptionGroup
           step="lados"
           legend="Opción de impresión"
-          value={config.sides === 1 ? "A una cara" : "A doble cara"}
+          value={picked.has("lados") ? (config.sides === 1 ? "A una cara" : "A doble cara") : undefined}
           hint="Las dos opciones no se suman: eliges una y el precio cambia."
         >
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             <Tile
               name="lados"
-              checked={config.sides === 1}
+              checked={on("lados", config.sides === 1)}
               onChange={() => choose("lados", { sides: 1 })}
               title="A una cara"
               detail="Solo el frente"
@@ -354,7 +369,7 @@ export function Configurator({
             />
             <Tile
               name="lados"
-              checked={config.sides === 2}
+              checked={on("lados", config.sides === 2)}
               onChange={() => choose("lados", { sides: 2 })}
               title="A doble cara"
               detail="Frente y reverso"
@@ -364,11 +379,11 @@ export function Configurator({
           </div>
         </OptionGroup>
 
-        <OptionGroup step="puntas" legend="Esquinas" value={config.rounded ? "Redondeadas" : "Rectas"}>
+        <OptionGroup step="puntas" legend="Esquinas" value={picked.has("puntas") ? (config.rounded ? "Redondeadas" : "Rectas") : undefined}>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             <Tile
               name="puntas"
-              checked={!config.rounded}
+              checked={on("puntas", !config.rounded)}
               onChange={() => choose("puntas", { rounded: false })}
               title="Rectas"
               detail="Incluido"
@@ -376,7 +391,7 @@ export function Configurator({
             />
             <Tile
               name="puntas"
-              checked={config.rounded}
+              checked={on("puntas", config.rounded)}
               onChange={() => choose("puntas", { rounded: true })}
               title="Redondeadas"
               detail={`+ ${formatUsd(addons.corners)}`}
@@ -388,13 +403,13 @@ export function Configurator({
         <OptionGroup
           step="cantidad"
           legend="Cantidad"
-          value={`${config.quantity.toLocaleString("es-EC")} u.`}
+          value={picked.has("cantidad") ? `${config.quantity.toLocaleString("es-EC")} u.` : undefined}
           hint={`El precio de cada fila ya incluye los acabados que elegiste. El porcentaje compara el precio por tarjeta contra pedir ${QUANTITIES[0]} unidades, que con estos acabados salen en ${formatUsd(smallestRun.unitCents)} c/u.`}
         >
           <div className="grid gap-2 sm:grid-cols-2" role="radiogroup" aria-label="Cantidad">
             {QUANTITIES.map((quantity) => {
               const row = quote({ ...config, quantity });
-              const checked = config.quantity === quantity;
+              const checked = on("cantidad", config.quantity === quantity);
               const recommended = quantity === 250;
               /*
                * Cuánto baja el precio por unidad frente a la tirada más chica. Se calcula
@@ -458,7 +473,7 @@ export function Configurator({
 
         <DeliveryChoices
           orderedAt={orderedAt}
-          selected={config.delivery}
+          selected={picked.has("entrega") ? config.delivery : null}
           hasArtwork={Boolean(file || editing?.artwork)}
           onChange={(delivery) => choose("entrega", { delivery })}
         />
@@ -466,6 +481,7 @@ export function Configurator({
           <QuoteSummary
             config={config}
             priced={priced}
+            missing={missing}
             sizeName={size.name}
             sizeLabel={size.sizeLabel}
             pending={pending}
@@ -495,6 +511,7 @@ export function Configurator({
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 pb-[env(safe-area-inset-bottom)]">
           <div className="min-w-0">
             <p className="truncate text-xs text-ink-soft">
+              {missing.length > 0 ? "Desde · " : ""}
               {config.quantity.toLocaleString("es-EC")} tarjetas · {formatUsd(priced.unitCents)} c/u
               <span className="hidden lg:inline">
                 {" "}
@@ -513,11 +530,17 @@ export function Configurator({
           <button
             type="button"
             onClick={commit}
-            disabled={pending || Boolean(editId && !cart.ready)}
-            className="min-h-12 shrink-0 cursor-pointer rounded-full bg-press px-5 text-sm font-medium text-white transition hover:bg-press-deep disabled:opacity-60"
+            disabled={pending || missing.length > 0 || Boolean(editId && !cart.ready)}
+            className="min-h-12 shrink-0 cursor-pointer rounded-full bg-press px-5 text-sm font-medium text-white transition hover:bg-press-deep disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {pending ? "Guardando…" : editing ? "Actualizar" : "Agregar"}
-            <span className="hidden lg:inline">{pending || editing ? "" : " al pedido"}</span>
+            {missing.length > 0 ? (
+              `Falta ${STEP_NAMES[missing[0]]}`
+            ) : (
+              <>
+                {pending ? "Guardando…" : editing ? "Actualizar" : "Agregar"}
+                <span className="hidden lg:inline">{pending || editing ? "" : " al pedido"}</span>
+              </>
+            )}
           </button>
         </div>
       </div>
@@ -532,7 +555,7 @@ function DeliveryChoices({
   onChange,
 }: {
   orderedAt: string;
-  selected: DeliveryId;
+  selected: DeliveryId | null;
   hasArtwork: boolean;
   onChange: (delivery: DeliveryId) => void;
 }) {
@@ -986,6 +1009,7 @@ function PdfIcon() {
 function QuoteSummary({
   config,
   priced,
+  missing,
   sizeName,
   sizeLabel,
   pending,
@@ -996,6 +1020,7 @@ function QuoteSummary({
 }: {
   config: Configuration;
   priced: Quote;
+  missing: string[];
   sizeName: string;
   sizeLabel: string;
   pending: boolean;
@@ -1005,31 +1030,50 @@ function QuoteSummary({
   onCommit: () => void;
 }) {
   const count = config.quantity.toLocaleString("es-EC");
+  /* Mientras falte algo por elegir el total es un "desde", no una cuenta cerrada. */
+  const open = missing.length > 0;
 
   return (
     <section aria-label="Resumen del precio" className="overflow-hidden rounded-[28px] border border-line bg-sheet shadow-[0_18px_44px_-28px_rgba(26,29,33,0.55)]">
       <div className="px-5 pt-5">
         <p className="text-sm text-ink-soft">Tu pedido</p>
-        <h2 className="mt-1 text-[1.65rem] font-medium leading-tight tracking-tight">{count} tarjetas</h2>
+        <h2 className="mt-1 text-[1.65rem] font-medium leading-tight tracking-tight">
+          {open ? "Tu tarjeta" : `${count} tarjetas`}
+        </h2>
         <p className="mt-1.5 text-sm leading-6 text-ink-soft">
-          {sizeName}, {sizeLabel} · {config.sides === 1 ? "un lado" : "dos lados"} · papel {config.paper}
+          {open
+            ? "El precio se arma mientras eliges."
+            : `${sizeName}, ${sizeLabel} · ${config.sides === 1 ? "un lado" : "dos lados"} · papel ${config.paper}`}
         </p>
       </div>
-      <ul className="mt-4 space-y-2.5 border-t border-line px-5 py-4 text-sm">
-        {priced.lines.map((line) => (
-          <li key={line.label} className="flex items-baseline justify-between gap-4">
-            <span className="text-ink-soft">{line.label}</span>
-            <span className={`shrink-0 tabular-nums ${line.included ? "font-medium text-press-deep" : "font-medium"}`}>
-              {line.included ? "Incluido" : formatUsd(line.cents)}
-            </span>
-          </li>
-        ))}
-      </ul>
+      {open ? (
+        <ul className="mt-4 space-y-2.5 border-t border-line px-5 py-4 text-sm">
+          {missing.map((step) => (
+            <li key={step} className="flex items-center gap-2.5 text-ink-soft">
+              <span className="size-1.5 shrink-0 rounded-full bg-line" aria-hidden="true" />
+              Falta {STEP_NAMES[step]}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <ul className="mt-4 space-y-2.5 border-t border-line px-5 py-4 text-sm">
+          {priced.lines.map((line) => (
+            <li key={line.label} className="flex items-baseline justify-between gap-4">
+              <span className="text-ink-soft">{line.label}</span>
+              <span className={`shrink-0 tabular-nums ${line.included ? "font-medium text-press-deep" : "font-medium"}`}>
+                {line.included ? "Incluido" : formatUsd(line.cents)}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
       <div className="border-t border-line bg-paper-deep/70 px-5 py-5">
         <div className="flex items-end justify-between gap-4">
           <div>
-            <p className="text-sm font-medium">Total</p>
-            <p className="mt-1 text-sm text-ink-soft">{formatUsd(priced.unitCents)} cada una</p>
+            <p className="text-sm font-medium">{open ? "Desde" : "Total"}</p>
+            <p className="mt-1 text-sm text-ink-soft">
+              {open ? `${count} tarjetas` : `${formatUsd(priced.unitCents)} cada una`}
+            </p>
           </div>
           <p key={priced.totalCents} className="price-tick text-[2.65rem] font-medium leading-none tracking-tight tabular-nums" aria-live="polite">
             {formatUsd(priced.totalCents)}
@@ -1047,11 +1091,17 @@ function QuoteSummary({
         <button
           type="button"
           onClick={onCommit}
-          disabled={disabled}
+          disabled={disabled || open}
           aria-busy={pending}
-          className="mt-5 hidden min-h-12 w-full cursor-pointer rounded-full bg-press px-5 text-base font-medium text-white transition hover:bg-press-deep disabled:cursor-wait disabled:opacity-60 lg:inline-flex lg:items-center lg:justify-center"
+          className="mt-5 hidden min-h-12 w-full cursor-pointer rounded-full bg-press px-5 text-base font-medium text-white transition hover:bg-press-deep disabled:cursor-not-allowed disabled:opacity-60 lg:inline-flex lg:items-center lg:justify-center"
         >
-          {pending ? "Guardando…" : editing ? "Actualizar pedido" : "Agregar al pedido"}
+          {open
+            ? `Falta elegir ${STEP_NAMES[missing[0]]}`
+            : pending
+              ? "Guardando…"
+              : editing
+                ? "Actualizar pedido"
+                : "Agregar al pedido"}
         </button>
       </div>
     </section>

@@ -4,15 +4,19 @@ export function CardPreview({
   config,
   face = "front",
   compact = false,
+  pair = false,
   artworkUrl = null,
 }: {
   config: Configuration;
   face?: "front" | "back";
   compact?: boolean;
+  /** Las dos caras juntas: cabe menos, así que el contenido va en tamaño chico. */
+  pair?: boolean;
   artworkUrl?: string | null;
 }) {
   const size = SIZES[config.sizeId];
   const square = config.sizeId === "55x55";
+  const small = compact || pair;
   /*
    * El laminado manda sobre el papel: uno mate apaga el brillo del couche
    * brillante. Antes se pintaban los dos y la muestra quedaba rarísima.
@@ -23,10 +27,18 @@ export function CardPreview({
   return (
     <div
       className={`relative inline-flex max-w-full ${
-        compact ? "w-[168px]" : square ? "w-[min(100%,280px)]" : "w-[min(100%,440px)]"
+        compact
+          ? "w-[168px]"
+          : pair
+            ? square
+              ? "w-[min(100%,200px)]"
+              : "w-[min(100%,250px)]"
+            : square
+              ? "w-[min(100%,280px)]"
+              : "w-[min(100%,440px)]"
       }`}
     >
-      {compact ? null : (
+      {small ? null : (
         <>
           <span className="pointer-events-none absolute -left-3 -top-3 h-4 w-4 border-l border-t border-ink/40" />
           <span className="pointer-events-none absolute -right-3 -top-3 h-4 w-4 border-r border-t border-ink/40" />
@@ -52,20 +64,20 @@ export function CardPreview({
             <span className="artwork-sheen pointer-events-none absolute inset-y-0 left-0 w-1/2" aria-hidden="true" />
           </>
         ) : face === "front" ? (
-          <div className={`flex h-full flex-col justify-between ${compact ? "p-3" : square ? "p-5" : "p-6 sm:p-7"}`}>
+          <div className={`flex h-full flex-col justify-between ${small ? "p-3.5" : square ? "p-5" : "p-6 sm:p-7"}`}>
             <div>
-              <p className={`font-display leading-none tracking-tight ${compact ? "text-base" : "text-2xl sm:text-3xl"}`}>Estudio Norte</p>
-              <p className="mt-2 text-[11px] uppercase tracking-[0.16em] text-ink-soft">Quito</p>
+              <p className={`font-display leading-none tracking-tight ${small ? "text-base" : "text-2xl sm:text-3xl"}`}>Estudio Norte</p>
+              <p className={`uppercase tracking-[0.16em] text-ink-soft ${small ? "mt-1 text-[9px]" : "mt-2 text-[11px]"}`}>Quito</p>
             </div>
-            <div className="text-sm leading-5">
+            <div className={small ? "text-[11px] leading-4" : "text-sm leading-5"}>
               <p className="font-medium">Tu nombre</p>
               <p className="text-ink-soft">Cargo</p>
             </div>
           </div>
         ) : (
-          <div className="flex h-full flex-col items-center justify-center gap-2 p-6 text-center">
-            <p className={`font-display italic ${compact ? "text-lg" : "text-3xl"}`}>ASAP</p>
-            <p className="text-xs uppercase tracking-[0.18em] text-ink-soft">Couche 300 g</p>
+          <div className={`flex h-full flex-col items-center justify-center gap-2 text-center ${small ? "p-3.5" : "p-6"}`}>
+            <p className={`font-display italic ${small ? "text-lg" : "text-3xl"}`}>ASAP</p>
+            <p className={`uppercase tracking-[0.18em] text-ink-soft ${small ? "text-[9px]" : "text-xs"}`}>Couche 300 g</p>
           </div>
         )}
         {glossy ? (
