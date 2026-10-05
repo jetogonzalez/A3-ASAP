@@ -36,7 +36,8 @@ export function SiteHeader() {
             <label className="sr-only" htmlFor="buscar">
               Buscar productos
             </label>
-            <div className="focus-shell flex h-11 items-center rounded-full border border-line bg-paper-deep pr-1 pl-4 transition-colors has-[input:focus-visible]:border-pick has-[input:focus-visible]:ring-2 has-[input:focus-visible]:ring-pick-line">
+            {/* Al enfocar se comporta igual que los campos del formulario: se vacía el relleno y el borde se pone fuerte. */}
+            <div className="focus-shell flex h-11 items-center rounded-full border border-line bg-paper-deep pr-1 pl-4 transition-colors has-[input:focus-visible]:border-ink has-[input:focus-visible]:bg-sheet has-[input:focus-visible]:shadow-[inset_0_0_0_1px_var(--ink)]">
               <input
                 id="buscar"
                 name="q"

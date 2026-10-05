@@ -21,6 +21,15 @@ export function addBusinessDays(iso: string, days: number): string {
   return cursor.toISOString();
 }
 
+/** Sin el día de la semana, para los renglones donde el nombre largo no cabe. */
+export function formatShortDate(isoDate: string): string {
+  return new Intl.DateTimeFormat("es-EC", {
+    day: "numeric",
+    month: "long",
+    timeZone: "UTC",
+  }).format(new Date(isoDate));
+}
+
 export function formatLongDate(isoDate: string): string {
   return new Intl.DateTimeFormat("es-EC", {
     weekday: "long",

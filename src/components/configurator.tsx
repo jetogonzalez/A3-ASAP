@@ -15,9 +15,11 @@ import {
   type SizeId,
   type DeliveryId,
 } from "@/lib/catalog";
-import { DELIVERY_OPTIONS, deliveryWindow, formatLongDate } from "@/lib/delivery";
+import { DELIVERY_OPTIONS, deliveryWindow, formatLongDate, formatShortDate } from "@/lib/delivery";
+import { shippingQuote } from "@/lib/ecuador";
 import { formatUsd } from "@/lib/money";
 import { addonCents, quote, type Quote } from "@/lib/pricing";
+import { formatWeight, packageGrams } from "@/lib/weight";
 import { uploadArtwork } from "@/server/actions";
 
 const MAX_FILE = 8 * 1024 * 1024;
@@ -594,7 +596,7 @@ function DeliveryChoices({
     <fieldset data-step="entrega" className="scroll-mt-4">
       <legend className="text-sm font-medium">Fecha de entrega estimada</legend>
       <p className="mt-1 mb-3 text-sm leading-6 text-ink-soft">
-        Por ahora el envío es solo en Quito y los valles. Adelantar la producción tiene un recargo de demostración y se suma al pagar.
+        Adelantar la producción cuesta más y el recargo se suma al total.
         {hasArtwork ? "" : " Sin archivo, la cuenta empieza cuando lo envíes."}
       </p>
       <div className="grid gap-2" role="radiogroup" aria-label="Fecha de entrega estimada">
@@ -606,34 +608,37 @@ function DeliveryChoices({
           return (
             <label
               key={option.id}
-              /* Mismo alto en todas y el contenido centrado: la etiqueta vive en la columna del precio. */
+              /*
+               * Todas del mismo alto. Antes la fecha larga partía el renglón en
+               * unas filas y en otras no, y la columna quedaba desalineada.
+               */
               className={`relative flex min-h-20 cursor-pointer items-center justify-between gap-3 overflow-hidden rounded-2xl border-2 px-4 py-3 transition-colors ${
                 checked
                   ? "border-pick bg-pick-soft"
                   : "border-line bg-sheet hover:border-pick-line hover:bg-pick-wash"
               }`}
             >
-              <span className="flex items-start gap-3">
+              <span className="flex min-w-0 items-center gap-3">
                 <input
                   type="radio"
                   name="entrega"
                   checked={checked}
                   onChange={() => onChange(option.id)}
-                  className="control control-radio mt-0.5"
+                  className="control control-radio"
                 />
-                <span>
-                  <span className={checked ? "font-semibold" : "font-medium"}>
-                    Entre el {formatLongDate(window.earliest)}
+                <span className="min-w-0">
+                  <span className={`block ${checked ? "font-semibold" : "font-medium"}`}>
+                    {formatLongDate(window.earliest)}
                   </span>
                   <span className="mt-0.5 block text-sm text-ink-soft">
-                    A más tardar el {formatLongDate(window.latest)}
+                    A más tardar, {formatShortDate(window.latest)}
                   </span>
                 </span>
               </span>
               <span className="flex shrink-0 flex-col items-end gap-1">
                 {fastest ? (
                   <span className="rounded-full bg-flag px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-flag-ink">
-                    La más rápida
+                    Más rápida
                   </span>
                 ) : null}
                 <span className={`text-sm font-medium tabular-nums ${option.cents === 0 ? "text-press-deep" : ""}`}>
@@ -778,7 +783,8 @@ function ArtworkPanel({
               ? "border-solid border-pick bg-pick-soft"
               : invalid
                 ? "border-dashed border-alert bg-alert-soft"
-                : "border-dashed border-pick-line bg-pick-wash hover:border-pick hover:bg-pick-soft"
+                : /* Neutral en reposo: el azul es de lo elegido, y aquí todavía no hay nada. */
+                  "border-dashed border-line bg-paper-deep hover:border-pick hover:bg-pick-wash"
           }`}
         >
           <DropGlyph dragOver={dragOver} invalid={invalid} />
@@ -1117,8 +1123,12 @@ function QuoteSummary({
           </p>
         </div>
         <div className="mt-4 flex items-baseline justify-between gap-4 border-t border-line pt-4 text-sm">
-          <span className="text-ink-soft">Envío en Quito y valles</span>
-          <span className="font-medium">Se calcula al pagar</span>
+          <span className="text-ink-soft">
+            Envío en Quito y valles
+            {/* El peso depende de toda la tanda, así que el valor exacto sale en el pago. */}
+            <span className="block text-xs">{formatWeight(packageGrams(config))} de esta tanda</span>
+          </span>
+          <span className="font-medium">{formatUsd(shippingQuote(packageGrams(config)).cents)}</span>
         </div>
         {error ? (
           <p role="alert" className="mt-3 hidden text-sm font-medium text-alert-deep lg:block">
