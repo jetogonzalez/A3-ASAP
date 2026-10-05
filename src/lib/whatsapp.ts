@@ -1,9 +1,12 @@
 /**
  * El pedido se cierra por WhatsApp: la web arma la tanda y guarda el resumen,
- * y la conversación confirma el pago y cuánto cuesta llevarlo. El número vive
- * en una variable de entorno para no tener que tocar el código al cambiarlo.
+ * y la conversación confirma el pago y cuánto cuesta llevarlo. El número va
+ * igual al navegador, así que vive aquí; la variable de entorno solo sirve
+ * para apuntar a otro número sin tocar el código.
  */
-export const WHATSAPP_NUMBER = (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "").replace(/\D/g, "");
+export const WHATSAPP_NUMBER = (
+  process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "593992656521"
+).replace(/\D/g, "");
 
 export const PAYMENT_LABELS = {
   transfer: "Transferencia bancaria",
