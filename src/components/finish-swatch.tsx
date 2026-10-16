@@ -26,15 +26,23 @@ export const GRAIN =
 const INK = "#0e5a33";
 const MATTE_PAPER = "#f4efe6";
 
-/** La tarjeta recostada sobre la mesa, vista un poco desde arriba. */
-const TILT = "translate(-50%, -46%) perspective(420px) rotateX(36deg) rotateZ(-9deg)";
+/*
+ * Escena 3D de verdad: la caja tiene perspectiva y cada tarjeta es una pila de
+ * capas en Z (sombra en la mesa, canto, cara). Al inclinarla, las capas se
+ * separan y aparece el grosor del cartón, como en una foto.
+ */
+const PERSPECTIVE = "560px";
+const CARD_THICKNESS = 3;
 
 export function FinishSwatch({ kind }: { kind: SwatchKind }) {
   return (
     <span
-      className="swatch relative block h-24 w-full overflow-hidden rounded-xl bg-[radial-gradient(120%_90%_at_30%_10%,#f3f1ed,#ddd8d0_70%,#cfc9bf)]"
+      className="swatch relative block h-28 w-full overflow-hidden rounded-xl bg-[radial-gradient(110%_95%_at_35%_15%,#f6f4f0,#e2ddd5_62%,#cdc6bb)]"
+      style={{ perspective: PERSPECTIVE }}
       aria-hidden="true"
     >
+      {/* Viñeta: la luz cae en el centro de la mesa y se apaga en los bordes. */}
+      <span className="pointer-events-none absolute inset-0 shadow-[inset_0_0_28px_rgba(60,50,35,0.18)]" />
       {kind === "esquina-recta" || kind === "esquina-redonda" ? (
         <CornerScene rounded={kind === "esquina-redonda"} />
       ) : kind === "una-cara" || kind === "doble-cara" ? (
@@ -53,13 +61,7 @@ function FinishScene({ kind }: { kind: SwatchKind }) {
   const laminated = kind === "laminado-mate" || kind === "laminado-brillante";
 
   return (
-    <span
-      className="absolute left-1/2 top-1/2 block aspect-[85/55] w-[76%] overflow-hidden rounded-[2px] shadow-[0_16px_18px_-12px_rgba(40,32,20,0.55),0_2px_3px_rgba(40,32,20,0.18)]"
-      style={{
-        transform: TILT,
-        background: dark ? "#1c1e20" : matte ? MATTE_PAPER : "#ffffff",
-      }}
-    >
+    <Card3D paper={dark ? "#1c1e20" : matte ? MATTE_PAPER : "#ffffff"} edge={dark ? "#0b0c0d" : "#d6cfc2"}>
       <PrintedArt dark={dark} deep={laminated} muted={matte && !laminated && !dark} />
 
       {/* El grano solo se ve donde no hay capa encima que lo tape. */}
@@ -68,7 +70,7 @@ function FinishScene({ kind }: { kind: SwatchKind }) {
       ) : null}
 
       {/* Luz de ambiente: más clara arriba, como bajo una lámpara. */}
-      <span className="absolute inset-0 bg-[linear-gradient(160deg,rgba(255,255,255,0.18),transparent_45%,rgba(0,0,0,0.07))]" />
+      <span className="absolute inset-0 bg-[linear-gradient(160deg,rgba(255,255,255,0.2),transparent_45%,rgba(0,0,0,0.09))]" />
 
       {kind === "laminado-mate" ? (
         /* Terciopelo: un brillo ancho y apagado, sin borde definido. */
@@ -87,6 +89,57 @@ function FinishScene({ kind }: { kind: SwatchKind }) {
       {kind === "uv" ? <UvShine /> : null}
 
       {laminated ? <FilmCorner glossy={kind === "laminado-brillante"} /> : null}
+    </Card3D>
+  );
+}
+
+/**
+ * Una tarjeta acostada en la mesa. La sombra va pegada al plano de la mesa y
+ * el canto son capas a 1 px de distancia, así el grosor sale de la perspectiva.
+ */
+function Card3D({
+  paper,
+  edge,
+  width = "76%",
+  turn = -16,
+  shiftX = 0,
+  shiftY = -3,
+  lift = 0,
+  children,
+}: {
+  paper: string;
+  edge: string;
+  width?: string;
+  /** Giro sobre la mesa, en grados. */
+  turn?: number;
+  shiftX?: number;
+  shiftY?: number;
+  /** Altura sobre la mesa: para apilar una tarjeta encima de otra. */
+  lift?: number;
+  children?: React.ReactNode;
+}) {
+  return (
+    <span
+      className="absolute left-1/2 top-1/2 block aspect-[85/55]"
+      style={{
+        width,
+        transformStyle: "preserve-3d",
+        transform: `translate(-50%, -50%) translate(${shiftX}px, ${shiftY}px) rotateX(50deg) rotateZ(${turn}deg) translateZ(${lift}px)`,
+      }}
+    >
+      <span
+        className="absolute inset-0 rounded-[2px]"
+        style={{ background: "rgba(38,28,12,0.5)", filter: "blur(5px)", transform: "translate3d(2px, 5px, -1px) scale(1.03)" }}
+      />
+      {Array.from({ length: CARD_THICKNESS }, (_, layer) => (
+        <span key={layer} className="absolute inset-0 rounded-[2px]" style={{ background: edge, transform: `translateZ(${layer}px)` }} />
+      ))}
+      <span
+        className="absolute inset-0 overflow-hidden rounded-[2px] shadow-[inset_0_0_0_0.5px_rgba(0,0,0,0.08)]"
+        style={{ background: paper, transform: `translateZ(${CARD_THICKNESS}px)` }}
+      >
+        {children}
+      </span>
     </span>
   );
 }
@@ -160,7 +213,7 @@ function CornerScene({ rounded }: { rounded: boolean }) {
           borderRadius: radius,
           background: MATTE_PAPER,
           transform: "rotate(-6deg)",
-          boxShadow: "0 14px 18px -10px rgba(40,32,20,0.5), 0 1px 2px rgba(40,32,20,0.2)",
+          boxShadow: "0 1px 0 #ddd6c9, 0 2px 0 #cdc5b6, 0 3px 0 #c2b9a9, 0 16px 18px -10px rgba(40,32,20,0.5)",
         }}
       >
         <span className="absolute inset-0 opacity-60 mix-blend-multiply" style={{ backgroundImage: GRAIN }} />
@@ -171,25 +224,16 @@ function CornerScene({ rounded }: { rounded: boolean }) {
   );
 }
 
-/** Dos tarjetas en abanico: la de atrás muestra el reverso, impreso o en blanco. */
+/** Dos tarjetas en abanico: la de abajo muestra el reverso, impreso o en blanco. */
 function SidesScene({ double }: { double: boolean }) {
   return (
     <>
-      <span
-        className="absolute left-1/2 top-1/2 block aspect-[85/55] w-[60%] overflow-hidden rounded-[2px] shadow-[0_10px_14px_-10px_rgba(40,32,20,0.5)]"
-        style={{ transform: "translate(-30%, -62%) rotate(9deg)", background: double ? INK : "#fbf9f5" }}
-      >
-        {double ? (
-          /* El reverso impreso asoma por la derecha, que es lo que queda a la vista. */
-          <span className="absolute right-[10%] top-[22%] h-[30%] aspect-square rounded-full bg-[#f4efe6]" />
-        ) : null}
-      </span>
-      <span
-        className="absolute left-1/2 top-1/2 block aspect-[85/55] w-[60%] overflow-hidden rounded-[2px] bg-[#fbf9f5] shadow-[0_14px_16px_-10px_rgba(40,32,20,0.55)]"
-        style={{ transform: "translate(-74%, -38%) rotate(-7deg)" }}
-      >
+      <Card3D paper={double ? INK : "#fbf9f5"} edge={double ? "#09391f" : "#d6cfc2"} width="58%" turn={8} shiftX={14} shiftY={-6}>
+        {double ? <span className="absolute right-[12%] top-[24%] h-[34%] aspect-square rounded-full bg-[#f4efe6]" /> : null}
+      </Card3D>
+      <Card3D paper="#fbf9f5" edge="#d6cfc2" width="58%" turn={-18} shiftX={-16} shiftY={6} lift={4}>
         <PrintedArt dark={false} deep={false} muted={false} />
-      </span>
+      </Card3D>
     </>
   );
 }
