@@ -70,7 +70,8 @@ function glideTo(top: number): void {
 }
 
 /** Los pasos del configurador, en el orden en que se bajan. */
-const STEPS = ["tamano", "papel", "laminado", "uv", "lados", "puntas", "cantidad", "entrega"] as const;
+/* Una o dos caras va segundo: cambia el precio base y cuántos artes necesitas. */
+const STEPS = ["tamano", "lados", "papel", "laminado", "uv", "puntas", "cantidad", "entrega"] as const;
 
 const STEP_NAMES: Record<string, string> = {
   tamano: "el tamaño",
@@ -151,6 +152,9 @@ export function Configurator({
   const size = SIZES[config.sizeId];
   /* Base para comparar el precio por unidad de cada tirada. */
   const smallestRun = useMemo(() => quote({ ...config, quantity: QUANTITIES[0] }), [config]);
+  /* Lo que suma imprimir el reverso con lo demás que ya elegiste. */
+  const doubleSideExtra =
+    quote({ ...config, sides: 2 }).printingCents - quote({ ...config, sides: 1 }).printingCents;
 
   /*
    * En escritorio el resumen vive al final de una columna larga, así que mientras
@@ -421,6 +425,33 @@ export function Configurator({
           </div>
         </OptionGroup>
 
+        <OptionGroup
+          step="lados" state={stepState("lados")}
+          legend="Opción de impresión"
+          value={picked.has("lados") ? (config.sides === 1 ? "A una cara" : "A doble cara") : undefined}
+          hint="Define el precio base y si necesitas uno o dos diseños. Las dos opciones no se suman."
+        >
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <Tile
+              name="lados"
+              checked={on("lados", config.sides === 1)}
+              onChange={() => choose("lados", { sides: 1 })}
+              title="A una cara"
+              detail="Incluido"
+              media={<FinishSwatch kind="una-cara" faces={facesWith({ sides: 1 })} />}
+            />
+            <Tile
+              name="lados"
+              checked={on("lados", config.sides === 2)}
+              onChange={() => choose("lados", { sides: 2 })}
+              title="A doble cara"
+              detail={`+ ${formatUsd(doubleSideExtra)}`}
+              tag="Más vendido"
+              media={<FinishSwatch kind="doble-cara" faces={facesWith({ sides: 2 })} />}
+            />
+          </div>
+        </OptionGroup>
+
         <OptionGroup step="papel" state={stepState("papel")} legend="Tipo de papel" value={picked.has("papel") ? (config.paper === "mate" ? "Mate" : "Brillante") : undefined} hint="Couche 300 g. Ya está incluido en la impresión.">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             <Tile
@@ -507,32 +538,6 @@ export function Configurator({
           </div>
         </OptionGroup>
 
-        <OptionGroup
-          step="lados" state={stepState("lados")}
-          legend="Opción de impresión"
-          value={picked.has("lados") ? (config.sides === 1 ? "A una cara" : "A doble cara") : undefined}
-          hint="Las dos opciones no se suman: eliges una y el precio cambia."
-        >
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            <Tile
-              name="lados"
-              checked={on("lados", config.sides === 1)}
-              onChange={() => choose("lados", { sides: 1 })}
-              title="A una cara"
-              detail="Solo el frente"
-              media={<FinishSwatch kind="una-cara" faces={facesWith({ sides: 1 })} />}
-            />
-            <Tile
-              name="lados"
-              checked={on("lados", config.sides === 2)}
-              onChange={() => choose("lados", { sides: 2 })}
-              title="A doble cara"
-              detail="Frente y reverso"
-              tag="Más vendido"
-              media={<FinishSwatch kind="doble-cara" faces={facesWith({ sides: 2 })} />}
-            />
-          </div>
-        </OptionGroup>
 
         <OptionGroup step="puntas" state={stepState("puntas")} legend="Esquinas" value={picked.has("puntas") ? (config.rounded ? "Redondeadas" : "Rectas") : undefined}>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
