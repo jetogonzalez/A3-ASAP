@@ -10,9 +10,9 @@ import { formatWeight } from "@/lib/weight";
  *
  * El número de la tienda vive aquí y no en una variable de entorno: así no
  * hay un valor viejo en Vercel que lo pise sin que nadie lo note.
- * 096 259 6566 en Ecuador, con el código de país y sin el 0.
+ * 096 295 6566 en Ecuador, con el código de país y sin el 0.
  */
-export const WHATSAPP_NUMBER = "593962596566";
+export const WHATSAPP_NUMBER = "593962956566";
 
 export function whatsappHref(message: string): string {
   const text = encodeURIComponent(message);

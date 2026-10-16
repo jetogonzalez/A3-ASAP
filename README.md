@@ -22,7 +22,7 @@ No hay base de datos. El pedido queda en el chat de WhatsApp de la tienda; el re
 
 ## WhatsApp de la tienda
 
-Los pedidos y proformas llegan al 096 259 6566. El número está en `src/lib/whatsapp.ts` (`WHATSAPP_NUMBER`, con 593 y sin el 0).
+Los pedidos y proformas llegan al 096 295 6566. El número está en `src/lib/whatsapp.ts` (`WHATSAPP_NUMBER`, con 593 y sin el 0).
 
 ## Diseñar en Canva
 

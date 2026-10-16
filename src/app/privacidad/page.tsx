@@ -50,7 +50,7 @@ export default function PrivacyPage() {
         <p>
           Puedes pedirnos ver, corregir o borrar tus datos y tus archivos. Escríbenos a nuestro{" "}
           <a href={whatsappHref("Hola ASAP, quiero hacer una consulta sobre mis datos.")} target="_blank" rel="noopener noreferrer">
-            WhatsApp 096 259 6566
+            WhatsApp 096 295 6566
           </a>
           .
         </p>

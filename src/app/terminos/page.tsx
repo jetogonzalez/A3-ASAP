@@ -48,7 +48,7 @@ export default function TermsPage() {
         <h2>Contacto</h2>
         <p>
           <a href={whatsappHref("Hola ASAP, tengo una consulta.")} target="_blank" rel="noopener noreferrer">
-            WhatsApp 096 259 6566
+            WhatsApp 096 295 6566
           </a>{" "}
           · Quito, Ecuador
         </p>

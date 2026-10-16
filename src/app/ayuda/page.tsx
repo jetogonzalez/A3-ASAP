@@ -51,7 +51,7 @@ export default function HelpPage() {
         <p>
           Escríbenos al{" "}
           <a href={whatsappHref("Hola ASAP, necesito ayuda con mi pedido.")} target="_blank" rel="noopener noreferrer">
-            WhatsApp 096 259 6566
+            WhatsApp 096 295 6566
           </a>
           . Atendemos pedidos de Quito y los valles.
         </p>
