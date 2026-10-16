@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 import { useCart } from "@/components/cart-provider";
 import type { Configuration } from "@/lib/catalog";
 import { formatUsd } from "@/lib/money";
+import { IVA_LABEL } from "@/lib/tax";
 import { orderTotals } from "@/lib/order";
 import { describeConfiguration, quote } from "@/lib/pricing";
 import { encodeQuote, quoteNumber, quoteValidUntil, QUOTE_VALID_DAYS, type QuotePayload } from "@/lib/quote";
@@ -164,14 +165,18 @@ export function QuoteBuilder({ shared }: { shared: QuotePayload | null }) {
             value={totals.delivery.cents === 0 ? "Incluida" : formatUsd(totals.delivery.cents)}
           />
           <Row label={`Envío Quito y valles · ${formatWeight(totals.shipping.grams)}`} value={formatUsd(totals.shipping.cents)} />
+          <div className="space-y-2 border-t border-line pt-2">
+            <Row label="Subtotal sin IVA" value={formatUsd(totals.iva.baseCents)} />
+            <Row label={IVA_LABEL} value={formatUsd(totals.iva.ivaCents)} />
+          </div>
           <div className="flex items-baseline justify-between gap-4 border-t-2 border-ink pt-3">
-            <dt className="font-semibold">Total USD</dt>
+            <dt className="font-semibold">Total con IVA</dt>
             <dd className="text-2xl font-semibold tabular-nums">{formatUsd(totals.totalCents)}</dd>
           </div>
         </dl>
 
         <p className="mt-10 border-t border-line pt-4 text-xs leading-5 text-ink-soft">
-          Precios de la tabla PVP de ASAP, válidos por {QUOTE_VALID_DAYS} días hábiles. Envío solo en Quito y los valles. El pago se coordina por WhatsApp con transferencia bancaria o Deuna.
+          Valores en USD con IVA incluido, de la tabla PVP de ASAP, válidos por {QUOTE_VALID_DAYS} días hábiles. Envío solo en Quito y los valles. El pago se coordina por WhatsApp con transferencia bancaria o Deuna.
         </p>
       </article>
 

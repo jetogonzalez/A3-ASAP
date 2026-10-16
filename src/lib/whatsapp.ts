@@ -1,6 +1,7 @@
 import { formatLongDate, formatShortDate } from "@/lib/delivery";
 import { formatUsd } from "@/lib/money";
 import type { Order } from "@/lib/order";
+import { IVA_LABEL } from "@/lib/tax";
 import { formatWeight } from "@/lib/weight";
 
 /**
@@ -41,7 +42,9 @@ export function orderMessage(order: Order): string {
     `Impresión: ${formatUsd(order.printingCents)}`,
     delivery,
     `Envío (${formatWeight(order.shipping.grams)}): ${formatUsd(order.shipping.cents)}`,
-    `*Total: ${formatUsd(order.totalCents)}*`,
+    `Subtotal sin IVA: ${formatUsd(order.iva.baseCents)}`,
+    `${IVA_LABEL}: ${formatUsd(order.iva.ivaCents)}`,
+    `*Total con IVA: ${formatUsd(order.totalCents)}*`,
     `Llega entre el ${formatLongDate(order.delivery.earliest)} y el ${formatShortDate(order.delivery.latest)}.`,
     "",
     "*Factura*",
@@ -83,7 +86,7 @@ export function quoteRequestMessage({
     `Hola ASAP, ¿me pueden enviar la cotización *${number}*?`,
     "",
     ...items.map((item) => `• ${item}`),
-    `*Total: ${total}*`,
+    `*Total con IVA: ${total}*`,
     "",
     ...(clientName ? [`A nombre de: ${clientName}`] : []),
     ...(clientDocument ? [`RUC o cédula: ${clientDocument}`] : []),

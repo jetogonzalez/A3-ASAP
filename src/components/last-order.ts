@@ -32,6 +32,7 @@ function isOrder(value: unknown): value is Order {
     typeof candidate.number === "string" &&
     Array.isArray(candidate.items) &&
     typeof candidate.totalCents === "number" &&
+    typeof candidate.iva === "object" &&
     typeof candidate.customer === "object"
   );
 }

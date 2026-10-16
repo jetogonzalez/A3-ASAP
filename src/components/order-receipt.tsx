@@ -5,6 +5,7 @@ import { useMemo, useSyncExternalStore } from "react";
 import { readLastOrder } from "@/components/last-order";
 import { formatLongDate, formatShortDate } from "@/lib/delivery";
 import { formatUsd } from "@/lib/money";
+import { IVA_LABEL } from "@/lib/tax";
 import { orderMessage, whatsappHref } from "@/lib/whatsapp";
 import { formatWeight } from "@/lib/weight";
 
@@ -94,8 +95,12 @@ export function OrderReceipt() {
           value={order.delivery.cents === 0 ? "Incluida" : formatUsd(order.delivery.cents)}
         />
         <Row label={`${order.shipping.label} · ${formatWeight(order.shipping.grams)}`} value={formatUsd(order.shipping.cents)} />
+        <div className="space-y-2 border-t border-line pt-3">
+          <Row label="Subtotal sin IVA" value={formatUsd(order.iva.baseCents)} />
+          <Row label={IVA_LABEL} value={formatUsd(order.iva.ivaCents)} />
+        </div>
         <div className="flex items-end justify-between gap-4 border-t border-line pt-3">
-          <dt>Total</dt>
+          <dt>Total con IVA</dt>
           <dd className="font-display text-4xl">{formatUsd(order.totalCents)}</dd>
         </div>
       </dl>

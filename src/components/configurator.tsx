@@ -16,7 +16,7 @@ import {
   type DeliveryId,
 } from "@/lib/catalog";
 import { DELIVERY_OPTIONS, deliveryWindow, formatLongDate, formatShortDate } from "@/lib/delivery";
-import { shippingQuote } from "@/lib/ecuador";
+import { EXTRA_KILO_CENTS, FIRST_KILO_CENTS, shippingQuote } from "@/lib/ecuador";
 import { formatUsd } from "@/lib/money";
 import { upload } from "@vercel/blob/client";
 import { ARTWORK_TYPES, MAX_ARTWORK_BYTES } from "@/lib/artwork";
@@ -900,7 +900,7 @@ const QUESTIONS = [
   },
   {
     q: "¿A dónde se envían?",
-    a: "Por ahora solo a Quito y los valles. El envío se cobra por peso y el total ya lo verás al pagar: $3.50 el primer kilo y $0.75 por cada kilo adicional.",
+    a: `Por ahora solo a Quito y los valles. El envío se cobra por peso y el total ya lo verás al pagar: ${formatUsd(FIRST_KILO_CENTS)} el primer kilo y ${formatUsd(EXTRA_KILO_CENTS)} por cada kilo adicional, con IVA.`,
   },
   {
     q: "¿Qué materiales hay?",
@@ -1128,7 +1128,7 @@ function QuoteSummary({
           <div>
             <p className="text-sm font-medium">{open ? "Desde" : "Total"}</p>
             <p className="mt-1 text-sm text-ink-soft">
-              {open ? `${count} tarjetas` : `${formatUsd(priced.unitCents)} cada una`}
+              {open ? `${count} tarjetas, con IVA` : `${formatUsd(priced.unitCents)} cada una, con IVA`}
             </p>
           </div>
           <p key={priced.totalCents} className="price-tick text-[2.65rem] font-medium leading-none tracking-tight tabular-nums" aria-live="polite">

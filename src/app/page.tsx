@@ -2,6 +2,7 @@ import Link from "next/link";
 import { HomeHero } from "@/components/home-hero";
 import { defaultConfiguration, productHref, QUANTITIES, type Configuration } from "@/lib/catalog";
 import { deliveryWindow, formatLongDate } from "@/lib/delivery";
+import { FIRST_KILO_CENTS } from "@/lib/ecuador";
 import { FAMILIES } from "@/lib/families";
 import { formatUsd } from "@/lib/money";
 import { quote } from "@/lib/pricing";
@@ -70,7 +71,7 @@ export default function HomePage() {
               Couche de 300 g, mate o brillante, sin acabados. El laminado, el UV selectivo y las puntas redondeadas se suman al armarlas.
             </p>
             <p className="mt-4 max-w-sm leading-7 text-ink-soft">
-              El envío en Quito y los valles cuesta {formatUsd(350)} hasta el primer kilo. Mil tarjetas pesan alrededor de 1,5 kg.
+              Precios con IVA. El envío en Quito y los valles cuesta {formatUsd(FIRST_KILO_CENTS)} hasta el primer kilo. Mil tarjetas pesan alrededor de 1,5 kg.
             </p>
           </div>
           <div className="overflow-x-auto">

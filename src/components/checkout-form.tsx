@@ -5,11 +5,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/components/cart-provider";
 import { rememberOrder } from "@/components/last-order";
-import { SERVICE_PLACES } from "@/lib/ecuador";
+import { EXTRA_KILO_CENTS, FIRST_KILO_CENTS, SERVICE_PLACES } from "@/lib/ecuador";
 import { formatWeight } from "@/lib/weight";
 import { formatUsd } from "@/lib/money";
 import { orderTotals, PAYMENT_LABELS, type PaymentMethod } from "@/lib/order";
 import { quote } from "@/lib/pricing";
+import { IVA_LABEL } from "@/lib/tax";
 import { DOCUMENT_TYPES, type DocumentType } from "@/lib/text";
 import { initialOrderState } from "@/lib/schema";
 import { placeOrder } from "@/server/actions";
@@ -99,7 +100,7 @@ export function CheckoutForm() {
         <Section title="Entrega">
           {/* Todo va a domicilio: no hay que elegir nada, solo decir a dónde. */}
           <p className="text-sm leading-6 text-ink-soft">
-            Entregamos en Quito y los valles. El envío cuesta {formatUsd(shipping.cents)} porque tu paquete pesa {formatWeight(shipping.grams)}: {formatUsd(350)} el primer kilo y {formatUsd(75)} por cada kilo adicional.
+            Entregamos en Quito y los valles. El envío cuesta {formatUsd(shipping.cents)} porque tu paquete pesa {formatWeight(shipping.grams)}: {formatUsd(FIRST_KILO_CENTS)} el primer kilo y {formatUsd(EXTRA_KILO_CENTS)} por cada kilo adicional, con IVA.
           </p>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <div className="sm:col-span-2">
@@ -312,9 +313,19 @@ export function CheckoutForm() {
             <span>{formatUsd(shipping.cents)}</span>
           </li>
         </ul>
+        <dl className="mt-3 space-y-1 border-t border-line pt-3 text-sm">
+          <div className="flex justify-between gap-3">
+            <dt className="text-ink-soft">Subtotal sin IVA</dt>
+            <dd>{formatUsd(totals.iva.baseCents)}</dd>
+          </div>
+          <div className="flex justify-between gap-3">
+            <dt className="text-ink-soft">{IVA_LABEL}</dt>
+            <dd>{formatUsd(totals.iva.ivaCents)}</dd>
+          </div>
+        </dl>
         <p className="mt-4 font-display text-4xl">{formatUsd(total)}</p>
         <p className="mt-2 text-xs leading-5 text-ink-soft">
-          Es el total en USD, con el envío ya incluido. El peso sale del papel y la cantidad que pediste.
+          Total en USD con IVA y envío incluidos. El peso sale del papel y la cantidad que pediste.
         </p>
       </aside>
     </form>

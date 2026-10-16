@@ -18,10 +18,18 @@ const card = (delivery: Configuration["delivery"]): Configuration => ({
 describe("orderTotals", () => {
   it("cobra el recargo de entrega una sola vez, con el ritmo más rápido", () => {
     const totals = orderTotals([card("express"), card("priority"), card("standard")], "2026-10-16T14:00:00.000Z");
-    assert.equal(totals.printingCents, 727 * 3);
+    assert.equal(totals.printingCents, 836 * 3);
     assert.equal(totals.delivery.id, "express");
-    assert.equal(totals.delivery.cents, 1500);
-    assert.equal(totals.totalCents, 727 * 3 + 1500 + totals.shipping.cents);
+    assert.equal(totals.delivery.cents, 1725);
+    assert.equal(totals.totalCents, 836 * 3 + 1725 + totals.shipping.cents);
+  });
+
+  it("separa base e IVA y los dos suman el total", () => {
+    const totals = orderTotals([card("standard")], "2026-10-16T14:00:00.000Z");
+    assert.equal(totals.totalCents, 836 + 403);
+    assert.equal(totals.iva.baseCents + totals.iva.ivaCents, totals.totalCents);
+    assert.equal(totals.iva.baseCents, 1077);
+    assert.equal(totals.iva.ivaCents, 162);
   });
 
   it("no cobra nada con el carrito vacío", () => {

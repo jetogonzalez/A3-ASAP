@@ -2,6 +2,7 @@ import type { Configuration } from "@/lib/catalog";
 import { deliveryWindow, fastestDelivery } from "@/lib/delivery";
 import { shippingQuote, type ShippingQuote } from "@/lib/ecuador";
 import { quote, type QuoteLine } from "@/lib/pricing";
+import { ivaBreakdown } from "@/lib/tax";
 import type { DocumentType } from "@/lib/text";
 import { cartGrams } from "@/lib/weight";
 
@@ -23,6 +24,8 @@ export type OrderTotals = {
   printingCents: number;
   delivery: OrderDelivery;
   shipping: ShippingQuote;
+  /** Todo va con IVA; esto lo separa para la factura. */
+  iva: { baseCents: number; ivaCents: number };
   totalCents: number;
 };
 
@@ -38,12 +41,8 @@ export function orderTotals(configs: Configuration[], orderedAtIso: string): Ord
     latest: window.latest,
   };
   const shipping = shippingQuote(cartGrams(configs));
-  return {
-    printingCents,
-    delivery,
-    shipping,
-    totalCents: printingCents + delivery.cents + (configs.length > 0 ? shipping.cents : 0),
-  };
+  const totalCents = printingCents + delivery.cents + (configs.length > 0 ? shipping.cents : 0);
+  return { printingCents, delivery, shipping, iva: ivaBreakdown(totalCents), totalCents };
 }
 
 export type PaymentMethod = "transfer" | "deuna";

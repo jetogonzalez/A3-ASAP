@@ -86,7 +86,7 @@ export function CartView() {
           </div>
         </dl>
         <p className="mt-4 border-t border-line pt-4 font-display text-4xl">{formatUsd(subtotal)}</p>
-        <p className="mt-2 text-xs leading-5 text-ink-soft">USD, sin el envío. El recargo de entrega va una vez por pedido, con el ritmo más rápido que elegiste.</p>
+        <p className="mt-2 text-xs leading-5 text-ink-soft">USD con IVA, sin el envío. El recargo de entrega va una vez por pedido, con el ritmo más rápido que elegiste.</p>
         <Link
           href="/checkout"
           className="mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-press px-5 font-medium text-white hover:bg-press-deep"

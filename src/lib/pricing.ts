@@ -6,6 +6,10 @@ import {
   type SizeId,
 } from "@/lib/catalog";
 import { toCents } from "@/lib/money";
+import { withIva } from "@/lib/tax";
+
+/** Un valor de la hoja PVP, sin IVA, convertido al precio final con IVA. */
+const sheetCents = (amount: string) => withIva(toCents(amount));
 import { deliveryOption } from "@/lib/delivery";
 
 export type QuoteLine = {
@@ -34,10 +38,10 @@ export type Quote = {
 
 export function quote(config: Configuration): Quote {
   const tier = PRICE_BOOK[config.sizeId][config.quantity];
-  const baseCents = toCents(config.sides === 1 ? tier.one : tier.two);
-  const laminateCents = config.laminate === "none" ? 0 : toCents(tier.laminate);
-  const uvCents = config.uv ? toCents(tier.uv) : 0;
-  const cornersCents = config.rounded ? toCents(tier.corners) : 0;
+  const baseCents = sheetCents(config.sides === 1 ? tier.one : tier.two);
+  const laminateCents = config.laminate === "none" ? 0 : sheetCents(tier.laminate);
+  const uvCents = config.uv ? sheetCents(tier.uv) : 0;
+  const cornersCents = config.rounded ? sheetCents(tier.corners) : 0;
   const deliveryCents = deliveryOption(config.delivery).cents;
   const printingCents = baseCents + laminateCents + uvCents + cornersCents;
   const totalCents = printingCents + deliveryCents;
@@ -86,15 +90,15 @@ export function quote(config: Configuration): Quote {
 }
 
 export function fromPrice(sizeId: SizeId): number {
-  return toCents(PRICE_BOOK[sizeId][50].one);
+  return sheetCents(PRICE_BOOK[sizeId][50].one);
 }
 
 export function addonCents(sizeId: SizeId, quantity: Quantity) {
   const tier = PRICE_BOOK[sizeId][quantity];
   return {
-    laminate: toCents(tier.laminate),
-    uv: toCents(tier.uv),
-    corners: toCents(tier.corners),
+    laminate: sheetCents(tier.laminate),
+    uv: sheetCents(tier.uv),
+    corners: sheetCents(tier.corners),
   };
 }
 
