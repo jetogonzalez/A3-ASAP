@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useCart } from "@/components/cart-provider";
 import type { Configuration } from "@/lib/catalog";
+import { DELIVERY_OPTIONS } from "@/lib/delivery";
 import { formatUsd } from "@/lib/money";
 import { IVA_LABEL } from "@/lib/tax";
 import { orderTotals } from "@/lib/order";
@@ -15,7 +16,7 @@ import { cleanText } from "@/lib/text";
 import { customQuoteMessage, quoteRequestMessage, whatsappHref } from "@/lib/whatsapp";
 import { formatWeight } from "@/lib/weight";
 
-/* Una cotización es un documento: la fecha lleva el año. */
+/* Una proforma es un documento: la fecha lleva el año. */
 const formatLongDate = (iso: string, timeZone = "UTC") =>
   new Intl.DateTimeFormat("es-EC", { day: "numeric", month: "long", year: "numeric", timeZone }).format(new Date(iso));
 
@@ -23,7 +24,7 @@ const actionClass =
   "inline-flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-full border border-line bg-sheet px-5 text-sm font-semibold text-ink transition-colors hover:border-ink/30";
 
 /**
- * Una cotización se arma desde el carrito o llega armada en un enlace que
+ * Una proforma se arma desde el carrito o llega armada en un enlace que
  * alguien compartió. En los dos casos los precios salen de la tabla actual.
  */
 export function QuoteBuilder({ shared }: { shared: QuotePayload | null }) {
@@ -56,17 +57,17 @@ export function QuoteBuilder({ shared }: { shared: QuotePayload | null }) {
   const number = quoteNumber(payload);
   const validUntil = quoteValidUntil(payload.issued);
   const expired = new Date(validUntil).getTime() < new Date(issued).getTime();
-  const link = () => `${window.location.origin}/cotizacion?c=${encodeQuote(payload)}`;
+  const link = () => `${window.location.origin}/proforma?c=${encodeQuote(payload)}`;
   const summary = items.map(
     (config) => `${describeConfiguration(config)} — ${formatUsd(quote(config).printingCents)}`,
   );
 
   async function share() {
     const url = link();
-    const text = `Cotización ${number} de ASAP por ${formatUsd(totals.totalCents)}`;
+    const text = `Proforma ${number} de ASAP por ${formatUsd(totals.totalCents)}`;
     try {
       if (navigator.share) {
-        await navigator.share({ title: `Cotización ${number}`, text, url });
+        await navigator.share({ title: `Proforma ${number}`, text, url });
         return;
       }
       await navigator.clipboard.writeText(url);
@@ -89,8 +90,8 @@ export function QuoteBuilder({ shared }: { shared: QuotePayload | null }) {
   }
 
   function mailHref() {
-    const body = [`Te comparto la cotización ${number} de ASAP.`, "", ...summary, "", `Total: ${formatUsd(totals.totalCents)}`, "", link()].join("\n");
-    return `mailto:?subject=${encodeURIComponent(`Cotización ${number} · ASAP`)}&body=${encodeURIComponent(body)}`;
+    const body = [`Te comparto la proforma ${number} de ASAP.`, "", ...summary, "", `Total: ${formatUsd(totals.totalCents)}`, "", link()].join("\n");
+    return `mailto:?subject=${encodeURIComponent(`Proforma ${number} · ASAP`)}&body=${encodeURIComponent(body)}`;
   }
 
   function order() {
@@ -101,7 +102,7 @@ export function QuoteBuilder({ shared }: { shared: QuotePayload | null }) {
   return (
     <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
       <article
-        aria-label={`Cotización ${number}`}
+        aria-label={`Proforma ${number}`}
         className="rounded-[20px] border border-line bg-sheet p-6 sm:p-10 print:rounded-none print:border-0 print:p-0"
       >
         <header className="flex flex-wrap items-start justify-between gap-6 border-b-2 border-ink pb-6">
@@ -110,7 +111,7 @@ export function QuoteBuilder({ shared }: { shared: QuotePayload | null }) {
             <p className="mt-1 text-sm text-ink-soft">Productos personalizados · Quito, Ecuador</p>
           </div>
           <div className="text-right">
-            <p className="text-sm text-ink-soft">Cotización</p>
+            <p className="text-sm text-ink-soft">Proforma</p>
             <p className="text-lg font-semibold tabular-nums">{number}</p>
           </div>
         </header>
@@ -176,9 +177,28 @@ export function QuoteBuilder({ shared }: { shared: QuotePayload | null }) {
           </div>
         </dl>
 
-        <p className="mt-10 border-t border-line pt-4 text-xs leading-5 text-ink-soft">
-          Valores en USD con IVA incluido, de la tabla PVP de ASAP, válidos por {QUOTE_VALID_DAYS} días hábiles. Envío solo en Quito y los valles. El pago se coordina por WhatsApp con transferencia bancaria o Deuna.
-        </p>
+        {/* Lo que toda proforma tiene que decir: cómo se paga, cuándo llega y que no es factura. */}
+        <dl className="mt-10 grid gap-x-8 gap-y-3 border-t border-line pt-5 text-sm sm:grid-cols-2">
+          <div>
+            <dt className="text-ink-soft">Forma de pago</dt>
+            <dd className="mt-0.5">Transferencia bancaria o Deuna, 100 % al confirmar el pedido.</dd>
+          </div>
+          <div>
+            <dt className="text-ink-soft">Tiempo de entrega</dt>
+            <dd className="mt-0.5">
+              {speedDays(totals.delivery.id)} días hábiles desde el pago y el arte aprobado, en Quito y los valles.
+            </dd>
+          </div>
+          <div>
+            <dt className="text-ink-soft">Validez</dt>
+            <dd className="mt-0.5">{QUOTE_VALID_DAYS} días hábiles. Precios en USD con IVA, de la tabla PVP de ASAP.</dd>
+          </div>
+          <div>
+            <dt className="text-ink-soft">Factura</dt>
+            <dd className="mt-0.5">Se emite a nombre del cliente al confirmar el pago.</dd>
+          </div>
+        </dl>
+        <p className="mt-6 text-xs leading-5 text-ink-soft">Este documento es una proforma y no es válido como factura.</p>
       </article>
 
       <aside className="space-y-5 lg:sticky lg:top-24 print:hidden">
@@ -235,7 +255,7 @@ export function QuoteBuilder({ shared }: { shared: QuotePayload | null }) {
         <section className="rounded-[20px] border border-press/25 bg-moss-soft p-5">
           <h2 className="text-lg font-semibold">¿Te la enviamos nosotros?</h2>
           <p className="mt-1 text-sm leading-6 text-ink-soft">
-            Te escribimos por WhatsApp con la cotización formal a nombre de tu empresa.
+            Te escribimos por WhatsApp con la proforma formal a nombre de tu empresa.
           </p>
           <button
             type="button"
@@ -243,7 +263,7 @@ export function QuoteBuilder({ shared }: { shared: QuotePayload | null }) {
             className="mt-4 inline-flex min-h-12 w-full cursor-pointer items-center justify-center rounded-full bg-press px-5 text-sm font-semibold text-white hover:bg-press-deep gap-2"
           >
             <WhatsappLogo />
-            Pedir cotización por WhatsApp
+            Pedir proforma por WhatsApp
           </button>
         </section>
 
@@ -264,7 +284,7 @@ function EmptyQuote() {
     <div className="rounded-[20px] border border-line bg-sheet px-6 py-10">
       <h2 className="text-2xl font-semibold tracking-tight">Arma lo que quieres cotizar</h2>
       <p className="mt-2 max-w-lg leading-7 text-ink-soft">
-        Agrega tarjetas al carrito y aquí sale la cotización con número, fecha y validez. Si buscas otro producto, pídela por WhatsApp.
+        Agrega tarjetas al carrito y aquí sale la proforma con número, fecha y validez. Si buscas otro producto, pídela por WhatsApp.
       </p>
       <div className="mt-6 flex flex-wrap gap-3">
         <Link
@@ -285,6 +305,11 @@ function EmptyQuote() {
       </div>
     </div>
   );
+}
+
+function speedDays(id: string): string {
+  const option = DELIVERY_OPTIONS.find((candidate) => candidate.id === id) ?? DELIVERY_OPTIONS[0];
+  return `${option.earliestDays} a ${option.latestDays}`;
 }
 
 function Row({ label, value }: { label: string; value: string }) {

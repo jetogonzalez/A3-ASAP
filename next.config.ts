@@ -78,6 +78,10 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  /* Los enlaces de cotización que ya se compartieron siguen abriendo: ahora se llama proforma. */
+  async redirects() {
+    return [{ source: "/cotizacion", destination: "/proforma", permanent: true }];
+  },
   async headers() {
     return [
       {

@@ -3,7 +3,7 @@ import { addBusinessDays } from "@/lib/delivery";
 import { configurationSchema } from "@/lib/schema";
 import type { Configuration } from "@/lib/catalog";
 
-/** Una cotización vale 15 días hábiles: los precios de la hoja PVP pueden cambiar. */
+/** Una proforma vale 15 días hábiles: los precios de la hoja PVP pueden cambiar. */
 export const QUOTE_VALID_DAYS = 15;
 
 const quotePayloadSchema = z.object({
@@ -17,7 +17,7 @@ const quotePayloadSchema = z.object({
 });
 
 /**
- * Todo lo que hace falta para rearmar la cotización. No se guarda en ningún
+ * Todo lo que hace falta para rearmar la proforma. No se guarda en ningún
  * servidor: va dentro del enlace y los precios se vuelven a sacar de la tabla.
  */
 export type QuotePayload = {
@@ -57,7 +57,7 @@ export function quoteNumber(payload: QuotePayload): string {
     hash = Math.imul(hash, 0x01000193) >>> 0;
   }
   const day = payload.issued.slice(2, 10).replace(/-/g, "");
-  return `COT-${day}-${hash.toString(36).toUpperCase().padStart(6, "0").slice(0, 6)}`;
+  return `PRO-${day}-${hash.toString(36).toUpperCase().padStart(6, "0").slice(0, 6)}`;
 }
 
 export function quoteValidUntil(issuedIso: string): string {

@@ -59,7 +59,7 @@ type CartContextValue = {
   addItem: (configuration: Configuration, artwork: ArtworkRef | null) => void;
   updateItem: (id: string, configuration: Configuration, artwork: ArtworkRef | null) => void;
   removeItem: (id: string) => void;
-  /** Cambia todo el carrito por estas tarjetas, como al aceptar una cotización. */
+  /** Cambia todo el carrito por estas tarjetas, como al aceptar una proforma. */
   replaceItems: (configurations: Configuration[]) => void;
   clear: () => void;
 };

@@ -98,10 +98,10 @@ export function CartView() {
           Continuar con el pedido
         </Link>
         <Link
-          href="/cotizacion"
+          href="/proforma"
           className="mt-2 inline-flex min-h-12 w-full items-center justify-center rounded-full border border-line px-5 font-medium text-ink hover:border-ink/30"
         >
-          Hacer una cotización
+          Hacer una proforma
         </Link>
       </aside>
     </div>

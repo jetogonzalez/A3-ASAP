@@ -70,7 +70,7 @@ export function orderMessage(order: Order): string {
   ].join("\n");
 }
 
-/** Para pedir a la tienda la cotización formal de lo que ya se armó en la web. */
+/** Para pedir a la tienda la proforma formal de lo que ya se armó en la web. */
 export function quoteRequestMessage({
   number,
   clientName,
@@ -87,7 +87,7 @@ export function quoteRequestMessage({
   link: string;
 }): string {
   return [
-    `Hola ASAP, ¿me pueden enviar la cotización *${number}*?`,
+    `Hola ASAP, ¿me pueden enviar la proforma *${number}*?`,
     "",
     ...items.map((item) => `• ${item}`),
     `*Total con IVA: ${total}*`,

@@ -506,7 +506,7 @@ label:has(:checked) > .method-logo {
   }
 }
 
-/* La cotización se guarda en PDF desde el diálogo de impresión: solo sale la hoja. */
+/* La proforma se guarda en PDF desde el diálogo de impresión: solo sale la hoja. */
 @page {
   size: A4;
   margin: 14mm;

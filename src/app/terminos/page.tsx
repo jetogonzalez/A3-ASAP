@@ -20,7 +20,7 @@ export default function TermsPage() {
         <ul>
           <li>Todos los precios están en dólares y ya incluyen el IVA del 15 %.</li>
           <li>El envío se calcula por peso y aparece en el total antes de pedir. Por ahora entregamos en Quito y los valles.</li>
-          <li>Las cotizaciones valen {QUOTE_VALID_DAYS} días hábiles desde su fecha.</li>
+          <li>Las proformas valen {QUOTE_VALID_DAYS} días hábiles desde su fecha.</li>
         </ul>
       </section>
       <section>

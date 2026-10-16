@@ -182,24 +182,24 @@ export default function HomePage() {
         </ol>
       </section>
 
-      {/* ---------- Cotización ---------- */}
-      <section className="border-t border-line" aria-labelledby="cotizacion">
+      {/* ---------- Proforma ---------- */}
+      <section className="border-t border-line" aria-labelledby="proforma">
         <div className="mx-auto grid w-full max-w-6xl gap-10 px-5 py-16 md:px-8 md:py-20 lg:grid-cols-2 lg:items-center">
           <div>
-            <h2 id="cotizacion" className="max-w-md text-3xl font-semibold tracking-tight text-balance md:text-4xl">
-              ¿Necesitas una cotización para la empresa?
+            <h2 id="proforma" className="max-w-md text-3xl font-semibold tracking-tight text-balance md:text-4xl">
+              ¿Necesitas una proforma para la empresa?
             </h2>
             <p className="mt-4 max-w-md leading-7 text-ink-soft">
               Sácala en un minuto, con número, fecha y {QUOTE_VALID_DAYS} días hábiles de validez. La guardas en PDF, la compartes o te la enviamos.
             </p>
-            <Link href="/cotizacion" className="press mt-8 inline-flex min-h-12 items-center rounded-full bg-ink px-6 font-semibold text-white hover:bg-ink/85">
-              Hacer una cotización
+            <Link href="/proforma" className="press mt-8 inline-flex min-h-12 items-center rounded-full bg-ink px-6 font-semibold text-white hover:bg-ink/85">
+              Hacer una proforma
             </Link>
           </div>
           <div className="rounded-[22px] border border-line bg-sheet p-6 shadow-[0_24px_50px_-34px_rgba(26,29,33,0.5)]" aria-hidden="true">
             <div className="flex items-center justify-between border-b-2 border-ink pb-4">
               <span className="text-xl font-semibold">ASAP</span>
-              <span className="text-sm text-ink-soft">Cotización de ejemplo</span>
+              <span className="text-sm text-ink-soft">Proforma de ejemplo</span>
             </div>
             <div className="mt-4 space-y-2 text-sm">
               <div className="flex justify-between gap-4">

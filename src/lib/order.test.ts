@@ -52,7 +52,7 @@ describe("isArtworkUrl", () => {
   });
 });
 
-describe("cotización", async () => {
+describe("proforma", async () => {
   const { decodeQuote, encodeQuote, quoteNumber } = await import("./quote");
   const payload = {
     v: 1 as const,
@@ -66,12 +66,12 @@ describe("cotización", async () => {
   });
 
   it("rechaza un enlace alterado", () => {
-    assert.equal(decodeQuote("no-es-una-cotizacion"), null);
+    assert.equal(decodeQuote("no-es-una-proforma"), null);
   });
 
   it("da siempre el mismo número para el mismo contenido", () => {
     assert.equal(quoteNumber(payload), quoteNumber({ ...payload }));
-    assert.match(quoteNumber(payload), /^COT-261016-[0-9A-Z]{6}$/);
+    assert.match(quoteNumber(payload), /^PRO-261016-[0-9A-Z]{6}$/);
   });
 });
 

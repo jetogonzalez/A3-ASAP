@@ -18,11 +18,11 @@ No hay base de datos. El pedido queda en el chat de WhatsApp de la tienda; el re
 - La impresión sale de la hoja PVP (couche 300 g, sin IVA), en `src/lib/catalog.ts`.
 - El envío se cobra por peso: $3.50 el primer kilo y $0.75 por cada kilo adicional, sin IVA (`src/lib/ecuador.ts`).
 - Hay tres ritmos de entrega (`src/lib/delivery.ts`): $8 y $15 sin IVA. El recargo va una sola vez por pedido, con el ritmo más rápido que se haya elegido.
-- **IVA 15 %** (`src/lib/tax.ts`): se suma a cada valor y el cliente siempre ve el precio final. Checkout, recibo, cotización y WhatsApp separan subtotal sin IVA e IVA para la factura. Si cambia la tarifa, se cambia `IVA_PERCENT`.
+- **IVA 15 %** (`src/lib/tax.ts`): se suma a cada valor y el cliente siempre ve el precio final. Checkout, recibo, proforma y WhatsApp separan subtotal sin IVA e IVA para la factura. Si cambia la tarifa, se cambia `IVA_PERCENT`.
 
 ## WhatsApp de la tienda
 
-Los pedidos y cotizaciones llegan al 096 259 6566. El número está en `src/lib/whatsapp.ts` (`WHATSAPP_NUMBER`, con 593 y sin el 0).
+Los pedidos y proformas llegan al 096 259 6566. El número está en `src/lib/whatsapp.ts` (`WHATSAPP_NUMBER`, con 593 y sin el 0).
 
 ## Diseñar en Canva
 
