@@ -6,13 +6,13 @@ import { formatWeight } from "@/lib/weight";
 
 /**
  * El pedido se cierra por WhatsApp: la web calcula todo y el mensaje lleva lo
- * que la tienda necesita para cobrar, facturar, imprimir y despachar. El
- * número va igual al navegador; la variable de entorno solo sirve para
- * apuntar a otro número sin tocar el código.
+ * que la tienda necesita para cobrar, facturar, imprimir y despachar.
+ *
+ * El número de la tienda vive aquí y no en una variable de entorno: así no
+ * hay un valor viejo en Vercel que lo pise sin que nadie lo note.
+ * 096 259 6566 en Ecuador, con el código de país y sin el 0.
  */
-export const WHATSAPP_NUMBER = (
-  process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "593992656521"
-).replace(/\D/g, "");
+export const WHATSAPP_NUMBER = "593962596566";
 
 export function whatsappHref(message: string): string {
   const text = encodeURIComponent(message);

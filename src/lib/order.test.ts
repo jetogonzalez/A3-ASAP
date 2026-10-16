@@ -105,3 +105,11 @@ describe("diseño", async () => {
     assert.equal(result.success, false);
   });
 });
+
+describe("whatsapp", async () => {
+  const { WHATSAPP_NUMBER, whatsappHref } = await import("./whatsapp");
+  it("manda los pedidos al número de la tienda", () => {
+    assert.equal(WHATSAPP_NUMBER, "593962596566");
+    assert.match(whatsappHref("Hola"), /^https:\/\/wa\.me\/593962596566\?text=Hola$/);
+  });
+});

@@ -20,11 +20,14 @@ No hay base de datos. El pedido queda en el chat de WhatsApp de la tienda; el re
 - Hay tres ritmos de entrega (`src/lib/delivery.ts`): $8 y $15 sin IVA. El recargo va una sola vez por pedido, con el ritmo más rápido que se haya elegido.
 - **IVA 15 %** (`src/lib/tax.ts`): se suma a cada valor y el cliente siempre ve el precio final. Checkout, recibo, cotización y WhatsApp separan subtotal sin IVA e IVA para la factura. Si cambia la tarifa, se cambia `IVA_PERCENT`.
 
+## WhatsApp de la tienda
+
+Los pedidos y cotizaciones llegan al 096 259 6566. El número está en `src/lib/whatsapp.ts` (`WHATSAPP_NUMBER`, con 593 y sin el 0).
+
 ## Variables de entorno
 
 | Variable | Para qué |
 | --- | --- |
-| `NEXT_PUBLIC_WHATSAPP_NUMBER` | Número que recibe los pedidos, solo dígitos con código de país (593…). |
 | `BLOB_READ_WRITE_TOKEN` | La agrega Vercel al conectar un Blob Store público al proyecto. Sin ella, la web pide mandar el arte por WhatsApp. |
 
 Para probar la subida en local: `vercel env pull .env.local`.
