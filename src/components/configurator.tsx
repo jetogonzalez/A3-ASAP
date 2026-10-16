@@ -4,6 +4,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CardPreview } from "@/components/card-preview";
 import { useCart } from "@/components/cart-provider";
+import { FinishSwatch } from "@/components/finish-swatch";
+import { LightStage } from "@/components/light-stage";
 import type { CartItemInput } from "@/lib/schema";
 import {
   PRODUCT,
@@ -287,9 +289,9 @@ export function Configurator({
           * Las dos caras a la vez. Con un interruptor Frente/Reverso había que
           * descubrir que existía una segunda cara; así se ve de una.
           */}
-        <div
+        <LightStage
           id="muestra"
-          className="flex min-h-[340px] scroll-mt-28 flex-col items-center justify-center gap-6 rounded-[28px] bg-paper-deep/70 px-8 py-12 sm:flex-row sm:gap-5"
+          className="flex min-h-[340px] scroll-mt-28 touch-pan-y flex-col items-center justify-center gap-6 rounded-[28px] bg-paper-deep/70 px-8 py-12 sm:flex-row sm:gap-5"
         >
           <figure className="flex w-full min-w-0 flex-1 flex-col items-center gap-2.5">
             <CardPreview
@@ -313,12 +315,13 @@ export function Configurator({
               <figcaption className="text-sm text-ink-soft">Reverso</figcaption>
             </figure>
           ) : null}
-        </div>
+        </LightStage>
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-ink-soft">
           <p>
             {size.sizeLabel} · {config.paper}
             {config.rounded ? " · puntas redondeadas" : ""}
             {config.uv ? " · el rectángulo claro es el UV" : ""}
+            <span className="hidden sm:inline"> · pasa el cursor para ver el brillo</span>
           </p>
           <p>{config.sides === 2 ? "Dos lados" : "Un lado"}</p>
         </div>
@@ -391,7 +394,7 @@ export function Configurator({
               title="Mate"
               detail="Incluido"
               tag="Más vendido"
-              glyph={<PaperGlyph glossy={false} />}
+              media={<FinishSwatch kind="papel-mate" />}
             />
             <Tile
               name="papel"
@@ -399,7 +402,7 @@ export function Configurator({
               onChange={() => choose("papel", { paper: "brillante" })}
               title="Brillante"
               detail="Incluido"
-              glyph={<PaperGlyph glossy />}
+              media={<FinishSwatch kind="papel-brillante" />}
             />
           </div>
         </OptionGroup>
@@ -425,7 +428,7 @@ export function Configurator({
               onChange={() => choose("laminado", { laminate: "none" })}
               title="Sin laminado"
               detail="Incluido"
-              glyph={<NoneGlyph />}
+              media={<FinishSwatch kind="sin-laminado" />}
             />
             {(["mate", "brillante"] as Finish[]).map((finish) => (
               <Tile
@@ -436,7 +439,7 @@ export function Configurator({
                 title={finish === "mate" ? "Laminado mate" : "Laminado brillante"}
                 detail={`+ ${formatUsd(addons.laminate)}`}
                 tag={finish === "mate" ? "Más vendido" : undefined}
-                glyph={<LaminateGlyph glossy={finish === "brillante"} />}
+                media={<FinishSwatch kind={finish === "mate" ? "laminado-mate" : "laminado-brillante"} />}
               />
             ))}
           </div>
@@ -455,7 +458,7 @@ export function Configurator({
               onChange={() => choose("uv", { uv: false })}
               title="Sin UV"
               detail="Incluido"
-              glyph={<NoneGlyph />}
+              media={<FinishSwatch kind="sin-uv" />}
             />
             <Tile
               name="uv"
@@ -463,7 +466,7 @@ export function Configurator({
               onChange={() => choose("uv", { uv: true })}
               title="UV selectivo"
               detail={`+ ${formatUsd(addons.uv)}`}
-              glyph={<UvGlyph />}
+              media={<FinishSwatch kind="uv" />}
             />
           </div>
         </OptionGroup>
@@ -481,7 +484,7 @@ export function Configurator({
               onChange={() => choose("lados", { sides: 1 })}
               title="A una cara"
               detail="Solo el frente"
-              glyph={<SidesGlyph double={false} />}
+              media={<FinishSwatch kind="una-cara" />}
             />
             <Tile
               name="lados"
@@ -490,7 +493,7 @@ export function Configurator({
               title="A doble cara"
               detail="Frente y reverso"
               tag="Más vendido"
-              glyph={<SidesGlyph double />}
+              media={<FinishSwatch kind="doble-cara" />}
             />
           </div>
         </OptionGroup>
@@ -503,7 +506,7 @@ export function Configurator({
               onChange={() => choose("puntas", { rounded: false })}
               title="Rectas"
               detail="Incluido"
-              glyph={<CornerGlyph rounded={false} />}
+              media={<FinishSwatch kind="esquina-recta" />}
             />
             <Tile
               name="puntas"
@@ -511,7 +514,7 @@ export function Configurator({
               onChange={() => choose("puntas", { rounded: true })}
               title="Redondeadas"
               detail={`+ ${formatUsd(addons.corners)}`}
-              glyph={<CornerGlyph rounded />}
+              media={<FinishSwatch kind="esquina-redonda" />}
             />
           </div>
         </OptionGroup>
@@ -1575,6 +1578,7 @@ function Tile({
   title,
   detail,
   glyph,
+  media,
   tag,
 }: {
   name: string;
@@ -1582,7 +1586,10 @@ function Tile({
   onChange: () => void;
   title: string;
   detail: string;
-  glyph: React.ReactNode;
+  /** Un dibujo esquemático, para lo que se entiende con una línea (el tamaño). */
+  glyph?: React.ReactNode;
+  /** Una muestra del material, para lo que hay que ver para entender (acabados). */
+  media?: React.ReactNode;
   tag?: string;
 }) {
   return (
@@ -1594,13 +1601,17 @@ function Tile({
       <input type="radio" name={name} checked={checked} onChange={onChange} className="sr-only" />
       {tag ? <CornerTag>{tag}</CornerTag> : null}
       {checked ? <CheckMark /> : null}
-      <span
-        className={`flex h-16 items-center justify-center ${checked ? "text-ink" : "text-ink-soft"}`}
-        style={{ "--glyph-bg": checked ? "var(--pick-soft)" : "var(--sheet)" } as React.CSSProperties}
-        aria-hidden="true"
-      >
-        {glyph}
-      </span>
+      {media ? (
+        <span className="mb-1 block w-full">{media}</span>
+      ) : (
+        <span
+          className={`flex h-16 items-center justify-center ${checked ? "text-ink" : "text-ink-soft"}`}
+          style={{ "--glyph-bg": checked ? "var(--pick-soft)" : "var(--sheet)" } as React.CSSProperties}
+          aria-hidden="true"
+        >
+          {glyph}
+        </span>
+      )}
       <span className={`mt-1 text-sm leading-5 ${checked ? "font-semibold" : "font-medium"}`}>
         {title}
       </span>
@@ -1631,99 +1642,6 @@ function SizeGlyph({ square }: { square: boolean }) {
         stroke="currentColor"
         strokeWidth="1.5"
       />
-    </svg>
-  );
-}
-
-function SidesGlyph({ double }: { double: boolean }) {
-  return (
-    <svg width="62" height="52" viewBox="0 0 62 52" fill="none">
-      <rect x="14" y="5" width="34" height="42" rx="2" stroke="currentColor" strokeWidth="1.5" />
-      <text x="20" y="20" fontSize="12" fill="currentColor">
-        1
-      </text>
-      {double ? (
-        <>
-          <path d="M48 26 28 47h20z" fill="var(--glyph-bg, var(--sheet))" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-          <text x="37" y="44" fontSize="12" fill="currentColor">
-            2
-          </text>
-        </>
-      ) : null}
-    </svg>
-  );
-}
-
-function PaperGlyph({ glossy }: { glossy: boolean }) {
-  return (
-    <svg width="62" height="52" viewBox="0 0 62 52" fill="none">
-      <rect x="13" y="7" width="36" height="38" rx="2" stroke="currentColor" strokeWidth="1.5" />
-      {glossy ? (
-        <path d="M20 38 42 14" stroke="currentColor" strokeWidth="7" strokeLinecap="round" opacity="0.25" />
-      ) : (
-        <path
-          d="M20 19h22M20 26h22M20 33h14"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          opacity="0.4"
-        />
-      )}
-    </svg>
-  );
-}
-
-function LaminateGlyph({ glossy }: { glossy: boolean }) {
-  return (
-    <svg width="62" height="52" viewBox="0 0 62 52" fill="none">
-      <rect x="8" y="12" width="34" height="34" rx="2" stroke="currentColor" strokeWidth="1.5" opacity="0.45" />
-      <rect x="18" y="6" width="34" height="34" rx="2" fill="var(--glyph-bg, var(--sheet))" stroke="currentColor" strokeWidth="1.5" />
-      {glossy ? (
-        <Sparkle x={35} y={23} size={9} />
-      ) : (
-        <path d="M44 32 52 40h-8z" fill="var(--glyph-bg, var(--sheet))" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-      )}
-    </svg>
-  );
-}
-
-function UvGlyph() {
-  return (
-    <svg width="62" height="52" viewBox="0 0 62 52" fill="none">
-      <rect x="13" y="7" width="36" height="38" rx="2" stroke="currentColor" strokeWidth="1.5" />
-      <rect x="21" y="17" width="20" height="18" rx="1.5" fill="currentColor" opacity="0.14" />
-      <Sparkle x={31} y={26} size={9} />
-    </svg>
-  );
-}
-
-function Sparkle({ x, y, size = 8 }: { x: number; y: number; size?: number }) {
-  return (
-    <path
-      d={`M${x} ${y - size}c1.3 ${size * 0.72} 2.4 ${size * 0.84} ${size} ${size}-${size * 0.72} 1.3-${size * 0.84} 2.4-${size} ${size}-1.3-${size * 0.72}-2.4-${size * 0.84}-${size}-${size} ${size * 0.72}-1.3 ${size * 0.84}-2.4 ${size}-${size}z`}
-      fill="currentColor"
-    />
-  );
-}
-
-function CornerGlyph({ rounded }: { rounded: boolean }) {
-  return (
-    <svg width="62" height="52" viewBox="0 0 62 52" fill="none">
-      <path d="M18 47V15h30" stroke="currentColor" strokeWidth="1.5" opacity="0.3" />
-      {rounded ? (
-        <path d="M18 45V28a13 13 0 0 1 13-13h16" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" />
-      ) : (
-        <path d="M18 45V15h29" stroke="currentColor" strokeWidth="3.5" strokeLinecap="square" />
-      )}
-    </svg>
-  );
-}
-
-function NoneGlyph() {
-  return (
-    <svg width="62" height="52" viewBox="0 0 62 52" fill="none">
-      <circle cx="31" cy="26" r="17" stroke="currentColor" strokeWidth="2.5" />
-      <path d="M19 38 43 14" stroke="currentColor" strokeWidth="2.5" />
     </svg>
   );
 }

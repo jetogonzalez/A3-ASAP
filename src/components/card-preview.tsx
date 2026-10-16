@@ -1,3 +1,4 @@
+import { GRAIN } from "@/components/finish-swatch";
 import { SIZES, type Configuration } from "@/lib/catalog";
 
 export function CardPreview({
@@ -53,7 +54,7 @@ export function CardPreview({
         </>
       )}
       <article
-        className={`relative w-full overflow-hidden border border-ink/10 bg-sheet shadow-[0_28px_50px_-36px_rgba(28,23,18,0.7)] transition-[border-radius] duration-200 ${
+        className={`light-card relative w-full overflow-hidden border border-ink/10 bg-sheet shadow-[0_28px_50px_-36px_rgba(28,23,18,0.7)] transition-[border-radius] duration-200 ${
           square ? "aspect-square" : "aspect-[85/55]"
         } ${config.rounded ? "rounded-[22px]" : "rounded-[3px]"} ${
           config.paper === "mate" && config.laminate !== "brillante" ? "bg-[#f7f3ec]" : "bg-white"
@@ -86,15 +87,37 @@ export function CardPreview({
             <p className={`uppercase tracking-[0.18em] text-ink-soft ${small ? "text-[9px]" : "text-xs"}`}>Couche 300 g</p>
           </div>
         )}
+        {config.paper === "mate" && config.laminate === "none" ? (
+          /* El couche mate tiene grano: se nota de cerca y es lo que lo separa del brillante. */
+          <span className="pointer-events-none absolute inset-0 opacity-50 mix-blend-multiply" style={{ backgroundImage: GRAIN }} aria-hidden="true" />
+        ) : null}
         {glossy ? (
-          /* Un reflejo, no una franja pintada: en screen levanta la luz sin blanquear el arte. */
-          <span
-            className="pointer-events-none absolute inset-0 mix-blend-screen bg-[linear-gradient(112deg,transparent_40%,rgba(255,255,255,0.26)_48%,rgba(255,255,255,0.08)_53%,transparent_62%)]"
-            aria-hidden="true"
-          />
+          /*
+           * Un reflejo, no una franja pintada: en screen levanta la luz sin blanquear
+           * el arte. Dentro de LightStage el punto de luz sigue al cursor.
+           */
+          <>
+            <span
+              className="pointer-events-none absolute inset-0 mix-blend-screen bg-[linear-gradient(112deg,transparent_40%,rgba(255,255,255,0.26)_48%,rgba(255,255,255,0.08)_53%,transparent_62%)]"
+              aria-hidden="true"
+            />
+            <span
+              className="pointer-events-none absolute inset-0 mix-blend-screen"
+              style={{ background: "radial-gradient(circle at var(--lx, 30%) var(--ly, 22%), rgba(255,255,255,0.55), rgba(255,255,255,0.12) 18%, transparent 38%)" }}
+              aria-hidden="true"
+            />
+          </>
         ) : null}
         {config.laminate === "mate" ? (
-          <span className="pointer-events-none absolute inset-0 bg-[rgba(88,72,48,0.05)]" aria-hidden="true" />
+          <>
+            <span className="pointer-events-none absolute inset-0 bg-[rgba(88,72,48,0.05)]" aria-hidden="true" />
+            {/* El laminado mate brilla poco y sin borde: un resplandor ancho, como terciopelo. */}
+            <span
+              className="pointer-events-none absolute inset-0 mix-blend-screen"
+              style={{ background: "radial-gradient(60% 70% at var(--lx, 30%) var(--ly, 22%), rgba(255,255,255,0.22), transparent 70%)" }}
+              aria-hidden="true"
+            />
+          </>
         ) : null}
         {config.uv ? (
           /*
@@ -108,6 +131,10 @@ export function CardPreview({
           >
             <span className="absolute inset-0 bg-[linear-gradient(135deg,rgba(90,95,110,0.12),rgba(90,95,110,0.02)_46%,rgba(90,95,110,0.11))]" />
             <span className="absolute inset-0 mix-blend-screen bg-[linear-gradient(135deg,rgba(255,255,255,0.05),rgba(255,255,255,0.36)_46%,rgba(255,255,255,0.07))]" />
+            <span
+              className="absolute inset-0 mix-blend-screen"
+              style={{ background: "radial-gradient(circle at var(--lx, 30%) var(--ly, 22%), rgba(255,255,255,0.7), transparent 60%)" }}
+            />
           </span>
         ) : null}
       </article>
