@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Configurator } from "@/components/configurator";
 import { PRODUCT, configurationFromSearch } from "@/lib/catalog";
+import { canvaReturnFromSearch, pickedFromSearch } from "@/lib/canva-return";
+import { canvaEnabled } from "@/server/canva";
 
 export const metadata: Metadata = {
   title: "Tarjetas de presentación",
@@ -44,6 +46,9 @@ export default async function ProductPage({ params, searchParams }: ProductPageP
           editId={editId}
           orderedAt={new Date().toISOString()}
           uploadsEnabled={Boolean(process.env.BLOB_READ_WRITE_TOKEN)}
+          canvaEnabled={canvaEnabled()}
+          canvaReturn={canvaReturnFromSearch(query)}
+          initialPicked={pickedFromSearch(query)}
         />
       </div>
     </div>

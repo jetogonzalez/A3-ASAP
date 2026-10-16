@@ -24,11 +24,21 @@ No hay base de datos. El pedido queda en el chat de WhatsApp de la tienda; el re
 
 Los pedidos y cotizaciones llegan al 096 259 6566. El número está en `src/lib/whatsapp.ts` (`WHATSAPP_NUMBER`, con 593 y sin el 0).
 
+## Diseñar en Canva
+
+El botón abre un lienzo del tamaño de la tarjeta con 3 mm de sangrado a 300 ppp (Canva Connect API). Al tocar «Volver» en Canva, `/api/canva/regreso` exporta el diseño en PDF y PNG, lo guarda en Vercel Blob y vuelve al configurador con el arte puesto. El inicio de sesión de Canva y los tokens viajan en cookies cifradas: no hay base de datos.
+
+En canva.com/developers, la app tiene registradas estas direcciones (cambiarlas al pasar a producción):
+
+- Redirect URL: `https://<dominio>/api/canva/callback`
+- Return URL: `https://<dominio>/api/canva/regreso`
+
 ## Variables de entorno
 
 | Variable | Para qué |
 | --- | --- |
 | `BLOB_READ_WRITE_TOKEN` | La agrega Vercel al conectar un Blob Store público al proyecto. Sin ella, la web pide mandar el arte por WhatsApp. |
+| `CANVA_CLIENT_ID`, `CANVA_CLIENT_SECRET` | De la app **ASAP Diseños** en canva.com/developers. Con las dos (y el Blob) aparece el botón «Diseñar en Canva». |
 
 Para probar la subida en local: `vercel env pull .env.local`.
 

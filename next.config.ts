@@ -6,7 +6,8 @@ const contentSecurityPolicy = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob:",
+  /* Las miniaturas del diseño que vuelve de Canva viven en Vercel Blob. */
+  "img-src 'self' data: blob: https://*.public.blob.vercel-storage.com",
   "font-src 'self'",
   /* vercel.com/api/blob es a donde el navegador sube el arte. */
   `connect-src 'self' https://vercel.com${isDev ? " ws: wss:" : ""}`,
