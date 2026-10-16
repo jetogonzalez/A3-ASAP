@@ -320,6 +320,15 @@ label:has(:checked) .swatch-sweep {
   }
 }
 
+/* El logo del método de pago se levanta un poco al elegirlo. */
+.method-logo {
+  transition: transform 260ms cubic-bezier(0.34, 1.4, 0.5, 1);
+}
+
+label:has(:checked) > .method-logo {
+  transform: scale(1.08) rotate(-4deg);
+}
+
 /* Control segmentado: la píldora se desliza con un leve rebote al llegar. */
 .segment-thumb {
   transition: transform 460ms cubic-bezier(0.34, 1.32, 0.5, 1);

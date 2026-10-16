@@ -220,6 +220,7 @@ export function CheckoutForm() {
               onChange={() => setPayment("transfer")}
               title={PAYMENT_LABELS.transfer}
               detail="Te pasamos la cuenta por el chat"
+              logo={<BankLogo />}
             />
             <MethodOption
               name="paymentMethod"
@@ -228,6 +229,7 @@ export function CheckoutForm() {
               onChange={() => setPayment("deuna")}
               title={PAYMENT_LABELS.deuna}
               detail="Te enviamos el código para pagar"
+              logo={<DeunaLogo />}
             />
           </div>
           {errors.paymentMethod ? (
@@ -398,6 +400,7 @@ function MethodOption({
   onChange,
   title,
   detail,
+  logo,
 }: {
   name: string;
   value: string;
@@ -405,6 +408,7 @@ function MethodOption({
   onChange: () => void;
   title: string;
   detail: string;
+  logo?: React.ReactNode;
 }) {
   return (
     <label
@@ -419,6 +423,30 @@ function MethodOption({
           <span className="block text-sm text-ink-soft">{detail}</span>
         </span>
       </span>
+      {logo ? <span className="method-logo shrink-0" aria-hidden="true">{logo}</span> : null}
     </label>
+  );
+}
+
+/** El logo de Deuna, tal como lo entrega la marca. */
+function DeunaLogo() {
+  /* eslint-disable-next-line @next/next/no-img-element -- SVG fijo y pequeño */
+  return <img src="/deuna.svg" alt="" width={40} height={40} className="size-10 rounded-xl shadow-[0_4px_10px_-4px_rgba(63,42,86,0.6)]" />;
+}
+
+/**
+ * Transferencia: no es de un banco en particular (vale cualquiera), así que
+ * va un edificio de banco propio, en el verde de la tienda.
+ */
+function BankLogo() {
+  return (
+    <span className="grid size-10 place-items-center rounded-xl bg-[linear-gradient(145deg,#1a8a4a,#0b4d2a)] text-white shadow-[0_4px_10px_-4px_rgba(11,77,42,0.7)]">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M12 3 3.5 7.5v1.6h17V7.5L12 3Z" fill="currentColor" />
+        <circle cx="12" cy="6.9" r="1.1" fill="#0b4d2a" />
+        <path d="M6 10.6v6.2M10 10.6v6.2M14 10.6v6.2M18 10.6v6.2" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+        <path d="M4 19.2h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      </svg>
+    </span>
   );
 }
