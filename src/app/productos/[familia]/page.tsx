@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { customQuoteMessage, whatsappHref } from "@/lib/whatsapp";
 import { notFound, redirect } from "next/navigation";
 import { productHref } from "@/lib/catalog";
 import { familyBySlug } from "@/lib/families";
@@ -39,14 +40,24 @@ export default async function FamilyPage({ params }: FamilyPageProps) {
       <h1 className="mt-3 text-3xl font-semibold tracking-tight">{family.label}</h1>
       <p className="mt-3 max-w-xl text-sm leading-6 text-ink-soft">{family.note}</p>
       <p className="mt-2 max-w-xl text-sm leading-6 text-ink-soft">
-        Todavía no abrimos esta categoría. Por ahora imprimimos tarjetas de presentación y vamos sumando el resto poco a poco.
+        Todavía no se arma en la web, pero ya lo cotizamos por WhatsApp: cuéntanos qué necesitas y te respondemos con precio y plazo.
       </p>
-      <Link
-        href={productHref()}
-        className="mt-6 inline-flex min-h-12 items-center rounded-full bg-press px-5 text-sm font-semibold text-white hover:bg-press-deep"
-      >
-        Ver tarjetas de presentación
-      </Link>
+      <div className="mt-6 flex flex-wrap gap-3">
+        <a
+          href={whatsappHref(customQuoteMessage(family.label.toLowerCase()))}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex min-h-12 items-center rounded-full bg-press px-5 text-sm font-semibold text-white hover:bg-press-deep"
+        >
+          Cotizar {family.label.toLowerCase()} por WhatsApp
+        </a>
+        <Link
+          href={productHref()}
+          className="inline-flex min-h-12 items-center rounded-full border border-line px-5 text-sm font-semibold hover:border-ink/30"
+        >
+          Ver tarjetas de presentación
+        </Link>
+      </div>
     </div>
   );
 }

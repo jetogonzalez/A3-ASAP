@@ -30,7 +30,7 @@ describe("toCents", () => {
 });
 
 describe("quote", () => {
-  it("suma acabados sobre la impresión y no mezcla los dos lados", () => {
+  it("suma acabados con IVA sobre la impresión y no mezcla los dos lados", () => {
     const priced = quote({
       sizeId: "85x55",
       quantity: 50,
@@ -41,11 +41,12 @@ describe("quote", () => {
       rounded: true,
       delivery: "standard",
     });
-    assert.equal(priced.baseCents, 726);
-    assert.equal(priced.laminateCents, 480);
-    assert.equal(priced.uvCents, 4200);
-    assert.equal(priced.cornersCents, 360);
-    assert.equal(priced.totalCents, 5766);
+    /* Hoja PVP sin IVA: 7.26 + 4.80 + 42 + 3.60. Cada valor lleva su 15 %. */
+    assert.equal(priced.baseCents, 835);
+    assert.equal(priced.laminateCents, 552);
+    assert.equal(priced.uvCents, 4830);
+    assert.equal(priced.cornersCents, 414);
+    assert.equal(priced.totalCents, 6631);
   });
 
   it("usa la tabla cuadrada de 100 unidades", () => {
@@ -59,7 +60,7 @@ describe("quote", () => {
       rounded: false,
       delivery: "standard",
     });
-    assert.equal(priced.totalCents, 727);
+    assert.equal(priced.totalCents, 836);
   });
 
   it("suma el recargo de la entrega exprés", () => {
@@ -73,7 +74,7 @@ describe("quote", () => {
       rounded: false,
       delivery: "express",
     });
-    assert.equal(priced.deliveryCents, 1500);
-    assert.equal(priced.totalCents, 2227);
+    assert.equal(priced.deliveryCents, 1725);
+    assert.equal(priced.totalCents, 2561);
   });
 });

@@ -4,7 +4,8 @@ import { createContext, useContext, useMemo, useSyncExternalStore } from "react"
 import type { Configuration } from "@/lib/catalog";
 import { cartSchema, type CartItemInput } from "@/lib/schema";
 
-const STORAGE_KEY = "pliego-cart-v1";
+/* v2: el arte ahora es un enlace de Vercel Blob; los carritos viejos se descartan. */
+const STORAGE_KEY = "asap-cart-v2";
 
 type ArtworkRef = NonNullable<CartItemInput["artwork"]>;
 type CartSnapshot = { ready: boolean; items: CartItemInput[] };
@@ -58,6 +59,8 @@ type CartContextValue = {
   addItem: (configuration: Configuration, artwork: ArtworkRef | null) => void;
   updateItem: (id: string, configuration: Configuration, artwork: ArtworkRef | null) => void;
   removeItem: (id: string) => void;
+  /** Cambia todo el carrito por estas tarjetas, como al aceptar una cotización. */
+  replaceItems: (configurations: Configuration[]) => void;
   clear: () => void;
 };
 
@@ -84,6 +87,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         );
       },
       removeItem: (id) => write(getSnapshot().items.filter((item) => item.id !== id)),
+      replaceItems: (configurations) =>
+        write(
+          configurations
+            .slice(0, 20)
+            .map((configuration) => ({ id: crypto.randomUUID(), configuration, artwork: null })),
+        ),
       clear: () => write([]),
     }),
     [current],

@@ -15,7 +15,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   const query = await searchParams;
   const raw = query.q;
   const q = (Array.isArray(raw) ? raw[0] : raw ?? "").trim();
-  const matches = q.length === 0 || /tarjet|present|card|visite|pliego|couche/i.test(q);
+  const matches = q.length === 0 || /tarjet|present|card|visite|asap|couche/i.test(q);
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-8 md:px-8 md:py-10">

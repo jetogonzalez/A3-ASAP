@@ -1,14 +1,17 @@
 "use client";
 
 import { startTransition, useActionState, useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/components/cart-provider";
-import { SERVICE_PLACES, shippingQuote } from "@/lib/ecuador";
-import { cartGrams, formatWeight } from "@/lib/weight";
+import { rememberOrder } from "@/components/last-order";
+import { EXTRA_KILO_CENTS, FIRST_KILO_CENTS, SERVICE_PLACES } from "@/lib/ecuador";
+import { formatWeight } from "@/lib/weight";
 import { formatUsd } from "@/lib/money";
+import { orderTotals, PAYMENT_LABELS, type PaymentMethod } from "@/lib/order";
 import { quote } from "@/lib/pricing";
+import { IVA_LABEL } from "@/lib/tax";
 import { DOCUMENT_TYPES, type DocumentType } from "@/lib/text";
-import { PAYMENT_LABELS, type PaymentMethod } from "@/lib/whatsapp";
 import { initialOrderState } from "@/lib/schema";
 import { placeOrder } from "@/server/actions";
 
@@ -27,23 +30,22 @@ export function CheckoutForm() {
   const documentPlaceholder =
     DOCUMENT_TYPES.find((type) => type.id === documentType)?.placeholder ?? "";
 
+  /* El servidor devuelve el pedido ya calculado: se guarda para el recibo y se vacía el carrito. */
   useEffect(() => {
-    if (!state.orderId || sent.current) return;
+    if (!state.order || sent.current) return;
     sent.current = true;
+    rememberOrder(state.order);
     cart.clear();
-    router.push(`/pedido/${state.orderId}`);
-  }, [state.orderId, cart, router]);
+    router.push("/pedido");
+  }, [state.order, cart, router]);
 
-  const subtotal = useMemo(
-    () => cart.items.reduce((sum, item) => sum + quote(item.configuration).totalCents, 0),
+  /* Es la misma cuenta que hace el servidor; aquí solo sirve para mostrarla antes de enviar. */
+  const totals = useMemo(
+    () => orderTotals(cart.items.map((item) => item.configuration), new Date().toISOString()),
     [cart.items],
   );
-  /* El peso sale del papel y la cantidad, así que el envío se puede mostrar aquí mismo. */
-  const shipping = useMemo(
-    () => shippingQuote(cartGrams(cart.items.map((item) => item.configuration))),
-    [cart.items],
-  );
-  const total = subtotal + shipping.cents;
+  const { shipping, delivery } = totals;
+  const total = totals.totalCents;
   const errors = state.fieldErrors ?? {};
 
   if (!cart.ready) return <p className="text-ink-soft">Cargando el pedido…</p>;
@@ -51,9 +53,9 @@ export function CheckoutForm() {
     return (
       <p className="text-ink-soft">
         El pedido está vacío. Vuelve a{" "}
-        <a href="/productos" className="underline underline-offset-4">
+        <Link href="/productos" className="underline underline-offset-4">
           productos
-        </a>
+        </Link>
         .
       </p>
     );
@@ -98,7 +100,7 @@ export function CheckoutForm() {
         <Section title="Entrega">
           {/* Todo va a domicilio: no hay que elegir nada, solo decir a dónde. */}
           <p className="text-sm leading-6 text-ink-soft">
-            Entregamos en Quito y los valles. El envío cuesta {formatUsd(shipping.cents)} porque tu paquete pesa {formatWeight(shipping.grams)}: {formatUsd(350)} el primer kilo y {formatUsd(75)} por cada kilo adicional.
+            Entregamos en Quito y los valles. El envío cuesta {formatUsd(shipping.cents)} porque tu paquete pesa {formatWeight(shipping.grams)}: {formatUsd(FIRST_KILO_CENTS)} el primer kilo y {formatUsd(EXTRA_KILO_CENTS)} por cada kilo adicional, con IVA.
           </p>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <div className="sm:col-span-2">
@@ -207,7 +209,7 @@ export function CheckoutForm() {
 
         <Section title="Pago">
           <p className="mb-3 text-sm leading-6 text-ink-soft">
-            El pago se cierra por WhatsApp. Al confirmar te abrimos el chat con el resumen y el total ya calculado, ahí te pasamos los datos de la cuenta.
+            El pago se cierra por WhatsApp. Al confirmar te dejamos el mensaje listo con el pedido, el total y tus datos de factura: lo envías y ahí te pasamos los datos para pagar.
           </p>
           <div className="grid gap-2 sm:grid-cols-2">
             <MethodOption
@@ -278,8 +280,11 @@ export function CheckoutForm() {
           aria-busy={pending}
           className="inline-flex min-h-12 cursor-pointer items-center justify-center rounded-full bg-press px-6 font-medium text-white hover:bg-press-deep disabled:cursor-wait disabled:opacity-60"
         >
-          {pending ? "Guardando pedido…" : `Continuar por WhatsApp · ${formatUsd(total)}`}
+          {pending ? "Preparando el pedido…" : `Continuar a WhatsApp · ${formatUsd(total)}`}
         </button>
+        <p className="-mt-5 text-sm text-ink-soft">
+          En el siguiente paso finalizas el pedido en WhatsApp, con el mensaje ya escrito.
+        </p>
       </div>
 
       <aside className="rounded-[24px] border border-line bg-sheet p-5 lg:sticky lg:top-24">
@@ -290,10 +295,17 @@ export function CheckoutForm() {
               <span className="text-ink-soft">
                 Tarjetas · {item.configuration.quantity} u.
               </span>
-              <span>{formatUsd(quote(item.configuration).totalCents)}</span>
+              <span>{formatUsd(quote(item.configuration).printingCents)}</span>
             </li>
           ))}
           <li className="flex justify-between gap-3 border-t border-line pt-3">
+            <span className="text-ink-soft">
+              Entrega {delivery.name.toLowerCase()}
+              <span className="block text-xs">Una vez por pedido</span>
+            </span>
+            <span>{delivery.cents === 0 ? "Incluida" : formatUsd(delivery.cents)}</span>
+          </li>
+          <li className="flex justify-between gap-3">
             <span className="text-ink-soft">
               {shipping.label}
               <span className="block text-xs">{formatWeight(shipping.grams)}</span>
@@ -301,9 +313,19 @@ export function CheckoutForm() {
             <span>{formatUsd(shipping.cents)}</span>
           </li>
         </ul>
+        <dl className="mt-3 space-y-1 border-t border-line pt-3 text-sm">
+          <div className="flex justify-between gap-3">
+            <dt className="text-ink-soft">Subtotal sin IVA</dt>
+            <dd>{formatUsd(totals.iva.baseCents)}</dd>
+          </div>
+          <div className="flex justify-between gap-3">
+            <dt className="text-ink-soft">{IVA_LABEL}</dt>
+            <dd>{formatUsd(totals.iva.ivaCents)}</dd>
+          </div>
+        </dl>
         <p className="mt-4 font-display text-4xl">{formatUsd(total)}</p>
         <p className="mt-2 text-xs leading-5 text-ink-soft">
-          Es el total en USD, con el envío ya incluido. El peso sale del papel y la cantidad que pediste.
+          Total en USD con IVA y envío incluidos. El peso sale del papel y la cantidad que pediste.
         </p>
       </aside>
     </form>

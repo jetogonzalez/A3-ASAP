@@ -6,6 +6,9 @@ export function CardPreview({
   compact = false,
   pair = false,
   artworkUrl = null,
+  company = "Estudio Norte",
+  name = "Tu nombre",
+  role = "Cargo",
 }: {
   config: Configuration;
   face?: "front" | "back";
@@ -13,6 +16,9 @@ export function CardPreview({
   /** Las dos caras juntas: cabe menos, así que el contenido va en tamaño chico. */
   pair?: boolean;
   artworkUrl?: string | null;
+  company?: string;
+  name?: string;
+  role?: string;
 }) {
   const size = SIZES[config.sizeId];
   const square = config.sizeId === "55x55";
@@ -66,12 +72,12 @@ export function CardPreview({
         ) : face === "front" ? (
           <div className={`flex h-full flex-col justify-between ${small ? "p-3.5" : square ? "p-5" : "p-6 sm:p-7"}`}>
             <div>
-              <p className={`font-display leading-none tracking-tight ${small ? "text-base" : "text-2xl sm:text-3xl"}`}>Estudio Norte</p>
+              <p className={`font-display leading-none tracking-tight break-words ${small ? "text-base" : "text-2xl sm:text-3xl"}`}>{company}</p>
               <p className={`uppercase tracking-[0.16em] text-ink-soft ${small ? "mt-1 text-[9px]" : "mt-2 text-[11px]"}`}>Quito</p>
             </div>
             <div className={small ? "text-[11px] leading-4" : "text-sm leading-5"}>
-              <p className="font-medium">Tu nombre</p>
-              <p className="text-ink-soft">Cargo</p>
+              <p className="font-medium break-words">{name}</p>
+              <p className="text-ink-soft break-words">{role}</p>
             </div>
           </div>
         ) : (

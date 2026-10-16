@@ -16,13 +16,20 @@ import {
   type DeliveryId,
 } from "@/lib/catalog";
 import { DELIVERY_OPTIONS, deliveryWindow, formatLongDate, formatShortDate } from "@/lib/delivery";
-import { shippingQuote } from "@/lib/ecuador";
+import { EXTRA_KILO_CENTS, FIRST_KILO_CENTS, shippingQuote } from "@/lib/ecuador";
 import { formatUsd } from "@/lib/money";
+import { upload } from "@vercel/blob/client";
+import { ARTWORK_TYPES, CANVA_FILENAME, isCanvaUrl, MAX_ARTWORK_BYTES } from "@/lib/artwork";
 import { addonCents, quote, type Quote } from "@/lib/pricing";
+import { safeFilename } from "@/lib/text";
+import {
+  CANVA_EXPORT_FILENAME,
+  canvaStartHref,
+  type CanvaDesign,
+  type CanvaReturn,
+  type CanvaStatus,
+} from "@/lib/canva-return";
 import { formatWeight, packageGrams } from "@/lib/weight";
-import { uploadArtwork } from "@/server/actions";
-
-const MAX_FILE = 8 * 1024 * 1024;
 
 /*
  * El `behavior: "smooth"` del navegador llega de golpe. Esto baja lo mismo pero
@@ -73,10 +80,21 @@ export function Configurator({
   initial,
   editId,
   orderedAt,
+  uploadsEnabled,
+  canvaEnabled = false,
+  canvaReturn = null,
+  initialPicked = [],
 }: {
   initial: Configuration;
   editId?: string;
   orderedAt: string;
+  /** Sin Vercel Blob conectado, el arte se ve en la muestra pero se manda por WhatsApp. */
+  uploadsEnabled: boolean;
+  /** Con la app de Canva conectada, se diseña en Canva y se vuelve con el arte puesto. */
+  canvaEnabled?: boolean;
+  canvaReturn?: CanvaReturn | null;
+  /** Los pasos ya elegidos antes de ir a Canva, para no tener que elegirlos otra vez. */
+  initialPicked?: string[];
 }) {
   const router = useRouter();
   const cart = useCart();
@@ -87,10 +105,16 @@ export function Configurator({
    * cada grupo se ve vacío hasta que la persona elige. Al editar algo del carrito
    * ya está todo decidido, así que ahí sí viene completo.
    */
-  const [picked, setPicked] = useState<Set<string>>(() => new Set(editing ? STEPS : []));
+  const [picked, setPicked] = useState<Set<string>>(
+    () => new Set(editing ? STEPS : initialPicked.filter((step) => (STEPS as readonly string[]).includes(step))),
+  );
+  const [canvaDesign, setCanvaDesign] = useState<CanvaDesign | null>(canvaReturn?.design ?? null);
   const missing = STEPS.filter((step) => !picked.has(step));
   const [imageFaces, setImageFaces] = useState<{ front: boolean; back: boolean }>({ front: true, back: false });
   const [file, setFile] = useState<File | null>(null);
+  /* El enlace de Canva es la otra forma de mandar el diseño desde la página. */
+  const [canvaUrl, setCanvaUrl] = useState(editing?.artwork?.source === "canva" ? editing.artwork.url : "");
+  const canvaReady = isCanvaUrl(canvaUrl);
   const [artworkUrl, setArtworkUrl] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [pending, setPending] = useState(false);
@@ -121,15 +145,17 @@ export function Configurator({
     return () => observer.disconnect();
   }, []);
 
-  useEffect(() => {
-    if (!file || !isPreviewImage(file)) {
-      setArtworkUrl(null);
-      return;
-    }
-    const url = URL.createObjectURL(file);
-    setArtworkUrl(url);
-    return () => URL.revokeObjectURL(url);
-  }, [file]);
+  /* La vista previa se arma al elegir el archivo y se suelta al cambiarlo o al salir. */
+  const previewRef = useRef<string | null>(null);
+  useEffect(() => () => {
+    if (previewRef.current) URL.revokeObjectURL(previewRef.current);
+  }, []);
+
+  function showPreview(next: File | null) {
+    if (previewRef.current) URL.revokeObjectURL(previewRef.current);
+    previewRef.current = next && isPreviewImage(next) ? URL.createObjectURL(next) : null;
+    setArtworkUrl(previewRef.current);
+  }
 
   function patch(partial: Partial<Configuration>) {
     setError(null);
@@ -166,19 +192,20 @@ export function Configurator({
     setError(null);
     if (!next) {
       setFile(null);
+      showPreview(null);
       setImageFaces({ front: true, back: false });
       return;
     }
-    const allowed = ["application/pdf", "image/png", "image/jpeg"];
-    if (next.type && !allowed.includes(next.type)) {
+    if (next.type && !ARTWORK_TYPES.some((type) => type === next.type)) {
       setError("Solo PDF, PNG o JPG.");
       return;
     }
-    if (next.size > MAX_FILE) {
+    if (next.size > MAX_ARTWORK_BYTES) {
       setError("El archivo supera 8 MB.");
       return;
     }
     setFile(next);
+    showPreview(next);
     if (isPreviewImage(next)) {
       document.getElementById("muestra")?.scrollIntoView({ behavior: "smooth", block: "center" });
     }
@@ -186,26 +213,32 @@ export function Configurator({
 
   async function commit() {
     if (missing.length > 0) return;
+    if (canvaUrl.trim() && !canvaReady && !file) {
+      setError("Ese enlace no es de Canva. Cópialo desde Compartir → Copiar enlace.");
+      return;
+    }
     setPending(true);
     setError(null);
     try {
       let artwork = editing?.artwork ?? null;
-      if (file) {
-        const body = new FormData();
-        body.set("artwork", file);
-        const uploaded = await uploadArtwork(body);
-        if (!uploaded.ok) {
-          setError(uploaded.message);
-          setPending(false);
-          return;
-        }
-        artwork = uploaded;
+      if (file && uploadsEnabled) {
+        const filename = safeFilename(file.name);
+        const blob = await upload(`artes/${filename}`, file, {
+          access: "public",
+          handleUploadUrl: "/api/arte",
+          contentType: file.type || undefined,
+        });
+        artwork = { source: "archivo", url: blob.url, filename };
+      } else if (canvaDesign) {
+        artwork = { source: "archivo", url: canvaDesign.pdf, filename: CANVA_EXPORT_FILENAME };
+      } else if (canvaReady) {
+        artwork = { source: "canva", url: canvaUrl.trim(), filename: CANVA_FILENAME };
       }
       if (editing) cart.updateItem(editing.id, config, artwork);
       else cart.addItem(config, artwork);
       router.push("/carrito");
     } catch {
-      setError("No pudimos guardar el archivo. Inténtalo de nuevo.");
+      setError("No pudimos subir el archivo. Inténtalo de nuevo, o quítalo y mándalo por WhatsApp al confirmar.");
       setPending(false);
     }
   }
@@ -217,7 +250,7 @@ export function Configurator({
       * viene a hacer es armar su tarjeta, no leer la ficha. En escritorio la grilla
       * devuelve la ficha a su sitio, debajo de la muestra.
       */}
-    <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
+    <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:grid-rows-[auto_1fr]">
       <div className="space-y-8 lg:col-start-1 lg:row-start-1">
       <div>
         {/*
@@ -233,7 +266,7 @@ export function Configurator({
               config={config}
               face="front"
               pair={config.sides === 2}
-              artworkUrl={artworkUrl && imageFaces.front ? artworkUrl : null}
+              artworkUrl={artworkUrl ? (imageFaces.front ? artworkUrl : null) : (canvaDesign?.front ?? null)}
             />
             {config.sides === 2 ? (
               <figcaption className="text-sm text-ink-soft">Frente</figcaption>
@@ -245,7 +278,7 @@ export function Configurator({
                 config={config}
                 face="back"
                 pair
-                artworkUrl={artworkUrl && imageFaces.back ? artworkUrl : null}
+                artworkUrl={artworkUrl ? (imageFaces.back ? artworkUrl : null) : (canvaDesign?.back ?? null)}
               />
               <figcaption className="text-sm text-ink-soft">Reverso</figcaption>
             </figure>
@@ -262,7 +295,23 @@ export function Configurator({
       </div>
       <ArtworkPanel
         file={file}
-        savedName={editing?.artwork?.filename}
+        savedName={editing?.artwork?.source === "archivo" ? editing.artwork.filename : undefined}
+        uploadsEnabled={uploadsEnabled}
+        canvaUrl={canvaUrl}
+        canvaReady={canvaReady}
+        canvaStartHref={
+          canvaEnabled
+            ? canvaStartHref(config, editId, Array.from(picked))
+            : null
+        }
+        twoSided={config.sides === 2}
+        canvaDesign={canvaDesign}
+        canvaStatus={canvaReturn?.status ?? null}
+        onCanvaRemove={() => setCanvaDesign(null)}
+        onCanvaUrl={(value) => {
+          setError(null);
+          setCanvaUrl(value);
+        }}
         dragOver={dragOver}
         onDragOver={() => setDragOver(true)}
         onDragLeave={() => setDragOver(false)}
@@ -450,7 +499,7 @@ export function Configurator({
                * dejaba 500 y 1.000 con el mismo porcentaje.
                */
               const saving = Math.round(
-                (1 - row.totalCents / quantity / (smallestRun.totalCents / QUANTITIES[0])) * 100,
+                (1 - row.printingCents / quantity / (smallestRun.printingCents / QUANTITIES[0])) * 100,
               );
               return (
                 <label
@@ -490,7 +539,7 @@ export function Configurator({
                         checked ? "font-semibold" : "font-medium"
                       }`}
                     >
-                      {formatUsd(row.totalCents)}
+                      {formatUsd(row.printingCents)}
                     </span>
                     <span
                       className="block text-xs tabular-nums text-ink-soft"
@@ -507,7 +556,7 @@ export function Configurator({
         <DeliveryChoices
           orderedAt={orderedAt}
           selected={picked.has("entrega") ? config.delivery : null}
-          hasArtwork={Boolean(file || editing?.artwork)}
+          hasArtwork={Boolean((uploadsEnabled && file) || canvaDesign || canvaReady || editing?.artwork)}
           onChange={(delivery) => choose("entrega", { delivery })}
         />
         <div ref={summaryRef} data-step="resumen" className="scroll-mt-4">
@@ -596,7 +645,7 @@ function DeliveryChoices({
     <fieldset data-step="entrega" className="scroll-mt-4">
       <legend className="text-sm font-medium">Fecha de entrega estimada</legend>
       <p className="mt-1 mb-3 text-sm leading-6 text-ink-soft">
-        Adelantar la producción cuesta más y el recargo se suma al total.
+        Adelantar la entrega cuesta más. El recargo va una vez por pedido y se suma al total.
         {hasArtwork ? "" : " Sin archivo, la cuenta empieza cuando lo envíes."}
       </p>
       <div className="grid gap-2" role="radiogroup" aria-label="Fecha de entrega estimada">
@@ -656,6 +705,15 @@ function DeliveryChoices({
 function ArtworkPanel({
   file,
   savedName,
+  uploadsEnabled,
+  canvaUrl,
+  canvaReady,
+  canvaStartHref: startHref,
+  twoSided,
+  canvaDesign,
+  canvaStatus,
+  onCanvaRemove,
+  onCanvaUrl,
   dragOver,
   onDragOver,
   onDragLeave,
@@ -670,6 +728,15 @@ function ArtworkPanel({
 }: {
   file: File | null;
   savedName?: string;
+  uploadsEnabled: boolean;
+  canvaUrl: string;
+  canvaReady: boolean;
+  canvaStartHref: string | null;
+  twoSided: boolean;
+  canvaDesign: CanvaDesign | null;
+  canvaStatus: CanvaStatus | null;
+  onCanvaRemove: () => void;
+  onCanvaUrl: (value: string) => void;
   dragOver: boolean;
   onDragOver: () => void;
   onDragLeave: () => void;
@@ -692,15 +759,25 @@ function ArtworkPanel({
     : invalid
       ? error
       : file
-        ? formatFileSize(file.size)
+        ? uploadsEnabled
+          ? formatFileSize(file.size)
+          : `${formatFileSize(file.size)} · solo para la muestra, lo mandas por WhatsApp`
         : savedName
           ? "Ya está en este pedido. Puedes cambiarlo."
-          : "También puedes enviarlo después de pedir.";
+          : "También puedes mandarlo por WhatsApp al confirmar.";
 
   return (
     <section id="tu-diseno" aria-label="Tu diseño" className="scroll-mt-28 rounded-[28px] border border-line bg-sheet p-5">
       <h2 className="text-lg font-semibold tracking-tight">Tu diseño</h2>
-      <p className="mt-1 text-sm leading-6 text-ink-soft">PDF, PNG o JPG de hasta 8 MB.</p>
+      <p className="mt-1 text-sm leading-6 text-ink-soft">
+        {uploadsEnabled
+          ? "PDF, PNG o JPG de hasta 8 MB. Nos llega junto con el pedido."
+          : "PDF, PNG o JPG de hasta 8 MB. Míralo aquí en la muestra y mándanos el archivo por WhatsApp, o pega abajo el enlace de Canva."}
+      </p>
+      {startHref || canvaDesign ? (
+        <CanvaBlock startHref={startHref} design={canvaDesign} status={canvaStatus} onRemove={onCanvaRemove} sizeLabel={sizeLabel} twoSided={twoSided} />
+      ) : null}
+      {startHref || canvaDesign ? <p className="mt-5 text-sm font-medium">O sube tu archivo</p> : null}
       {/* El input vive fuera de la zona de arrastre porque "Cambiar" también lo abre. */}
       <input
         id="archivo"
@@ -793,7 +870,35 @@ function ArtworkPanel({
         </label>
       )}
       <div className="mt-5 border-t border-line pt-4">
-        <p className="text-sm font-medium">¿Todavía no tienes el arte?</p>
+        <label htmlFor="canva-url" className="flex items-center gap-2.5 text-sm font-medium">
+          <img src="/canva.png" alt="" width={24} height={24} className="size-6 shrink-0 rounded-full" />
+          ¿Lo tienes en Canva? Pega el enlace
+        </label>
+        <input
+          id="canva-url"
+          type="url"
+          inputMode="url"
+          value={canvaUrl}
+          onChange={(event) => onCanvaUrl(event.target.value)}
+          placeholder="https://www.canva.com/design/…"
+          aria-invalid={Boolean(canvaUrl.trim()) && !canvaReady}
+          aria-describedby="canva-help"
+          className="field mt-2"
+        />
+        <p id="canva-help" className={`mt-1.5 text-sm leading-6 ${canvaUrl.trim() && !canvaReady ? "font-medium text-alert-deep" : canvaReady ? "font-medium text-press-deep" : "text-ink-soft"}`}>
+          {canvaUrl.trim() && !canvaReady
+            ? "Ese enlace no es de Canva. Cópialo desde Compartir → Copiar enlace."
+            : canvaReady
+              ? file && uploadsEnabled
+                ? "Usaremos el archivo que subiste; el enlace queda de respaldo si lo quitas."
+                : "Listo: el enlace llega con el pedido."
+              : "En Canva: Compartir → Enlace de colaboración → «Cualquier persona con el enlace» → Copiar enlace."}
+        </p>
+        <p className="mt-3 text-sm text-ink-soft">O mándanos el archivo por WhatsApp al finalizar el pedido.</p>
+      </div>
+      <div className="mt-5 border-t border-line pt-4">
+        <p className="text-sm font-medium">{startHref ? "¿Prefieres partir de la plantilla?" : "¿Todavía no tienes el arte?"}</p>
+        {startHref ? null : (
         <a
           href="https://www.canva.com/es_419/crear/tarjetas-de-presentacion/"
           target="_blank"
@@ -803,9 +908,10 @@ function ArtworkPanel({
           <img src="/canva.png" alt="" width={40} height={40} className="size-10 shrink-0 rounded-full" />
           <span className="min-w-0 text-left">
             <span className="block text-sm font-semibold text-ink">Diseñar en Canva</span>
-            <span className="mt-0.5 block text-sm leading-5 text-ink-soft">Se abre en otra pestaña. Exporta el PDF y súbelo aquí.</span>
+            <span className="mt-0.5 block text-sm leading-5 text-ink-soft">Se abre en otra pestaña. Al terminar, súbelo como PDF o pega aquí el enlace.</span>
           </span>
         </a>
+        )}
         <a href={href} className="mt-2 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-pick-deep underline-offset-4 hover:underline">
           <PdfIcon />
           Plantilla {sizeName}, {sizeLabel}
@@ -813,6 +919,81 @@ function ArtworkPanel({
         </a>
       </div>
     </section>
+  );
+}
+
+const CANVA_MESSAGES: Record<Exclude<CanvaStatus, "listo">, string> = {
+  cancelado: "No diste permiso en Canva. Puedes intentarlo otra vez o subir tu archivo.",
+  error: "No pudimos conectar con Canva. Inténtalo otra vez o sube tu archivo.",
+  exportar: "Tu diseño quedó en Canva, pero no pudimos traerlo. Si usaste elementos de pago de Canva, quítalos o descárgalo como PDF y súbelo aquí.",
+  apagado: "Diseñar en Canva no está disponible ahora. Sube tu archivo o pega el enlace.",
+};
+
+/*
+ * Diseñar en Canva sin salir del pedido: se abre un lienzo del tamaño exacto,
+ * con sangrado, y al tocar «Volver» el arte aparece en la muestra.
+ */
+function CanvaBlock({
+  startHref,
+  design,
+  status,
+  onRemove,
+  sizeLabel,
+  twoSided,
+}: {
+  startHref: string | null;
+  design: CanvaDesign | null;
+  status: CanvaStatus | null;
+  onRemove: () => void;
+  sizeLabel: string;
+  twoSided: boolean;
+}) {
+  if (design) {
+    return (
+      <div className="mt-4 flex items-center gap-3 rounded-2xl border border-press/30 bg-moss-soft px-3.5 py-3">
+        {/* eslint-disable-next-line @next/next/no-img-element -- miniatura de Vercel Blob, ya del tamaño justo */}
+        <img src={design.front} alt="Tu diseño de Canva" className="h-12 w-auto shrink-0 rounded-[3px] border border-ink/10 bg-white" />
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm font-semibold text-ink">Tu diseño de Canva está listo</span>
+          <span className="block text-sm text-ink-soft">
+            {design.back ? "Frente y reverso" : "Una cara"}, en PDF para imprimir.
+          </span>
+        </span>
+        <span className="flex shrink-0 flex-col items-end gap-1">
+          {startHref ? (
+            <a href={startHref} className="text-sm font-medium text-pick-deep underline-offset-4 hover:underline">
+              Hacer otro
+            </a>
+          ) : null}
+          <button type="button" onClick={onRemove} className="cursor-pointer text-sm font-medium text-alert-deep underline-offset-4 hover:underline">
+            Quitar
+          </button>
+        </span>
+      </div>
+    );
+  }
+  if (!startHref) return null;
+  return (
+    <>
+      <a
+        href={startHref}
+        className="mt-4 flex items-center gap-3 rounded-2xl border border-ink/10 bg-sheet px-3.5 py-3.5 shadow-[0_8px_24px_-18px_rgba(26,29,33,0.9)] transition hover:border-ink/25 active:scale-[0.99]"
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element -- logo pequeño y fijo */}
+        <img src="/canva.png" alt="" width={44} height={44} className="size-11 shrink-0 rounded-full" />
+        <span className="min-w-0 text-left">
+          <span className="block font-semibold text-ink">Diseñar en Canva</span>
+          <span className="mt-0.5 block text-sm leading-5 text-ink-soft">
+            Te abrimos un lienzo de {sizeLabel} con el sangrado listo.{twoSided ? " Agrega una segunda página para el reverso." : ""} Al terminar toca «Volver» y tu diseño aparece aquí.
+          </span>
+        </span>
+      </a>
+      {status && status !== "listo" ? (
+        <p role="alert" className="mt-2 text-sm font-medium text-alert-deep">
+          {CANVA_MESSAGES[status]}
+        </p>
+      ) : null}
+    </>
   );
 }
 
@@ -870,7 +1051,7 @@ const DESIGN_RULES = [
   "La cobertura de tinta no debe pasar del 300 %.",
   "Evita un marco pegado al borde: el corte puede comerlo.",
   "Si pides puntas redondeadas, aparta el contenido de las esquinas.",
-  "PDF, PNG o JPG, hasta 8 MB. Puedes pedirlo ahora y mandar el arte después.",
+  "PDF, PNG o JPG, hasta 8 MB. Puedes pedir ahora y mandar el arte por WhatsApp.",
 ] as const;
 
 const TEMPLATES = [
@@ -887,7 +1068,7 @@ const QUESTIONS = [
   },
   {
     q: "¿A dónde se envían?",
-    a: "Por ahora solo a Quito y los valles. El envío se cobra por peso y el total ya lo verás al pagar: $3.50 el primer kilo y $0.75 por cada kilo adicional.",
+    a: `Por ahora solo a Quito y los valles. El envío se cobra por peso y el total ya lo verás al pagar: ${formatUsd(FIRST_KILO_CENTS)} el primer kilo y ${formatUsd(EXTRA_KILO_CENTS)} por cada kilo adicional, con IVA.`,
   },
   {
     q: "¿Qué materiales hay?",
@@ -895,7 +1076,7 @@ const QUESTIONS = [
   },
   {
     q: "¿Cuál es el plazo más corto?",
-    a: "La entrega exprés sale entre 2 y 3 días hábiles en Quito y los valles. Es un recargo de demostración. Sin archivo, el plazo empieza cuando lo recibimos.",
+    a: "La entrega exprés llega a tu puerta entre 2 y 3 días hábiles, en Quito y los valles. Se cobra una sola vez por pedido. Sin archivo, el plazo empieza cuando lo recibimos por WhatsApp.",
   },
   {
     q: "¿Cómo se imprimen?",
@@ -1115,7 +1296,7 @@ function QuoteSummary({
           <div>
             <p className="text-sm font-medium">{open ? "Desde" : "Total"}</p>
             <p className="mt-1 text-sm text-ink-soft">
-              {open ? `${count} tarjetas` : `${formatUsd(priced.unitCents)} cada una`}
+              {open ? `${count} tarjetas, con IVA` : `${formatUsd(priced.unitCents)} cada una, con IVA`}
             </p>
           </div>
           <p key={priced.totalCents} className="price-tick text-[2.65rem] font-medium leading-none tracking-tight tabular-nums" aria-live="polite">

@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { isArtworkUrl, isCanvaUrl } from "@/lib/artwork";
+import type { Order } from "@/lib/order";
 
 export const configurationSchema = z.object({
   sizeId: z.enum(["85x55", "55x55"]),
@@ -19,9 +21,14 @@ export const configurationSchema = z.object({
 
 export const artworkRefSchema = z
   .object({
-    id: z.uuid(),
-    token: z.string().regex(/^[a-f0-9]{64}$/),
+    /* Sin fuente es un carrito de antes de Canva: era un archivo subido. */
+    source: z.enum(["archivo", "canva"]).default("archivo"),
+    url: z.string().max(500),
     filename: z.string().regex(/^[\p{L}\p{N} ._()-]{1,80}$/u),
+  })
+  .refine((art) => (art.source === "canva" ? isCanvaUrl(art.url) : isArtworkUrl(art.url)), {
+    message: "El diseño no es válido",
+    path: ["url"],
   })
   .nullable();
 
@@ -39,7 +46,7 @@ export type OrderState = {
   ok: boolean;
   message?: string;
   fieldErrors?: Record<string, string>;
-  orderId?: string;
+  order?: Order;
 };
 
 export const initialOrderState: OrderState = { ok: false };

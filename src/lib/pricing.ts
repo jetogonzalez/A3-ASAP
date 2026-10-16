@@ -6,6 +6,10 @@ import {
   type SizeId,
 } from "@/lib/catalog";
 import { toCents } from "@/lib/money";
+import { withIva } from "@/lib/tax";
+
+/** Un valor de la hoja PVP, sin IVA, convertido al precio final con IVA. */
+const sheetCents = (amount: string) => withIva(toCents(amount));
 import { deliveryOption } from "@/lib/delivery";
 
 export type QuoteLine = {
@@ -21,19 +25,26 @@ export type Quote = {
   uvCents: number;
   cornersCents: number;
   deliveryCents: number;
+  /** Solo la impresión y los acabados, sin el recargo de entrega. */
+  printingCents: number;
+  /** El total de esta tarjeta sola, con su recargo de entrega. */
   totalCents: number;
+  /** Precio por tarjeta, sin el recargo: la entrega no cambia lo que cuesta imprimir. */
   unitCents: number;
+  /** Los renglones de impresión, sin la entrega (va una sola vez por pedido). */
+  printingLines: QuoteLine[];
   lines: QuoteLine[];
 };
 
 export function quote(config: Configuration): Quote {
   const tier = PRICE_BOOK[config.sizeId][config.quantity];
-  const baseCents = toCents(config.sides === 1 ? tier.one : tier.two);
-  const laminateCents = config.laminate === "none" ? 0 : toCents(tier.laminate);
-  const uvCents = config.uv ? toCents(tier.uv) : 0;
-  const cornersCents = config.rounded ? toCents(tier.corners) : 0;
+  const baseCents = sheetCents(config.sides === 1 ? tier.one : tier.two);
+  const laminateCents = config.laminate === "none" ? 0 : sheetCents(tier.laminate);
+  const uvCents = config.uv ? sheetCents(tier.uv) : 0;
+  const cornersCents = config.rounded ? sheetCents(tier.corners) : 0;
   const deliveryCents = deliveryOption(config.delivery).cents;
-  const totalCents = baseCents + laminateCents + uvCents + cornersCents + deliveryCents;
+  const printingCents = baseCents + laminateCents + uvCents + cornersCents;
+  const totalCents = printingCents + deliveryCents;
 
   const lines: QuoteLine[] = [
     {
@@ -55,6 +66,7 @@ export function quote(config: Configuration): Quote {
   }
   if (config.uv) lines.push({ label: "UV selectivo", cents: uvCents });
   if (config.rounded) lines.push({ label: "Puntas redondeadas", cents: cornersCents });
+  const printingLines = [...lines];
   const speed = deliveryOption(config.delivery);
   lines.push({
     label: `Entrega ${speed.name.toLowerCase()}`,
@@ -69,22 +81,24 @@ export function quote(config: Configuration): Quote {
     uvCents,
     cornersCents,
     deliveryCents,
+    printingCents,
     totalCents,
-    unitCents: Math.round(totalCents / config.quantity),
+    unitCents: Math.round(printingCents / config.quantity),
     lines,
+    printingLines,
   };
 }
 
 export function fromPrice(sizeId: SizeId): number {
-  return toCents(PRICE_BOOK[sizeId][50].one);
+  return sheetCents(PRICE_BOOK[sizeId][50].one);
 }
 
 export function addonCents(sizeId: SizeId, quantity: Quantity) {
   const tier = PRICE_BOOK[sizeId][quantity];
   return {
-    laminate: toCents(tier.laminate),
-    uv: toCents(tier.uv),
-    corners: toCents(tier.corners),
+    laminate: sheetCents(tier.laminate),
+    uv: sheetCents(tier.uv),
+    corners: sheetCents(tier.corners),
   };
 }
 
@@ -99,6 +113,5 @@ export function describeConfiguration(config: Configuration): string {
   if (config.laminate !== "none") parts.push(`laminado ${config.laminate}`);
   if (config.uv) parts.push("UV selectivo");
   if (config.rounded) parts.push("puntas redondeadas");
-  parts.push(`entrega ${deliveryOption(config.delivery).name.toLowerCase()}`);
   return parts.join(" · ");
 }

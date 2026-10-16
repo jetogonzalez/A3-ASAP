@@ -40,16 +40,17 @@ describe("plantilla", () => {
 });
 
 describe("shippingQuote", () => {
-  it("cobra el primer kilo y recarga por kilo empezado", () => {
-    assert.equal(shippingQuote(231).cents, 350);
-    assert.equal(shippingQuote(1000).cents, 350);
-    assert.equal(shippingQuote(1001).cents, 425);
-    assert.equal(shippingQuote(1585).cents, 425);
-    assert.equal(shippingQuote(2400).cents, 500);
+  it("cobra el primer kilo y recarga por kilo empezado, con IVA", () => {
+    /* $3.50 y $0.75 sin IVA: $4.03 y $0.86 con el 15 %. */
+    assert.equal(shippingQuote(231).cents, 403);
+    assert.equal(shippingQuote(1000).cents, 403);
+    assert.equal(shippingQuote(1001).cents, 489);
+    assert.equal(shippingQuote(1585).cents, 489);
+    assert.equal(shippingQuote(2400).cents, 575);
   });
 
   it("cobra el mínimo aunque el paquete sea liviano", () => {
-    assert.equal(shippingQuote(0).cents, 350);
+    assert.equal(shippingQuote(0).cents, 403);
   });
 });
 

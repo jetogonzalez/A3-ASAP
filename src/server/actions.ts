@@ -1,20 +1,12 @@
 "use server";
 
 import { headers } from "next/headers";
-import { isServicePlace, shippingQuote, type ShippingMethod } from "@/lib/ecuador";
+import { isServicePlace } from "@/lib/ecuador";
+import { orderNumber, orderTotals, PAYMENT_LABELS, type Order } from "@/lib/order";
 import { describeConfiguration, quote } from "@/lib/pricing";
 import { cartSchema, type OrderState } from "@/lib/schema";
-import { cartGrams } from "@/lib/weight";
-import {
-  cleanText,
-  documentOk,
-  DOCUMENT_TYPES,
-  isDocumentType,
-  normalizePhone,
-  safeFilename,
-} from "@/lib/text";
+import { cleanText, documentOk, DOCUMENT_TYPES, isDocumentType, normalizePhone } from "@/lib/text";
 import { rateLimit } from "@/server/rate-limit";
-import { saveOrder, saveUpload, verifyUpload, type StoredOrder } from "@/server/store";
 
 async function clientKey(): Promise<string> {
   const headerList = await headers();
@@ -27,21 +19,6 @@ function readField(formData: FormData, key: string, max: number): string {
   const value = formData.get(key);
   if (typeof value !== "string") return "";
   return cleanText(value, max);
-}
-
-export async function uploadArtwork(formData: FormData): Promise<
-  | { ok: true; id: string; token: string; filename: string }
-  | { ok: false; message: string }
-> {
-  const key = await clientKey();
-  if (!rateLimit(`upload:${key}`, 20, 10 * 60 * 1000)) {
-    return { ok: false, message: "Demasiados archivos seguidos. Espera unos minutos." };
-  }
-  const file = formData.get("artwork");
-  if (!(file instanceof File)) {
-    return { ok: false, message: "Adjunta un PDF, PNG o JPG." };
-  }
-  return saveUpload(file, safeFilename(file.name));
 }
 
 export async function placeOrder(_prev: OrderState, formData: FormData): Promise<OrderState> {
@@ -104,77 +81,55 @@ export async function placeOrder(_prev: OrderState, formData: FormData): Promise
   if (!phone) fieldErrors.phone = "Usa un teléfono de Ecuador, como 0991234567";
 
   /* Todo va a domicilio, así que el sector y la dirección siempre hacen falta. */
-  const method: ShippingMethod = "envio";
   let city = "";
   if (!isServicePlace(citySelect)) fieldErrors.city = "Elige Quito o uno de los valles";
   else city = citySelect;
   if (address.length < 5) fieldErrors.address = "Escribe la calle, número y sector";
 
   /*
-   * El cobro se cierra por WhatsApp: aquí solo se guarda con qué va a pagar.
+   * El cobro se cierra por WhatsApp: aquí solo se anota con qué va a pagar.
    * No hay pasarela ni datos de tarjeta de por medio.
    */
   const pay = paymentMethod === "transfer" || paymentMethod === "deuna" ? paymentMethod : null;
   if (!pay) fieldErrors.paymentMethod = "Elige cómo vas a pagar";
-  const paymentLabel = pay === "deuna" ? "Deuna" : "Transferencia bancaria";
 
-  if (Object.keys(fieldErrors).length > 0) {
+  if (Object.keys(fieldErrors).length > 0 || !pay || !phone) {
     return { ok: false, fieldErrors, message: "Revisa los campos marcados." };
   }
 
-  const items: StoredOrder["items"] = [];
-  for (const item of cart.data) {
-    const priced = quote(item.configuration);
-    let artwork = null;
-    if (item.artwork) {
-      artwork = await verifyUpload(item.artwork.id, item.artwork.token, item.artwork.filename);
-      if (!artwork) {
-        return {
-          ok: false,
-          fieldErrors: { cart: "Uno de los archivos ya no está disponible. Vuelve a adjuntarlo." },
-        };
-      }
-    }
-    items.push({
-      description: describeConfiguration(item.configuration),
-      quantity: item.configuration.quantity,
-      totalCents: priced.totalCents,
-      lines: priced.lines,
-      artwork,
-    });
-  }
-
-  const shipping = shippingQuote(cartGrams(cart.data.map((item) => item.configuration)));
-  const subtotalCents = items.reduce((sum, item) => sum + item.totalCents, 0);
-  const id = crypto.randomUUID();
-  const order: StoredOrder = {
-    id,
-    number: `ASAP-${id.slice(0, 8).toUpperCase()}`,
-    createdAt: new Date().toISOString(),
-    items,
+  /*
+   * El precio se vuelve a sacar aquí, con la tabla del servidor: lo que venga
+   * calculado del navegador no cuenta. El pedido no se guarda en ninguna base;
+   * vuelve armado al navegador y de ahí va escrito al WhatsApp de la tienda.
+   */
+  const configs = cart.data.map((item) => item.configuration);
+  const createdAt = new Date().toISOString();
+  const order: Order = {
+    number: orderNumber(crypto.randomUUID()),
+    createdAt,
+    ...orderTotals(configs, createdAt),
+    items: cart.data.map((item) => {
+      const priced = quote(item.configuration);
+      return {
+        description: describeConfiguration(item.configuration),
+        quantity: item.configuration.quantity,
+        printingCents: priced.printingCents,
+        lines: priced.printingLines,
+        artwork: item.artwork,
+      };
+    }),
     customer: {
       name: `${firstName} ${lastName}`,
       document: { type: documentType, label: documentLabel, number: documentNumber },
       email,
-      phone: phone!,
-      province: "Pichincha",
+      phone,
       city,
       address,
       reference,
     },
-    shipping: { method, ...shipping },
-    payment: { method: pay!, label: paymentLabel },
+    payment: { method: pay, label: PAYMENT_LABELS[pay] },
     notes,
-    subtotalCents,
-    totalCents: subtotalCents + shipping.cents,
   };
 
-  try {
-    await saveOrder(order);
-  } catch (error) {
-    console.error("order_save_failed", error instanceof Error ? error.name : "unknown");
-    return { ok: false, message: "No pudimos guardar el pedido en este equipo. Inténtalo de nuevo." };
-  }
-
-  return { ok: true, orderId: id };
+  return { ok: true, order };
 }

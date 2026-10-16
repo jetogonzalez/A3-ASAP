@@ -1,3 +1,6 @@
+import { formatUsd } from "@/lib/money";
+import { withIva } from "@/lib/tax";
+
 export type ServicePlace = {
   name: string;
   group: "Quito" | "Valles";
@@ -34,9 +37,9 @@ export type ShippingQuote = {
   detail: string;
 };
 
-/* Tarifa de mensajería en Quito y los valles: un primer kilo y recargo por kilo empezado. */
-const FIRST_KILO_CENTS = 350;
-const EXTRA_KILO_CENTS = 75;
+/* Mensajería en Quito y los valles: $3.50 el primer kilo y $0.75 por kilo empezado, más IVA. */
+export const FIRST_KILO_CENTS = withIva(350);
+export const EXTRA_KILO_CENTS = withIva(75);
 
 /**
  * El envío se cobra por peso, y el peso lo calcula la web a partir del papel y
@@ -49,11 +52,11 @@ export function shippingQuote(grams: number): ShippingQuote {
     cents: FIRST_KILO_CENTS + EXTRA_KILO_CENTS * (kilos - 1),
     grams,
     label: "Envío en Quito y valles",
-    detail: "Llega en 4 días hábiles.",
+    detail: "Entrega a domicilio, con la fecha del ritmo que elegiste.",
   };
 }
 
-export const SHIPPING_TABLE: Array<{ zone: string; price: string; time: string }> = [
-  { zone: "Quito y valles · hasta 1 kg", price: "$3.50", time: "4 días hábiles" },
-  { zone: "Cada kilo adicional", price: "+ $0.75", time: "4 días hábiles" },
+export const SHIPPING_TABLE: Array<{ zone: string; price: string }> = [
+  { zone: "Quito y valles · hasta 1 kg", price: formatUsd(FIRST_KILO_CENTS) },
+  { zone: "Cada kilo adicional", price: `+ ${formatUsd(EXTRA_KILO_CENTS)}` },
 ];

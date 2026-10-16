@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import { DELIVERY_OPTIONS } from "@/lib/delivery";
 import { SHIPPING_TABLE } from "@/lib/ecuador";
+import { formatUsd } from "@/lib/money";
 
 export const metadata: Metadata = {
   title: "Envío",
@@ -19,22 +21,45 @@ export default function ShippingPage() {
         <thead>
           <tr className="border-b border-line text-ink-soft">
             <th scope="col" className="py-2 pr-4 font-medium">Zona</th>
-            <th scope="col" className="py-2 pr-4 font-medium">Tarifa</th>
-            <th scope="col" className="py-2 font-medium">Plazo</th>
+            <th scope="col" className="py-2 font-medium">Tarifa</th>
           </tr>
         </thead>
         <tbody>
           {SHIPPING_TABLE.map((row) => (
             <tr key={row.zone} className="border-b border-line/80">
               <th scope="row" className="py-3 pr-4 font-medium">{row.zone}</th>
-              <td className="py-3 pr-4">{row.price}</td>
-              <td className="py-3">{row.time}</td>
+              <td className="py-3">{row.price}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <h2 className="mt-10 font-display text-3xl">Cuándo llega</h2>
+      <p className="mt-3 leading-7 text-ink-soft">
+        Eliges el ritmo al armar tu tarjeta. Los días hábiles cuentan desde que confirmamos el pago y tenemos tu archivo, y ya incluyen la producción y la mensajería. El recargo se cobra una sola vez por pedido.
+      </p>
+      <table className="mt-6 w-full border-collapse text-left text-sm">
+        <caption className="sr-only">Ritmos de entrega</caption>
+        <thead>
+          <tr className="border-b border-line text-ink-soft">
+            <th scope="col" className="py-2 pr-4 font-medium">Entrega</th>
+            <th scope="col" className="py-2 pr-4 font-medium">Plazo</th>
+            <th scope="col" className="py-2 font-medium">Recargo</th>
+          </tr>
+        </thead>
+        <tbody>
+          {DELIVERY_OPTIONS.map((option) => (
+            <tr key={option.id} className="border-b border-line/80">
+              <th scope="row" className="py-3 pr-4 font-medium">{option.name}</th>
+              <td className="py-3 pr-4">
+                {option.earliestDays} a {option.latestDays} días hábiles
+              </td>
+              <td className="py-3">{option.cents === 0 ? "Incluido" : `+ ${formatUsd(option.cents)}`}</td>
             </tr>
           ))}
         </tbody>
       </table>
       <p className="mt-6 text-sm leading-6 text-ink-soft">
-        Producción estimada de las tarjetas: 4 días hábiles antes de salir del taller. Para que te hagas una idea, mil tarjetas clásicas laminadas pesan 1,58 kg y cien pesan 231 g.
+        Para que te hagas una idea del peso: mil tarjetas clásicas laminadas pesan 1,58 kg y cien pesan 231 g.
       </p>
     </div>
   );

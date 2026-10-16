@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCart } from "@/components/cart-provider";
 import { productHref } from "@/lib/catalog";
 import { formatUsd } from "@/lib/money";
+import { orderTotals } from "@/lib/order";
 import { describeConfiguration, quote } from "@/lib/pricing";
 
 export function CartView() {
@@ -30,7 +31,8 @@ export function CartView() {
     );
   }
 
-  const subtotal = items.reduce((sum, item) => sum + quote(item.configuration).totalCents, 0);
+  const totals = orderTotals(items.map((item) => item.configuration), new Date().toISOString());
+  const subtotal = totals.printingCents + totals.delivery.cents;
 
   return (
     <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
@@ -46,10 +48,14 @@ export function CartView() {
                     {describeConfiguration(item.configuration)}
                   </p>
                   <p className="mt-2 text-sm text-ink-soft">
-                    {item.artwork ? `Archivo: ${item.artwork.filename}` : "Sin archivo adjunto"}
+                    {!item.artwork
+                      ? "Sin diseño: lo mandas por WhatsApp"
+                      : item.artwork.source === "canva"
+                        ? "Diseño en Canva"
+                        : `Archivo: ${item.artwork.filename}`}
                   </p>
                 </div>
-                <p className="font-display text-2xl">{formatUsd(priced.totalCents)}</p>
+                <p className="font-display text-2xl">{formatUsd(priced.printingCents)}</p>
               </div>
               <div className="mt-4 flex gap-4 text-sm">
                 <Link href={productHref(item.configuration, item.id)} className="underline-offset-4 hover:underline">
@@ -72,7 +78,11 @@ export function CartView() {
         <dl className="mt-4 space-y-2 text-sm">
           <div className="flex justify-between gap-4">
             <dt className="text-ink-soft">Impresión</dt>
-            <dd>{formatUsd(subtotal)}</dd>
+            <dd>{formatUsd(totals.printingCents)}</dd>
+          </div>
+          <div className="flex justify-between gap-4">
+            <dt className="text-ink-soft">Entrega {totals.delivery.name.toLowerCase()}</dt>
+            <dd>{totals.delivery.cents === 0 ? "Incluida" : formatUsd(totals.delivery.cents)}</dd>
           </div>
           <div className="flex justify-between gap-4">
             <dt className="text-ink-soft">Envío</dt>
@@ -80,12 +90,18 @@ export function CartView() {
           </div>
         </dl>
         <p className="mt-4 border-t border-line pt-4 font-display text-4xl">{formatUsd(subtotal)}</p>
-        <p className="mt-2 text-xs leading-5 text-ink-soft">USD, sin el envío. El total final se confirma al guardar el pedido.</p>
+        <p className="mt-2 text-xs leading-5 text-ink-soft">USD con IVA, sin el envío. El recargo de entrega va una vez por pedido, con el ritmo más rápido que elegiste.</p>
         <Link
           href="/checkout"
           className="mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-press px-5 font-medium text-white hover:bg-press-deep"
         >
-          Continuar
+          Continuar con el pedido
+        </Link>
+        <Link
+          href="/cotizacion"
+          className="mt-2 inline-flex min-h-12 w-full items-center justify-center rounded-full border border-line px-5 font-medium text-ink hover:border-ink/30"
+        >
+          Hacer una cotización
         </Link>
       </aside>
     </div>
