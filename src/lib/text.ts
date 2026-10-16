@@ -68,6 +68,30 @@ export function rucOk(value: string): boolean {
   return third === 6 || third === 9;
 }
 
+/**
+ * Qué está mal en el documento, dicho para que la persona lo pueda arreglar.
+ * Antes todo error de cédula decía «son 10 dígitos», también cuando sí tenía
+ * diez y lo que fallaba era el dígito verificador.
+ */
+export function documentProblem(type: DocumentType, value: string): string | null {
+  if (documentOk(type, value)) return null;
+  const digits = value.replace(/\D/g, "");
+  if (type === "pasaporte") return "Escribe el número del pasaporte, con letras y números";
+
+  const expected = type === "cedula" ? 10 : 13;
+  const name = type === "cedula" ? "La cédula" : "El RUC";
+  if (digits.length !== expected) {
+    return `${name} tiene ${expected} dígitos y escribiste ${digits.length}`;
+  }
+  const province = Number(digits.slice(0, 2));
+  if (province < 1 || (province > 24 && province !== 30)) {
+    return `Los dos primeros dígitos son la provincia (01 a 24). Revisa ${type === "cedula" ? "la cédula" : "el RUC"}`;
+  }
+  if (type === "ruc" && digits.slice(10) === "000") return "El RUC termina en 001 (o en el número del local)";
+  if (type === "cedula" && Number(digits[2]) > 5) return "El tercer dígito de una cédula va de 0 a 5. Si es de una empresa, elige RUC";
+  return `${name} no pasa la verificación del Registro Civil: el último dígito no coincide. Revisa que no haya un número cambiado`;
+}
+
 export function documentOk(type: DocumentType, value: string): boolean {
   if (type === "cedula") return cedulaOk(value);
   if (type === "ruc") return rucOk(value);

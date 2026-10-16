@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { cedulaOk, documentOk, rucOk } from "./text";
+import { cedulaOk, documentOk, documentProblem, rucOk } from "./text";
 
 describe("cedulaOk", () => {
   it("acepta cédulas con verificador correcto", () => {
@@ -42,5 +42,21 @@ describe("documentOk", () => {
   it("deja pasar pasaportes alfanuméricos", () => {
     assert.equal(documentOk("pasaporte", "AB123456"), true);
     assert.equal(documentOk("pasaporte", "AB1"), false);
+  });
+});
+
+describe("documentProblem", () => {
+  it("no dice nada cuando el documento está bien", () => {
+    assert.equal(documentProblem("cedula", "1710034065"), null);
+  });
+
+  it("dice cuántos dígitos faltan o sobran", () => {
+    assert.match(documentProblem("cedula", "17100340") ?? "", /10 dígitos y escribiste 8/);
+  });
+
+  it("con diez dígitos y el verificador mal, habla del último dígito y no del largo", () => {
+    const problem = documentProblem("cedula", "1287563498") ?? "";
+    assert.match(problem, /último dígito/);
+    assert.doesNotMatch(problem, /10 dígitos/);
   });
 });

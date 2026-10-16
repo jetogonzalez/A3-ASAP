@@ -5,7 +5,7 @@ import { isServicePlace } from "@/lib/ecuador";
 import { orderNumber, orderTotals, PAYMENT_LABELS, type Order } from "@/lib/order";
 import { describeConfiguration, quote } from "@/lib/pricing";
 import { cartSchema, type OrderState } from "@/lib/schema";
-import { cleanText, documentOk, DOCUMENT_TYPES, isDocumentType, normalizePhone } from "@/lib/text";
+import { cleanText, documentProblem, DOCUMENT_TYPES, isDocumentType, normalizePhone } from "@/lib/text";
 import { rateLimit } from "@/server/rate-limit";
 
 async function clientKey(): Promise<string> {
@@ -66,14 +66,8 @@ export async function placeOrder(_prev: OrderState, formData: FormData): Promise
   const documentType = isDocumentType(documentTypeInput) ? documentTypeInput : "cedula";
   const documentLabel =
     DOCUMENT_TYPES.find((type) => type.id === documentType)?.label ?? "Cédula";
-  if (!documentOk(documentType, documentNumber)) {
-    fieldErrors.documentNumber =
-      documentType === "cedula"
-        ? "La cédula no es válida, son 10 dígitos"
-        : documentType === "ruc"
-          ? "El RUC no es válido, son 13 dígitos y termina en 001"
-          : "Escribe el número del pasaporte";
-  }
+  const documentError = documentProblem(documentType, documentNumber);
+  if (documentError) fieldErrors.documentNumber = documentError;
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 120) {
     fieldErrors.email = "El correo no es válido";
   }
