@@ -25,7 +25,11 @@ export function orderMessage(order: Order): string {
 
   const items = order.items.flatMap((item, index) => [
     `${index + 1}. ${item.description} — ${formatUsd(item.printingCents)}`,
-    item.artwork ? `   Arte: ${item.artwork.url}` : "   Arte: lo envío en este chat",
+    !item.artwork
+      ? "   Arte: lo envío en este chat"
+      : item.artwork.source === "canva"
+        ? `   Diseño en Canva: ${item.artwork.url}`
+        : `   Arte: ${item.artwork.url}`,
   ]);
 
   const delivery =

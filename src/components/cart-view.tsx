@@ -48,7 +48,11 @@ export function CartView() {
                     {describeConfiguration(item.configuration)}
                   </p>
                   <p className="mt-2 text-sm text-ink-soft">
-                    {item.artwork ? `Archivo: ${item.artwork.filename}` : "Sin archivo adjunto"}
+                    {!item.artwork
+                      ? "Sin diseño: lo mandas por WhatsApp"
+                      : item.artwork.source === "canva"
+                        ? "Diseño en Canva"
+                        : `Archivo: ${item.artwork.filename}`}
                   </p>
                 </div>
                 <p className="font-display text-2xl">{formatUsd(priced.printingCents)}</p>

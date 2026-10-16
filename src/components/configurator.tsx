@@ -19,7 +19,7 @@ import { DELIVERY_OPTIONS, deliveryWindow, formatLongDate, formatShortDate } fro
 import { EXTRA_KILO_CENTS, FIRST_KILO_CENTS, shippingQuote } from "@/lib/ecuador";
 import { formatUsd } from "@/lib/money";
 import { upload } from "@vercel/blob/client";
-import { ARTWORK_TYPES, MAX_ARTWORK_BYTES } from "@/lib/artwork";
+import { ARTWORK_TYPES, CANVA_FILENAME, isCanvaUrl, MAX_ARTWORK_BYTES } from "@/lib/artwork";
 import { addonCents, quote, type Quote } from "@/lib/pricing";
 import { safeFilename } from "@/lib/text";
 import { formatWeight, packageGrams } from "@/lib/weight";
@@ -94,6 +94,9 @@ export function Configurator({
   const missing = STEPS.filter((step) => !picked.has(step));
   const [imageFaces, setImageFaces] = useState<{ front: boolean; back: boolean }>({ front: true, back: false });
   const [file, setFile] = useState<File | null>(null);
+  /* El enlace de Canva es la otra forma de mandar el diseño desde la página. */
+  const [canvaUrl, setCanvaUrl] = useState(editing?.artwork?.source === "canva" ? editing.artwork.url : "");
+  const canvaReady = isCanvaUrl(canvaUrl);
   const [artworkUrl, setArtworkUrl] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [pending, setPending] = useState(false);
@@ -192,6 +195,10 @@ export function Configurator({
 
   async function commit() {
     if (missing.length > 0) return;
+    if (canvaUrl.trim() && !canvaReady && !file) {
+      setError("Ese enlace no es de Canva. Cópialo desde Compartir → Copiar enlace.");
+      return;
+    }
     setPending(true);
     setError(null);
     try {
@@ -203,7 +210,9 @@ export function Configurator({
           handleUploadUrl: "/api/arte",
           contentType: file.type || undefined,
         });
-        artwork = { url: blob.url, filename };
+        artwork = { source: "archivo", url: blob.url, filename };
+      } else if (canvaReady) {
+        artwork = { source: "canva", url: canvaUrl.trim(), filename: CANVA_FILENAME };
       }
       if (editing) cart.updateItem(editing.id, config, artwork);
       else cart.addItem(config, artwork);
@@ -266,8 +275,14 @@ export function Configurator({
       </div>
       <ArtworkPanel
         file={file}
-        savedName={editing?.artwork?.filename}
+        savedName={editing?.artwork?.source === "archivo" ? editing.artwork.filename : undefined}
         uploadsEnabled={uploadsEnabled}
+        canvaUrl={canvaUrl}
+        canvaReady={canvaReady}
+        onCanvaUrl={(value) => {
+          setError(null);
+          setCanvaUrl(value);
+        }}
         dragOver={dragOver}
         onDragOver={() => setDragOver(true)}
         onDragLeave={() => setDragOver(false)}
@@ -512,7 +527,7 @@ export function Configurator({
         <DeliveryChoices
           orderedAt={orderedAt}
           selected={picked.has("entrega") ? config.delivery : null}
-          hasArtwork={Boolean((uploadsEnabled && file) || editing?.artwork)}
+          hasArtwork={Boolean((uploadsEnabled && file) || canvaReady || editing?.artwork)}
           onChange={(delivery) => choose("entrega", { delivery })}
         />
         <div ref={summaryRef} data-step="resumen" className="scroll-mt-4">
@@ -662,6 +677,9 @@ function ArtworkPanel({
   file,
   savedName,
   uploadsEnabled,
+  canvaUrl,
+  canvaReady,
+  onCanvaUrl,
   dragOver,
   onDragOver,
   onDragLeave,
@@ -677,6 +695,9 @@ function ArtworkPanel({
   file: File | null;
   savedName?: string;
   uploadsEnabled: boolean;
+  canvaUrl: string;
+  canvaReady: boolean;
+  onCanvaUrl: (value: string) => void;
   dragOver: boolean;
   onDragOver: () => void;
   onDragLeave: () => void;
@@ -712,7 +733,7 @@ function ArtworkPanel({
       <p className="mt-1 text-sm leading-6 text-ink-soft">
         {uploadsEnabled
           ? "PDF, PNG o JPG de hasta 8 MB. Nos llega junto con el pedido."
-          : "PDF, PNG o JPG de hasta 8 MB. Míralo aquí en la muestra y mándanos el archivo por WhatsApp al confirmar."}
+          : "PDF, PNG o JPG de hasta 8 MB. Míralo aquí en la muestra y mándanos el archivo por WhatsApp, o pega abajo el enlace de Canva."}
       </p>
       {/* El input vive fuera de la zona de arrastre porque "Cambiar" también lo abre. */}
       <input
@@ -806,6 +827,33 @@ function ArtworkPanel({
         </label>
       )}
       <div className="mt-5 border-t border-line pt-4">
+        <label htmlFor="canva-url" className="flex items-center gap-2.5 text-sm font-medium">
+          <img src="/canva.png" alt="" width={24} height={24} className="size-6 shrink-0 rounded-full" />
+          ¿Lo tienes en Canva? Pega el enlace
+        </label>
+        <input
+          id="canva-url"
+          type="url"
+          inputMode="url"
+          value={canvaUrl}
+          onChange={(event) => onCanvaUrl(event.target.value)}
+          placeholder="https://www.canva.com/design/…"
+          aria-invalid={Boolean(canvaUrl.trim()) && !canvaReady}
+          aria-describedby="canva-help"
+          className="field mt-2"
+        />
+        <p id="canva-help" className={`mt-1.5 text-sm leading-6 ${canvaUrl.trim() && !canvaReady ? "font-medium text-alert-deep" : canvaReady ? "font-medium text-press-deep" : "text-ink-soft"}`}>
+          {canvaUrl.trim() && !canvaReady
+            ? "Ese enlace no es de Canva. Cópialo desde Compartir → Copiar enlace."
+            : canvaReady
+              ? file && uploadsEnabled
+                ? "Usaremos el archivo que subiste; el enlace queda de respaldo si lo quitas."
+                : "Listo: el enlace llega con el pedido."
+              : "En Canva: Compartir → Enlace de colaboración → «Cualquier persona con el enlace» → Copiar enlace."}
+        </p>
+        <p className="mt-3 text-sm text-ink-soft">O mándanos el archivo por WhatsApp al finalizar el pedido.</p>
+      </div>
+      <div className="mt-5 border-t border-line pt-4">
         <p className="text-sm font-medium">¿Todavía no tienes el arte?</p>
         <a
           href="https://www.canva.com/es_419/crear/tarjetas-de-presentacion/"
@@ -816,7 +864,7 @@ function ArtworkPanel({
           <img src="/canva.png" alt="" width={40} height={40} className="size-10 shrink-0 rounded-full" />
           <span className="min-w-0 text-left">
             <span className="block text-sm font-semibold text-ink">Diseñar en Canva</span>
-            <span className="mt-0.5 block text-sm leading-5 text-ink-soft">Se abre en otra pestaña. Exporta el PDF y súbelo aquí.</span>
+            <span className="mt-0.5 block text-sm leading-5 text-ink-soft">Se abre en otra pestaña. Al terminar, súbelo como PDF o pega aquí el enlace.</span>
           </span>
         </a>
         <a href={href} className="mt-2 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-pick-deep underline-offset-4 hover:underline">

@@ -19,3 +19,22 @@ export function isArtworkUrl(value: string): boolean {
     return false;
   }
 }
+
+export const CANVA_FILENAME = "Diseño en Canva";
+
+/**
+ * Un diseño compartido desde Canva: «Compartir → Copiar enlace». Llega como
+ * canva.com/design/… o como enlace corto canva.link/….
+ */
+export function isCanvaUrl(value: string): boolean {
+  try {
+    const url = new URL(value.trim());
+    if (url.protocol !== "https:") return false;
+    if (url.hostname === "canva.link") return url.pathname.length > 1;
+    return (url.hostname === "www.canva.com" || url.hostname === "canva.com") && url.pathname.startsWith("/design/");
+  } catch {
+    return false;
+  }
+}
+
+export type ArtworkSource = "archivo" | "canva";

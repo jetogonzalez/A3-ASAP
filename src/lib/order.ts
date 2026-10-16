@@ -6,7 +6,7 @@ import { ivaBreakdown } from "@/lib/tax";
 import type { DocumentType } from "@/lib/text";
 import { cartGrams } from "@/lib/weight";
 
-export type OrderArtwork = { url: string; filename: string };
+export type OrderArtwork = { source: "archivo" | "canva"; url: string; filename: string };
 
 export type OrderDelivery = {
   id: string;

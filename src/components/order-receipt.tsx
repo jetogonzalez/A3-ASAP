@@ -83,7 +83,11 @@ export function OrderReceipt() {
               ))}
             </ul>
             <p className="mt-3 text-sm text-ink-soft">
-              {item.artwork ? `Archivo recibido: ${item.artwork.filename}` : "Sin archivo: mándalo por WhatsApp."}
+              {!item.artwork
+                ? "Sin archivo: mándalo por WhatsApp."
+                : item.artwork.source === "canva"
+                  ? "Diseño en Canva: el enlace va en el mensaje."
+                  : `Archivo recibido: ${item.artwork.filename}`}
             </p>
           </article>
         ))}

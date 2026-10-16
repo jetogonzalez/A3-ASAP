@@ -74,3 +74,34 @@ describe("cotización", async () => {
     assert.match(quoteNumber(payload), /^COT-261016-[0-9A-Z]{6}$/);
   });
 });
+
+describe("diseño", async () => {
+  const { isCanvaUrl } = await import("./artwork");
+  const { cartItemSchema } = await import("./schema");
+
+  it("acepta enlaces de Canva y rechaza los de otros sitios", () => {
+    assert.equal(isCanvaUrl("https://www.canva.com/design/DAGx1y2z3/abc/view?utm_content=x"), true);
+    assert.equal(isCanvaUrl("https://canva.link/a1b2c3"), true);
+    assert.equal(isCanvaUrl("https://www.canva.com/es_419/"), false);
+    assert.equal(isCanvaUrl("https://canva.com.evil.io/design/x"), false);
+    assert.equal(isCanvaUrl("http://www.canva.com/design/x"), false);
+  });
+
+  it("lee carritos guardados antes de Canva como archivo subido", () => {
+    const parsed = cartItemSchema.parse({
+      id: "7fe65618-8805-4348-9420-ea425add1579",
+      configuration: card("standard"),
+      artwork: { url: "https://abc.public.blob.vercel-storage.com/artes/logo-x.pdf", filename: "logo.pdf" },
+    });
+    assert.equal(parsed.artwork?.source, "archivo");
+  });
+
+  it("no deja pasar un enlace de Canva como archivo subido", () => {
+    const result = cartItemSchema.safeParse({
+      id: "7fe65618-8805-4348-9420-ea425add1579",
+      configuration: card("standard"),
+      artwork: { source: "archivo", url: "https://www.canva.com/design/x/view", filename: "x.pdf" },
+    });
+    assert.equal(result.success, false);
+  });
+});
