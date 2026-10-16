@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CardPreview } from "@/components/card-preview";
 import { useCart } from "@/components/cart-provider";
+import type { CartItemInput } from "@/lib/schema";
 import {
   PRODUCT,
   QUANTITIES,
@@ -109,6 +110,13 @@ export function Configurator({
     () => new Set(editing ? STEPS : initialPicked.filter((step) => (STEPS as readonly string[]).includes(step))),
   );
   const [canvaDesign, setCanvaDesign] = useState<CanvaDesign | null>(canvaReturn?.design ?? null);
+  /* Qué forma de enviar el arte está abierta. Al volver de Canva, la de Canva. */
+  const [method, setMethod] = useState<ArtworkMethod>(() => {
+    if (canvaReturn) return "canva";
+    if (editing?.artwork?.source === "canva") return "enlace";
+    if (editing?.artwork) return "archivo";
+    return canvaEnabled ? "canva" : "archivo";
+  });
   const missing = STEPS.filter((step) => !picked.has(step));
   const [imageFaces, setImageFaces] = useState<{ front: boolean; back: boolean }>({ front: true, back: false });
   const [file, setFile] = useState<File | null>(null);
@@ -211,34 +219,56 @@ export function Configurator({
     }
   }
 
+  /* La muestra enseña el arte de la forma elegida: el archivo propio o lo que volvió de Canva. */
+  const previewFront =
+    method === "archivo" ? (artworkUrl && imageFaces.front ? artworkUrl : null) : method === "canva" ? (canvaDesign?.front ?? null) : null;
+  const previewBack =
+    method === "archivo" ? (artworkUrl && imageFaces.back ? artworkUrl : null) : method === "canva" ? (canvaDesign?.back ?? null) : null;
+  const artworkReady =
+    method === "canva"
+      ? Boolean(canvaDesign)
+      : method === "archivo"
+        ? Boolean((uploadsEnabled && file) || (!file && editing?.artwork?.source === "archivo"))
+        : method === "enlace"
+          ? canvaReady
+          : false;
+
   async function commit() {
     if (missing.length > 0) return;
-    if (canvaUrl.trim() && !canvaReady && !file) {
-      setError("Ese enlace no es de Canva. Cópialo desde Compartir → Copiar enlace.");
+    if (method === "enlace" && canvaUrl.trim() && !canvaReady) {
+      setError("Ese enlace no es de Canva. Cópialo desde Compartir en tu diseño.");
       return;
     }
     setPending(true);
     setError(null);
     try {
-      let artwork = editing?.artwork ?? null;
-      if (file && uploadsEnabled) {
-        const filename = safeFilename(file.name);
-        const blob = await upload(`artes/${filename}`, file, {
-          access: "public",
-          handleUploadUrl: "/api/arte",
-          contentType: file.type || undefined,
-        });
-        artwork = { source: "archivo", url: blob.url, filename };
-      } else if (canvaDesign) {
-        artwork = { source: "archivo", url: canvaDesign.pdf, filename: CANVA_EXPORT_FILENAME };
-      } else if (canvaReady) {
+      /* Lo que viaja con el pedido sale de la forma elegida; las otras quedan guardadas por si vuelve. */
+      const kept = editing?.artwork ?? null;
+      let artwork: CartItemInput["artwork"] = null;
+      if (method === "canva") {
+        artwork = canvaDesign
+          ? { source: "archivo", url: canvaDesign.pdf, filename: CANVA_EXPORT_FILENAME }
+          : null;
+      } else if (method === "archivo") {
+        if (file && uploadsEnabled) {
+          const filename = safeFilename(file.name);
+          const blob = await upload(`artes/${filename}`, file, {
+            access: "public",
+            handleUploadUrl: "/api/arte",
+            contentType: file.type || undefined,
+          });
+          artwork = { source: "archivo", url: blob.url, filename };
+        } else if (!file && kept?.source === "archivo") {
+          artwork = kept;
+        }
+      } else if (method === "enlace" && canvaReady) {
         artwork = { source: "canva", url: canvaUrl.trim(), filename: CANVA_FILENAME };
       }
       if (editing) cart.updateItem(editing.id, config, artwork);
       else cart.addItem(config, artwork);
       router.push("/carrito");
     } catch {
-      setError("No pudimos subir el archivo. Inténtalo de nuevo, o quítalo y mándalo por WhatsApp al confirmar.");
+      setError("No pudimos subir el archivo. Inténtalo de nuevo o elige enviarlo por WhatsApp.");
       setPending(false);
     }
   }
@@ -266,7 +296,7 @@ export function Configurator({
               config={config}
               face="front"
               pair={config.sides === 2}
-              artworkUrl={artworkUrl ? (imageFaces.front ? artworkUrl : null) : (canvaDesign?.front ?? null)}
+              artworkUrl={previewFront}
             />
             {config.sides === 2 ? (
               <figcaption className="text-sm text-ink-soft">Frente</figcaption>
@@ -278,7 +308,7 @@ export function Configurator({
                 config={config}
                 face="back"
                 pair
-                artworkUrl={artworkUrl ? (imageFaces.back ? artworkUrl : null) : (canvaDesign?.back ?? null)}
+                artworkUrl={previewBack}
               />
               <figcaption className="text-sm text-ink-soft">Reverso</figcaption>
             </figure>
@@ -294,6 +324,11 @@ export function Configurator({
         </div>
       </div>
       <ArtworkPanel
+        method={method}
+        onMethod={(next) => {
+          setError(null);
+          setMethod(next);
+        }}
         file={file}
         savedName={editing?.artwork?.source === "archivo" ? editing.artwork.filename : undefined}
         uploadsEnabled={uploadsEnabled}
@@ -317,7 +352,6 @@ export function Configurator({
         onDragLeave={() => setDragOver(false)}
         onFile={takeFile}
         sizeId={config.sizeId}
-        sizeName={size.name}
         sizeLabel={size.sizeLabel}
         rounded={config.rounded}
         error={error}
@@ -556,7 +590,7 @@ export function Configurator({
         <DeliveryChoices
           orderedAt={orderedAt}
           selected={picked.has("entrega") ? config.delivery : null}
-          hasArtwork={Boolean((uploadsEnabled && file) || canvaDesign || canvaReady || editing?.artwork)}
+          hasArtwork={artworkReady}
           onChange={(delivery) => choose("entrega", { delivery })}
         />
         <div ref={summaryRef} data-step="resumen" className="scroll-mt-4">
@@ -702,7 +736,15 @@ function DeliveryChoices({
   );
 }
 
+type ArtworkMethod = "canva" | "archivo" | "enlace" | "whatsapp";
+
+/*
+ * Cuatro formas de hacernos llegar el arte. Primero se elige una y solo se ve
+ * lo de esa: antes estaban todas apiladas y la columna parecía un formulario.
+ */
 function ArtworkPanel({
+  method,
+  onMethod,
   file,
   savedName,
   uploadsEnabled,
@@ -719,13 +761,14 @@ function ArtworkPanel({
   onDragLeave,
   onFile,
   sizeId,
-  sizeName,
   sizeLabel,
   rounded,
   error,
   imageFaces,
   onPlace,
 }: {
+  method: ArtworkMethod;
+  onMethod: (method: ArtworkMethod) => void;
   file: File | null;
   savedName?: string;
   uploadsEnabled: boolean;
@@ -742,18 +785,168 @@ function ArtworkPanel({
   onDragLeave: () => void;
   onFile: (file: File | null) => void;
   sizeId: SizeId;
-  sizeName: string;
   sizeLabel: string;
   rounded: boolean;
   error: string | null;
   imageFaces: { front: boolean; back: boolean };
   onPlace: (side: "front" | "back") => void;
 }) {
+  const template = `/plantilla/${sizeId}?puntas=${rounded ? "1" : "0"}`;
+  const methods: Array<{ id: ArtworkMethod; title: string; hint: string; icon: React.ReactNode; done: boolean }> = [
+    ...(startHref || canvaDesign
+      ? [{ id: "canva" as const, title: "Diseñar en Canva", hint: "Lienzo listo", icon: <CanvaMark />, done: Boolean(canvaDesign) }]
+      : []),
+    { id: "archivo", title: "Subir archivo", hint: "PDF, PNG o JPG", icon: <UploadGlyph />, done: Boolean(file || savedName) },
+    { id: "enlace", title: "Enlace de Canva", hint: "Ya lo tengo hecho", icon: <LinkGlyph />, done: canvaReady },
+    { id: "whatsapp", title: "Por WhatsApp", hint: "Al finalizar", icon: <ChatGlyph />, done: false },
+  ];
+
+  return (
+    <section id="tu-diseno" aria-labelledby="tu-diseno-titulo" className="scroll-mt-28 rounded-[28px] border border-line bg-sheet p-5">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h2 id="tu-diseno-titulo" className="text-lg font-semibold tracking-tight">
+            Tu diseño
+          </h2>
+          <p className="mt-0.5 text-sm leading-6 text-ink-soft">¿Cómo nos haces llegar el arte?</p>
+        </div>
+        <a
+          href={template}
+          className="inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-full border border-line px-3 text-sm font-medium text-ink-soft transition-colors hover:border-ink/30 hover:text-ink"
+        >
+          <PdfIcon />
+          Plantilla
+        </a>
+      </div>
+
+      <div
+        role="radiogroup"
+        aria-label="Cómo enviar el diseño"
+        className="mt-4 grid grid-cols-2 gap-2"
+      >
+        {methods.map((option) => {
+          const checked = method === option.id;
+          return (
+            <label
+              key={option.id}
+              className={`relative flex min-h-[4.5rem] cursor-pointer items-center gap-2.5 rounded-2xl border-2 px-2.5 py-2.5 sm:gap-3 sm:px-3 transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-pick-line ${
+                checked ? "border-pick bg-pick-soft" : "border-line bg-sheet hover:border-pick-line hover:bg-pick-wash"
+              } ${methods.length % 2 === 1 ? "last:col-span-2" : ""}`}
+            >
+              <input type="radio" name="metodo-diseno" checked={checked} onChange={() => onMethod(option.id)} className="sr-only" />
+              <span className={`grid size-9 shrink-0 place-items-center rounded-xl ${checked ? "bg-sheet text-pick-deep" : "bg-paper-deep text-ink-soft"}`} aria-hidden="true">
+                {option.icon}
+              </span>
+              <span className="min-w-0">
+                <span className={`block text-sm leading-5 ${checked ? "font-semibold text-ink" : "font-medium text-ink"}`}>{option.title}</span>
+                <span className="block text-xs leading-4 text-ink-soft">{option.done ? "Listo" : option.hint}</span>
+              </span>
+              {option.done ? (
+                <span className="absolute right-2 top-2 grid size-4 place-items-center rounded-full bg-press text-white" aria-label="Listo">
+                  <svg width="9" height="9" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                    <path d="M2.5 6.2 4.8 8.5 9.5 3.8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
+              ) : null}
+            </label>
+          );
+        })}
+      </div>
+
+      <div className="mt-4">
+        {method === "canva" ? (
+          <CanvaBlock startHref={startHref} design={canvaDesign} status={canvaStatus} onRemove={onCanvaRemove} sizeLabel={sizeLabel} twoSided={twoSided} />
+        ) : null}
+
+        {method === "archivo" ? (
+          <FileDrop
+            file={file}
+            savedName={savedName}
+            uploadsEnabled={uploadsEnabled}
+            dragOver={dragOver}
+            onDragOver={onDragOver}
+            onDragLeave={onDragLeave}
+            onFile={onFile}
+            error={error}
+            imageFaces={imageFaces}
+            onPlace={onPlace}
+          />
+        ) : null}
+
+        {method === "enlace" ? (
+          <div>
+            <label htmlFor="canva-url" className="block text-sm font-medium">
+              Enlace de tu diseño en Canva
+            </label>
+            <input
+              id="canva-url"
+              type="url"
+              inputMode="url"
+              value={canvaUrl}
+              onChange={(event) => onCanvaUrl(event.target.value)}
+              placeholder="https://www.canva.com/design/…"
+              aria-invalid={Boolean(canvaUrl.trim()) && !canvaReady}
+              aria-describedby="canva-help"
+              className="field mt-1.5"
+            />
+            <p
+              id="canva-help"
+              className={`mt-2 text-sm leading-6 ${
+                canvaUrl.trim() && !canvaReady ? "font-medium text-alert-deep" : canvaReady ? "font-medium text-press-deep" : "text-ink-soft"
+              }`}
+            >
+              {canvaUrl.trim() && !canvaReady
+                ? "Ese enlace no es de Canva. Cópialo desde Compartir en tu diseño."
+                : canvaReady
+                  ? "Listo: el enlace llega con el pedido."
+                  : "En Canva toca Compartir, deja el acceso en «Cualquier persona con el enlace» y copia el enlace."}
+            </p>
+          </div>
+        ) : null}
+
+        {method === "whatsapp" ? (
+          <div className="flex gap-3 rounded-2xl bg-paper-deep px-4 py-3.5 text-sm leading-6">
+            <span className="mt-0.5 text-press" aria-hidden="true">
+              <ChatGlyph />
+            </span>
+            <p className="text-ink-soft">
+              <span className="font-medium text-ink">Al finalizar te dejamos el chat listo.</span> Adjunta ahí tu PDF, PNG o JPG. La fecha de entrega cuenta desde que lo recibimos.
+            </p>
+          </div>
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
+/* La zona para soltar o elegir el archivo, y la lista cuando ya está puesto. */
+function FileDrop({
+  file,
+  savedName,
+  uploadsEnabled,
+  dragOver,
+  onDragOver,
+  onDragLeave,
+  onFile,
+  error,
+  imageFaces,
+  onPlace,
+}: {
+  file: File | null;
+  savedName?: string;
+  uploadsEnabled: boolean;
+  dragOver: boolean;
+  onDragOver: () => void;
+  onDragLeave: () => void;
+  onFile: (file: File | null) => void;
+  error: string | null;
+  imageFaces: { front: boolean; back: boolean };
+  onPlace: (side: "front" | "back") => void;
+}) {
   const ready = Boolean(file || savedName);
   const invalid = Boolean(error) && !file;
-  const href = `/plantilla/${sizeId}?puntas=${rounded ? "1" : "0"}`;
   const inputRef = useRef<HTMLInputElement>(null);
-  const title = dragOver ? "Aquí va el archivo" : invalid ? "Revisa el archivo" : file?.name ?? savedName ?? "Elige el archivo";
+  const title = dragOver ? "Suéltalo aquí" : invalid ? "Revisa el archivo" : file?.name ?? savedName ?? "Arrastra tu archivo o elígelo";
   const hint = dragOver
     ? "PDF, PNG o JPG"
     : invalid
@@ -764,20 +957,10 @@ function ArtworkPanel({
           : `${formatFileSize(file.size)} · solo para la muestra, lo mandas por WhatsApp`
         : savedName
           ? "Ya está en este pedido. Puedes cambiarlo."
-          : "También puedes mandarlo por WhatsApp al confirmar.";
+          : "PDF, PNG o JPG de hasta 8 MB, con 3 mm de sangrado";
 
   return (
-    <section id="tu-diseno" aria-label="Tu diseño" className="scroll-mt-28 rounded-[28px] border border-line bg-sheet p-5">
-      <h2 className="text-lg font-semibold tracking-tight">Tu diseño</h2>
-      <p className="mt-1 text-sm leading-6 text-ink-soft">
-        {uploadsEnabled
-          ? "PDF, PNG o JPG de hasta 8 MB. Nos llega junto con el pedido."
-          : "PDF, PNG o JPG de hasta 8 MB. Míralo aquí en la muestra y mándanos el archivo por WhatsApp, o pega abajo el enlace de Canva."}
-      </p>
-      {startHref || canvaDesign ? (
-        <CanvaBlock startHref={startHref} design={canvaDesign} status={canvaStatus} onRemove={onCanvaRemove} sizeLabel={sizeLabel} twoSided={twoSided} />
-      ) : null}
-      {startHref || canvaDesign ? <p className="mt-5 text-sm font-medium">O sube tu archivo</p> : null}
+    <>
       {/* El input vive fuera de la zona de arrastre porque "Cambiar" también lo abre. */}
       <input
         id="archivo"
@@ -791,8 +974,7 @@ function ArtworkPanel({
         }}
       />
       {ready && !dragOver ? (
-        /* Con el archivo puesto deja de ser una caja para soltar: es una lista de lo que ya está listo. */
-        <div className="mt-4 divide-y divide-line overflow-hidden rounded-2xl border border-line">
+        <div className="divide-y divide-line overflow-hidden rounded-2xl border border-line">
           <div className="flex items-center gap-3 px-4 py-3">
             <FileCheck />
             <span className="min-w-0 flex-1">
@@ -811,7 +993,7 @@ function ArtworkPanel({
               onClick={() => onFile(null)}
               className="min-h-11 shrink-0 cursor-pointer px-1 text-sm font-medium text-alert-deep underline-offset-4 hover:underline"
             >
-              Eliminar
+              Quitar
             </button>
           </div>
           {file && isPreviewImage(file) ? (
@@ -855,13 +1037,12 @@ function ArtworkPanel({
             onDragLeave();
             onFile(event.dataTransfer.files?.[0] ?? null);
           }}
-          className={`mt-4 flex min-h-36 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 px-5 py-6 text-center transition-colors ${
+          className={`flex min-h-36 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 px-5 py-6 text-center transition-colors ${
             dragOver
               ? "border-solid border-pick bg-pick-soft"
               : invalid
                 ? "border-dashed border-alert bg-alert-soft"
-                : /* Neutral en reposo: el azul es de lo elegido, y aquí todavía no hay nada. */
-                  "border-dashed border-line bg-paper-deep hover:border-pick hover:bg-pick-wash"
+                : "border-dashed border-line bg-paper-deep hover:border-pick hover:bg-pick-wash"
           }`}
         >
           <DropGlyph dragOver={dragOver} invalid={invalid} />
@@ -869,56 +1050,43 @@ function ArtworkPanel({
           <span className={`mt-1 text-sm ${invalid ? "font-medium text-alert-deep" : "text-ink-soft"}`}>{hint}</span>
         </label>
       )}
-      <div className="mt-5 border-t border-line pt-4">
-        <label htmlFor="canva-url" className="flex items-center gap-2.5 text-sm font-medium">
-          <img src="/canva.png" alt="" width={24} height={24} className="size-6 shrink-0 rounded-full" />
-          ¿Lo tienes en Canva? Pega el enlace
-        </label>
-        <input
-          id="canva-url"
-          type="url"
-          inputMode="url"
-          value={canvaUrl}
-          onChange={(event) => onCanvaUrl(event.target.value)}
-          placeholder="https://www.canva.com/design/…"
-          aria-invalid={Boolean(canvaUrl.trim()) && !canvaReady}
-          aria-describedby="canva-help"
-          className="field mt-2"
-        />
-        <p id="canva-help" className={`mt-1.5 text-sm leading-6 ${canvaUrl.trim() && !canvaReady ? "font-medium text-alert-deep" : canvaReady ? "font-medium text-press-deep" : "text-ink-soft"}`}>
-          {canvaUrl.trim() && !canvaReady
-            ? "Ese enlace no es de Canva. Cópialo desde Compartir → Copiar enlace."
-            : canvaReady
-              ? file && uploadsEnabled
-                ? "Usaremos el archivo que subiste; el enlace queda de respaldo si lo quitas."
-                : "Listo: el enlace llega con el pedido."
-              : "En Canva: Compartir → Enlace de colaboración → «Cualquier persona con el enlace» → Copiar enlace."}
-        </p>
-        <p className="mt-3 text-sm text-ink-soft">O mándanos el archivo por WhatsApp al finalizar el pedido.</p>
-      </div>
-      <div className="mt-5 border-t border-line pt-4">
-        <p className="text-sm font-medium">{startHref ? "¿Prefieres partir de la plantilla?" : "¿Todavía no tienes el arte?"}</p>
-        {startHref ? null : (
-        <a
-          href="https://www.canva.com/es_419/crear/tarjetas-de-presentacion/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-2.5 flex items-center gap-3 rounded-2xl border border-ink/10 bg-sheet px-3.5 py-3 shadow-[0_8px_24px_-18px_rgba(26,29,33,0.9)] transition hover:border-ink/25"
-        >
-          <img src="/canva.png" alt="" width={40} height={40} className="size-10 shrink-0 rounded-full" />
-          <span className="min-w-0 text-left">
-            <span className="block text-sm font-semibold text-ink">Diseñar en Canva</span>
-            <span className="mt-0.5 block text-sm leading-5 text-ink-soft">Se abre en otra pestaña. Al terminar, súbelo como PDF o pega aquí el enlace.</span>
-          </span>
-        </a>
-        )}
-        <a href={href} className="mt-2 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-pick-deep underline-offset-4 hover:underline">
-          <PdfIcon />
-          Plantilla {sizeName}, {sizeLabel}
-          {rounded ? ", con puntas redondeadas" : ""}
-        </a>
-      </div>
-    </section>
+    </>
+  );
+}
+
+function CanvaMark() {
+  /* eslint-disable-next-line @next/next/no-img-element -- logo pequeño y fijo */
+  return <img src="/canva.png" alt="" width={24} height={24} className="size-6 rounded-full" />;
+}
+
+function UploadGlyph() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+      <path d="M9 12V3.5M5.5 7 9 3.5 12.5 7" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M3.5 11.5v2a1.5 1.5 0 0 0 1.5 1.5h8a1.5 1.5 0 0 0 1.5-1.5v-2" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function LinkGlyph() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+      <path d="M7.6 10.4a3 3 0 0 0 4.2 0l2.3-2.3a3 3 0 0 0-4.2-4.2l-.9.9" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+      <path d="M10.4 7.6a3 3 0 0 0-4.2 0l-2.3 2.3a3 3 0 0 0 4.2 4.2l.9-.9" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function ChatGlyph() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+      <path
+        d="M9 2.5a6.5 6.5 0 0 0-5.6 9.8L2.5 15.5l3.3-.9A6.5 6.5 0 1 0 9 2.5Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }
 
@@ -950,7 +1118,7 @@ function CanvaBlock({
 }) {
   if (design) {
     return (
-      <div className="mt-4 flex items-center gap-3 rounded-2xl border border-press/30 bg-moss-soft px-3.5 py-3">
+      <div className="flex items-center gap-3 rounded-2xl border border-press/30 bg-moss-soft px-3.5 py-3">
         {/* eslint-disable-next-line @next/next/no-img-element -- miniatura de Vercel Blob, ya del tamaño justo */}
         <img src={design.front} alt="Tu diseño de Canva" className="h-12 w-auto shrink-0 rounded-[3px] border border-ink/10 bg-white" />
         <span className="min-w-0 flex-1">
@@ -974,26 +1142,27 @@ function CanvaBlock({
   }
   if (!startHref) return null;
   return (
-    <>
+    <div className="rounded-2xl border border-line bg-paper-deep p-4">
+      <ul className="space-y-1.5 text-sm leading-6 text-ink-soft">
+        <li>Lienzo de {sizeLabel} con 3 mm de sangrado, listo para imprenta.</li>
+        {twoSided ? <li>Agrega una segunda página para el reverso.</li> : null}
+        <li>Al terminar toca «Volver» y tu diseño aparece en la muestra.</li>
+      </ul>
       <a
         href={startHref}
-        className="mt-4 flex items-center gap-3 rounded-2xl border border-ink/10 bg-sheet px-3.5 py-3.5 shadow-[0_8px_24px_-18px_rgba(26,29,33,0.9)] transition hover:border-ink/25 active:scale-[0.99]"
+        className="mt-4 flex min-h-12 w-full items-center justify-center gap-2.5 rounded-full bg-gradient-to-r from-[#00c4cc] via-[#5a32fa] to-[#7d2ae8] px-5 text-sm font-semibold text-white shadow-[0_10px_24px_-14px_rgba(90,50,250,0.9)] transition hover:brightness-110 active:scale-[0.98]"
       >
-        {/* eslint-disable-next-line @next/next/no-img-element -- logo pequeño y fijo */}
-        <img src="/canva.png" alt="" width={44} height={44} className="size-11 shrink-0 rounded-full" />
-        <span className="min-w-0 text-left">
-          <span className="block font-semibold text-ink">Diseñar en Canva</span>
-          <span className="mt-0.5 block text-sm leading-5 text-ink-soft">
-            Te abrimos un lienzo de {sizeLabel} con el sangrado listo.{twoSided ? " Agrega una segunda página para el reverso." : ""} Al terminar toca «Volver» y tu diseño aparece aquí.
-          </span>
-        </span>
+        Abrir Canva
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <path d="M5 2.5h6.5V9M11.5 2.5 3 11" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
       </a>
       {status && status !== "listo" ? (
-        <p role="alert" className="mt-2 text-sm font-medium text-alert-deep">
+        <p role="alert" className="mt-3 text-sm font-medium text-alert-deep">
           {CANVA_MESSAGES[status]}
         </p>
       ) : null}
-    </>
+    </div>
   );
 }
 

@@ -32,6 +32,19 @@ export function canvaEnabled(): boolean {
   return canvaCredentials() !== null && Boolean(process.env.BLOB_READ_WRITE_TOKEN);
 }
 
+/**
+ * Si el botón «Diseñar en Canva» se muestra a esta persona. Hasta que Canva
+ * apruebe la app, a cualquiera que no sea su dueño Canva le responde «ID de
+ * cliente no válida»: por eso solo se ve con CANVA_PUBLICO=1 o con la cookie
+ * de prueba que deja ?canva_beta=1.
+ */
+export async function canvaVisible(): Promise<boolean> {
+  if (!canvaEnabled()) return false;
+  if (process.env.CANVA_PUBLICO === "1") return true;
+  const { cookies } = await import("next/headers");
+  return (await cookies()).get("asap_canva_beta")?.value === "1";
+}
+
 /* ---------- Cookies cifradas ---------- */
 
 function key(secret: string): Buffer {
