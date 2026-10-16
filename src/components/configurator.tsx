@@ -24,6 +24,7 @@ import { formatUsd } from "@/lib/money";
 import { upload } from "@vercel/blob/client";
 import { ARTWORK_TYPES, CANVA_FILENAME, isCanvaUrl, MAX_ARTWORK_BYTES } from "@/lib/artwork";
 import { addonCents, quote, type Quote } from "@/lib/pricing";
+import { IVA_LABEL, ivaBreakdown } from "@/lib/tax";
 import { safeFilename } from "@/lib/text";
 import {
   CANVA_EXPORT_FILENAME,
@@ -131,6 +132,9 @@ export function Configurator({
   const [error, setError] = useState<string | null>(null);
 
   const priced = useMemo(() => quote(config), [config]);
+  /* Lo que paga por esta tanda: impresión, entrega y envío. El envío va dentro del total, no aparte. */
+  const shipping = shippingQuote(packageGrams(config));
+  const grandCents = priced.totalCents + shipping.cents;
   const addons = addonCents(config.sizeId, config.quantity);
   const size = SIZES[config.sizeId];
   /* Base para comparar el precio por unidad de cada tirada. */
@@ -600,6 +604,9 @@ export function Configurator({
           <QuoteSummary
             config={config}
             priced={priced}
+            shippingCents={shipping.cents}
+            shippingGrams={shipping.grams}
+            grandCents={grandCents}
             missing={missing}
             sizeName={size.name}
             sizeLabel={size.sizeLabel}
@@ -630,8 +637,8 @@ export function Configurator({
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 pb-[env(safe-area-inset-bottom)]">
           <div className="min-w-0">
             <p className="truncate text-xs text-ink-soft">
-              {missing.length > 0 ? "Desde · " : ""}
-              {config.quantity.toLocaleString("es-EC")} tarjetas · {formatUsd(priced.unitCents)} c/u
+              {missing.length > 0 ? "Desde · " : "Total · "}
+              {config.quantity.toLocaleString("es-EC")} tarjetas con envío e IVA
               <span className="hidden lg:inline">
                 {" "}
                 · {size.name}, {size.sizeLabel} · {config.sides === 1 ? "un lado" : "dos lados"} · papel{" "}
@@ -639,11 +646,11 @@ export function Configurator({
               </span>
             </p>
             <p
-              key={priced.totalCents}
+              key={grandCents}
               className="price-tick font-display text-2xl leading-none tabular-nums"
               aria-live="polite"
             >
-              {formatUsd(priced.totalCents)}
+              {formatUsd(grandCents)}
             </p>
           </div>
           <button
@@ -1405,6 +1412,9 @@ function PdfIcon() {
 function QuoteSummary({
   config,
   priced,
+  shippingCents,
+  shippingGrams,
+  grandCents,
   missing,
   sizeName,
   sizeLabel,
@@ -1416,6 +1426,9 @@ function QuoteSummary({
 }: {
   config: Configuration;
   priced: Quote;
+  shippingCents: number;
+  shippingGrams: number;
+  grandCents: number;
   missing: string[];
   sizeName: string;
   sizeLabel: string;
@@ -1428,6 +1441,7 @@ function QuoteSummary({
   const count = config.quantity.toLocaleString("es-EC");
   /* Mientras falte algo por elegir el total es un "desde", no una cuenta cerrada. */
   const open = missing.length > 0;
+  const iva = ivaBreakdown(grandCents);
 
   return (
     <section aria-label="Resumen del precio" className="overflow-hidden rounded-[28px] border border-line bg-sheet shadow-[0_18px_44px_-28px_rgba(26,29,33,0.55)]">
@@ -1442,6 +1456,7 @@ function QuoteSummary({
             : `${sizeName}, ${sizeLabel} · ${config.sides === 1 ? "un lado" : "dos lados"} · papel ${config.paper}`}
         </p>
       </div>
+
       {open ? (
         <ul className="mt-4 space-y-2.5 border-t border-line px-5 py-4 text-sm">
           {missing.map((step) => (
@@ -1452,37 +1467,44 @@ function QuoteSummary({
           ))}
         </ul>
       ) : (
+        /* Un solo desglose: impresión, acabados, entrega y envío, todos con IVA y en la misma columna. */
         <ul className="mt-4 space-y-2.5 border-t border-line px-5 py-4 text-sm">
           {priced.lines.map((line) => (
-            <li key={line.label} className="flex items-baseline justify-between gap-4">
-              <span className="text-ink-soft">{line.label}</span>
-              <span className={`shrink-0 tabular-nums ${line.included ? "font-medium text-press-deep" : "font-medium"}`}>
-                {line.included ? "Incluido" : formatUsd(line.cents)}
-              </span>
-            </li>
+            <SummaryLine key={line.label} label={line.label} value={line.included ? "Incluido" : formatUsd(line.cents)} included={line.included} />
           ))}
+          <SummaryLine label="Envío Quito y valles" note={formatWeight(shippingGrams)} value={formatUsd(shippingCents)} />
         </ul>
       )}
+
       <div className="border-t border-line bg-paper-deep/70 px-5 py-5">
+        {open ? null : (
+          <dl className="mb-4 space-y-1.5 border-b border-line pb-4 text-sm text-ink-soft">
+            <div className="flex justify-between gap-4">
+              <dt>Subtotal sin IVA</dt>
+              <dd className="tabular-nums">{formatUsd(iva.baseCents)}</dd>
+            </div>
+            <div className="flex justify-between gap-4">
+              <dt>{IVA_LABEL}</dt>
+              <dd className="tabular-nums">{formatUsd(iva.ivaCents)}</dd>
+            </div>
+          </dl>
+        )}
         <div className="flex items-end justify-between gap-4">
-          <div>
-            <p className="text-sm font-medium">{open ? "Desde" : "Total"}</p>
-            <p className="mt-1 text-sm text-ink-soft">
-              {open ? `${count} tarjetas, con IVA` : `${formatUsd(priced.unitCents)} cada una, con IVA`}
-            </p>
+          <div className="min-w-0">
+            <p className="text-base font-semibold">{open ? "Desde" : "Total"}</p>
+            <p className="mt-0.5 text-sm text-ink-soft">{open ? `${count} tarjetas` : "Con envío e IVA"}</p>
           </div>
-          <p key={priced.totalCents} className="price-tick text-[2.65rem] font-medium leading-none tracking-tight tabular-nums" aria-live="polite">
-            {formatUsd(priced.totalCents)}
+          <p key={grandCents} className="price-tick text-[2.65rem] font-medium leading-none tracking-tight tabular-nums" aria-live="polite">
+            {formatUsd(grandCents)}
           </p>
         </div>
-        <div className="mt-4 flex items-baseline justify-between gap-4 border-t border-line pt-4 text-sm">
-          <span className="text-ink-soft">
-            Envío en Quito y valles
-            {/* El peso depende de toda la tanda, así que el valor exacto sale en el pago. */}
-            <span className="block text-xs">{formatWeight(packageGrams(config))} de esta tanda</span>
-          </span>
-          <span className="font-medium">{formatUsd(shippingQuote(packageGrams(config)).cents)}</span>
-        </div>
+        {open ? (
+          <p className="mt-2 text-xs leading-5 text-ink-soft">Incluye envío en Quito y valles e IVA.</p>
+        ) : (
+          <p className="mt-2 text-xs leading-5 text-ink-soft">
+            {formatUsd(priced.unitCents)} cada tarjeta. Si sumas más tandas, el envío se recalcula por el peso total.
+          </p>
+        )}
         {error ? (
           <p role="alert" className="mt-3 hidden text-sm font-medium text-alert-deep lg:block">
             {error}
@@ -1505,6 +1527,18 @@ function QuoteSummary({
         </button>
       </div>
     </section>
+  );
+}
+
+function SummaryLine({ label, note, value, included = false }: { label: string; note?: string; value: string; included?: boolean }) {
+  return (
+    <li className="flex items-baseline justify-between gap-4">
+      <span className="text-ink-soft">
+        {label}
+        {note ? <span className="ml-1.5 text-xs">· {note}</span> : null}
+      </span>
+      <span className={`shrink-0 font-medium tabular-nums ${included ? "text-press-deep" : ""}`}>{value}</span>
+    </li>
   );
 }
 
@@ -1534,9 +1568,13 @@ function OptionGroup({
 }
 
 /** Etiqueta de esquina. Ámbar porque el azul ya significa "esto elegiste" y el verde, "ahorro". */
-function CornerTag({ children }: { children: string }) {
+function CornerTag({ children, overlay = false }: { children: string; overlay?: boolean }) {
   return (
-    <span className="absolute left-0 top-0 rounded-br-xl bg-flag px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-flag-ink">
+    <span
+      className={`absolute z-10 bg-flag px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-flag-ink ${
+        overlay ? "left-5 top-5 rounded-md shadow-sm" : "left-0 top-0 rounded-br-xl"
+      }`}
+    >
       {children}
     </span>
   );
@@ -1561,7 +1599,7 @@ function SavingTag({ percent, onPick }: { percent: number; onPick: boolean }) {
 function CheckMark() {
   return (
     <span
-      className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-pick text-white"
+      className="absolute right-2 top-2 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-pick text-white"
       aria-hidden="true"
     >
       <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
@@ -1595,11 +1633,12 @@ function Tile({
   return (
     <label
       className={`relative flex cursor-pointer flex-col items-center gap-1 overflow-hidden rounded-2xl border-2 px-3 pb-4 text-center transition-colors has-[:focus-visible]:border-pick has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-pick-line ${
-        tag ? "pt-7" : "pt-4"
+        /* Con muestra, la etiqueta va encima de la foto: así todas las opciones quedan a la misma altura. */
+        media ? "pt-3" : tag ? "pt-7" : "pt-4"
       } ${checked ? "border-pick bg-pick-soft" : "border-line bg-sheet hover:border-pick-line hover:bg-pick-wash"}`}
     >
       <input type="radio" name={name} checked={checked} onChange={onChange} className="sr-only" />
-      {tag ? <CornerTag>{tag}</CornerTag> : null}
+      {tag ? <CornerTag overlay={Boolean(media)}>{tag}</CornerTag> : null}
       {checked ? <CheckMark /> : null}
       {media ? (
         <span className="mb-1 block w-full">{media}</span>
