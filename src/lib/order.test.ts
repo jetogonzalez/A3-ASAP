@@ -43,3 +43,26 @@ describe("isArtworkUrl", () => {
     assert.equal(isArtworkUrl("https://abc123.public.blob.vercel-storage.com/otro/logo.pdf"), false);
   });
 });
+
+describe("cotización", async () => {
+  const { decodeQuote, encodeQuote, quoteNumber } = await import("./quote");
+  const payload = {
+    v: 1 as const,
+    issued: "2026-10-16T14:00:00.000Z",
+    client: { name: "Ñandú Diseño Cía. Ltda.", document: "1790012345001" },
+    items: [card("express")],
+  };
+
+  it("viaja en el enlace sin perder tildes ni eñes", () => {
+    assert.deepEqual(decodeQuote(encodeQuote(payload)), payload);
+  });
+
+  it("rechaza un enlace alterado", () => {
+    assert.equal(decodeQuote("no-es-una-cotizacion"), null);
+  });
+
+  it("da siempre el mismo número para el mismo contenido", () => {
+    assert.equal(quoteNumber(payload), quoteNumber({ ...payload }));
+    assert.match(quoteNumber(payload), /^COT-261016-[0-9A-Z]{6}$/);
+  });
+});

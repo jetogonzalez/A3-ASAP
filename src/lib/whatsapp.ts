@@ -62,3 +62,36 @@ export function orderMessage(order: Order): string {
       : "¿Me pasan los datos para pagar?",
   ].join("\n");
 }
+
+/** Para pedir a la tienda la cotización formal de lo que ya se armó en la web. */
+export function quoteRequestMessage({
+  number,
+  clientName,
+  clientDocument,
+  items,
+  total,
+  link,
+}: {
+  number: string;
+  clientName: string;
+  clientDocument: string;
+  items: string[];
+  total: string;
+  link: string;
+}): string {
+  return [
+    `Hola ASAP, ¿me pueden enviar la cotización *${number}*?`,
+    "",
+    ...items.map((item) => `• ${item}`),
+    `*Total: ${total}*`,
+    "",
+    ...(clientName ? [`A nombre de: ${clientName}`] : []),
+    ...(clientDocument ? [`RUC o cédula: ${clientDocument}`] : []),
+    `Detalle: ${link}`,
+  ].join("\n");
+}
+
+/** Para lo que todavía no se arma en la web: se cotiza conversando. */
+export function customQuoteMessage(product: string): string {
+  return `Hola ASAP, quiero cotizar ${product}. ¿Me ayudan?`;
+}

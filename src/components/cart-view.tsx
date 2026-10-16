@@ -91,7 +91,13 @@ export function CartView() {
           href="/checkout"
           className="mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-press px-5 font-medium text-white hover:bg-press-deep"
         >
-          Continuar
+          Continuar con el pedido
+        </Link>
+        <Link
+          href="/cotizacion"
+          className="mt-2 inline-flex min-h-12 w-full items-center justify-center rounded-full border border-line px-5 font-medium text-ink hover:border-ink/30"
+        >
+          Hacer una cotización
         </Link>
       </aside>
     </div>

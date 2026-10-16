@@ -3,7 +3,7 @@ import { productHref } from "@/lib/catalog";
 
 export function SiteFooter() {
   return (
-    <footer className="mt-8 border-t border-line">
+    <footer className="mt-8 border-t border-line print:hidden">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 py-8 text-sm text-ink-soft md:flex-row md:items-center md:justify-between md:px-8">
         <p>ASAP · productos personalizados · USD · Quito y valles</p>
         <div className="flex flex-wrap gap-x-5 gap-y-2">

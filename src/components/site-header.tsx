@@ -27,7 +27,7 @@ export function SiteHeader() {
      * filas de pantalla en cada página.
      */
     <>
-      <header className="sticky top-0 z-40 border-b border-line bg-white">
+      <header className="sticky top-0 z-40 border-b border-line bg-white print:hidden">
         <div className="mx-auto flex w-full max-w-6xl items-center gap-2.5 px-4 py-2.5 md:gap-5 md:px-8 md:py-3">
           <Link href="/" className="shrink-0 text-xl font-semibold tracking-tight" aria-label="ASAP, inicio">
             ASAP
@@ -58,7 +58,7 @@ export function SiteHeader() {
         </div>
         <CategoryNav className="hidden border-t border-line md:block" pathname={pathname} />
       </header>
-      <CategoryNav className="border-b border-line bg-white md:hidden" pathname={pathname} />
+      <CategoryNav className="border-b border-line bg-white md:hidden print:hidden" pathname={pathname} />
     </>
   );
 }

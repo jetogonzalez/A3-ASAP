@@ -279,8 +279,11 @@ export function CheckoutForm() {
           aria-busy={pending}
           className="inline-flex min-h-12 cursor-pointer items-center justify-center rounded-full bg-press px-6 font-medium text-white hover:bg-press-deep disabled:cursor-wait disabled:opacity-60"
         >
-          {pending ? "Preparando el pedido…" : `Continuar por WhatsApp · ${formatUsd(total)}`}
+          {pending ? "Finalizando el pedido…" : `Finalizar pedido · ${formatUsd(total)}`}
         </button>
+        <p className="-mt-5 text-sm text-ink-soft">
+          Después te dejamos el mensaje listo para pagar por WhatsApp.
+        </p>
       </div>
 
       <aside className="rounded-[24px] border border-line bg-sheet p-5 lg:sticky lg:top-24">
