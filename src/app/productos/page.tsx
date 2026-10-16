@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { CatalogCard } from "@/components/catalog-card";
+import { FamilyGrid } from "@/components/family-grid";
 import { PRODUCT } from "@/lib/catalog";
 
 export const metadata: Metadata = {
@@ -23,10 +24,10 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       <p className="mt-2 max-w-xl text-sm leading-6 text-ink-soft">
         {q && !matches
           ? `No hay resultados para “${q}”. Hoy solo se piden ${PRODUCT.name.toLowerCase()}.`
-          : "Hoy se piden tarjetas de presentación. Papelería, catálogos, gran formato, pegatinas, empaque y textil se abren después."}
+          : "Las tarjetas se arman y piden aquí mismo. Papelería, catálogos, gran formato, pegatinas, empaque y textil se cotizan por WhatsApp."}
       </p>
       <div className="mt-8">
-        <CatalogCard />
+        {q && matches ? <CatalogCard /> : <FamilyGrid />}
       </div>
     </div>
   );

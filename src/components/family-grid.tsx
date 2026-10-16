@@ -1,0 +1,57 @@
+import Link from "next/link";
+import { ProductArt } from "@/components/product-art";
+import { WhatsappLogo } from "@/components/whatsapp-logo";
+import { defaultConfiguration } from "@/lib/catalog";
+import { FAMILIES, familyHref } from "@/lib/families";
+import { formatUsd } from "@/lib/money";
+import { quote } from "@/lib/pricing";
+
+/**
+ * Todas las familias de productos en una grilla. Las que ya se piden en línea
+ * muestran el precio de entrada; las demás llevan a cotizar. Una familia nueva
+ * en FAMILIES aparece aquí sola.
+ */
+export function FamilyGrid() {
+  const cardsFrom = formatUsd(quote({ ...defaultConfiguration("85x55"), quantity: 100 }).printingCents);
+
+  return (
+    <ul className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+      {FAMILIES.map((family, index) => (
+        <li key={family.slug} className="reveal-up" style={{ animationDelay: `${index * 50}ms` }}>
+          <Link
+            href={familyHref(family)}
+            className="family-card group flex h-full flex-col overflow-hidden rounded-[22px] border border-line bg-sheet"
+          >
+            <ProductArt kind={family.slug} className="aspect-[4/3] w-full" />
+            <span className="flex flex-1 flex-col gap-1 p-4">
+              <span className="flex items-center justify-between gap-2">
+                <span className="text-base font-semibold tracking-tight sm:text-lg">{family.label}</span>
+                <span
+                  aria-hidden="true"
+                  className="family-arrow grid size-7 shrink-0 place-items-center rounded-full bg-paper-deep text-ink"
+                >
+                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+                    <path d="m6 3 5 5-5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
+              </span>
+              <span className="text-sm leading-5 text-ink-soft">{family.note}</span>
+              <span className="mt-auto pt-3">
+                {family.live ? (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-moss-soft px-2.5 py-1 text-xs font-semibold text-press-deep">
+                    Pídelo en línea · desde {cardsFrom}
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-paper-deep px-2.5 py-1 text-xs font-semibold text-ink-soft">
+                    <WhatsappLogo size={13} brand />
+                    Cotiza por WhatsApp
+                  </span>
+                )}
+              </span>
+            </span>
+          </Link>
+        </li>
+      ))}
+    </ul>
+  );
+}

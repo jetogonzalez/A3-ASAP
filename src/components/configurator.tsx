@@ -8,6 +8,7 @@ import { FinishSwatch, type SwatchFaces } from "@/components/finish-swatch";
 import { WhatsappLogo } from "@/components/whatsapp-logo";
 import { LightStage } from "@/components/light-stage";
 import { ProductGallery } from "@/components/product-gallery";
+import { StickyColumn } from "@/components/sticky-column";
 import type { CartItemInput } from "@/lib/schema";
 import {
   PRODUCT,
@@ -293,15 +294,15 @@ export function Configurator({
   return (
     <>
     {/*
-      * Las opciones van antes que la descripción: lo que la persona viene a hacer
-      * es armar su tarjeta, no leer la ficha. La ficha queda al final, a lo ancho.
+      * En escritorio la ficha va debajo de la galería y la columna acompaña el
+      * scroll. En el teléfono va al final: primero se arma la tarjeta.
       */}
     <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
       {/*
         * La muestra acompaña mientras eliges: en escritorio queda fija arriba y
         * cada opción que tocas a la derecha se ve en ella sin tener que subir.
         */}
-      <div className="lg:sticky lg:top-32 lg:col-start-1 lg:row-start-1">
+      <StickyColumn className="space-y-8 lg:col-start-1 lg:row-start-1">
       <div>
         {/*
           * Las dos caras a la vez. Con un interruptor Frente/Reverso había que
@@ -346,7 +347,10 @@ export function Configurator({
           <p>{config.sides === 2 ? "Dos lados" : "Un lado"}</p>
         </div>
       </div>
-      </div>
+        <div className="hidden lg:block">
+          <DesignNotes />
+        </div>
+      </StickyColumn>
 
       <div className="space-y-8 pb-28 lg:col-start-2 lg:row-start-1 lg:pb-0">
         {/* El arte es el primer paso: todo lo demás se ve sobre tu diseño. */}
@@ -636,7 +640,7 @@ export function Configurator({
         </div>
       </div>
 
-      <div className="lg:col-span-2 lg:row-start-2">
+      <div className="lg:hidden">
         <DesignNotes />
       </div>
     </div>
