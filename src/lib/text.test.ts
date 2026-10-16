@@ -54,9 +54,13 @@ describe("documentProblem", () => {
     assert.match(documentProblem("cedula", "17100340") ?? "", /10 dígitos y escribiste 8/);
   });
 
-  it("con diez dígitos y el verificador mal, habla del último dígito y no del largo", () => {
+  it("con diez dígitos y el tercero de empresa, lo dice en vez de hablar del largo", () => {
     const problem = documentProblem("cedula", "1287563498") ?? "";
-    assert.match(problem, /último dígito/);
+    assert.match(problem, /tercer dígito/);
     assert.doesNotMatch(problem, /10 dígitos/);
+  });
+
+  it("con diez dígitos y el verificador mal, habla del último dígito", () => {
+    assert.match(documentProblem("cedula", "1710034064") ?? "", /último dígito/);
   });
 });
