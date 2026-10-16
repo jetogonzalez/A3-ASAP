@@ -214,6 +214,17 @@ export function Configurator({
     return picked.has(step) && value;
   }
 
+  /*
+   * Un paso se abre cuando eliges el anterior: así la persona sigue un camino y
+   * no tiene que adivinar por dónde empezar. Lo ya elegido queda siempre abierto.
+   */
+  const firstMissing = STEPS.findIndex((step) => !picked.has(step));
+  function stepState(step: (typeof STEPS)[number]): StepState {
+    const index = STEPS.indexOf(step);
+    const status = picked.has(step) ? "done" : index === firstMissing ? "current" : "locked";
+    return { number: index + 1, status, waitFor: index > 0 ? STEP_NAMES[STEPS[index - 1]] : "" };
+  }
+
   function takeFile(next: File | null) {
     setError(null);
     if (!next) {
@@ -393,7 +404,7 @@ export function Configurator({
             if (side === "back" && turningOn) choose("lados", { sides: 2 });
           }}
         />
-        <OptionGroup step="tamano" legend="Tamaño" value={picked.has("tamano") ? size.sizeLabel : undefined} hint="Las dos medidas que imprimimos hoy. El dibujo está a escala.">
+        <OptionGroup step="tamano" state={stepState("tamano")} legend="Tamaño" value={picked.has("tamano") ? size.sizeLabel : undefined} hint="Las dos medidas que imprimimos hoy. El dibujo está a escala.">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {SIZE_IDS.map((id) => (
               <Tile
@@ -410,7 +421,7 @@ export function Configurator({
           </div>
         </OptionGroup>
 
-        <OptionGroup step="papel" legend="Tipo de papel" value={picked.has("papel") ? (config.paper === "mate" ? "Mate" : "Brillante") : undefined} hint="Couche 300 g. Ya está incluido en la impresión.">
+        <OptionGroup step="papel" state={stepState("papel")} legend="Tipo de papel" value={picked.has("papel") ? (config.paper === "mate" ? "Mate" : "Brillante") : undefined} hint="Couche 300 g. Ya está incluido en la impresión.">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             <Tile
               name="papel"
@@ -433,7 +444,7 @@ export function Configurator({
         </OptionGroup>
 
         <OptionGroup
-          step="laminado"
+          step="laminado" state={stepState("laminado")}
           legend="Laminado"
           value={
             !picked.has("laminado")
@@ -471,7 +482,7 @@ export function Configurator({
         </OptionGroup>
 
         <OptionGroup
-          step="uv"
+          step="uv" state={stepState("uv")}
           legend="Brillo UV"
           value={picked.has("uv") ? (config.uv ? "UV selectivo" : "Sin UV") : undefined}
           hint={`Barniz brillante solo sobre las zonas que marques. Cargo fijo de taller: ${formatUsd(addons.uv)}.`}
@@ -497,7 +508,7 @@ export function Configurator({
         </OptionGroup>
 
         <OptionGroup
-          step="lados"
+          step="lados" state={stepState("lados")}
           legend="Opción de impresión"
           value={picked.has("lados") ? (config.sides === 1 ? "A una cara" : "A doble cara") : undefined}
           hint="Las dos opciones no se suman: eliges una y el precio cambia."
@@ -523,7 +534,7 @@ export function Configurator({
           </div>
         </OptionGroup>
 
-        <OptionGroup step="puntas" legend="Esquinas" value={picked.has("puntas") ? (config.rounded ? "Redondeadas" : "Rectas") : undefined}>
+        <OptionGroup step="puntas" state={stepState("puntas")} legend="Esquinas" value={picked.has("puntas") ? (config.rounded ? "Redondeadas" : "Rectas") : undefined}>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             <Tile
               name="puntas"
@@ -545,7 +556,7 @@ export function Configurator({
         </OptionGroup>
 
         <OptionGroup
-          step="cantidad"
+          step="cantidad" state={stepState("cantidad")}
           legend="Cantidad"
           value={picked.has("cantidad") ? `${config.quantity.toLocaleString("es-EC")} u.` : undefined}
           hint={`El precio de cada fila ya incluye los acabados que elegiste. El porcentaje compara el precio por tarjeta contra pedir ${QUANTITIES[0]} unidades, que con estos acabados salen en ${formatUsd(smallestRun.unitCents)} c/u.`}
@@ -618,6 +629,7 @@ export function Configurator({
         <DeliveryChoices
           orderedAt={orderedAt}
           selected={picked.has("entrega") ? config.delivery : null}
+          state={stepState("entrega")}
           hasArtwork={artworkReady}
           onChange={(delivery) => choose("entrega", { delivery })}
         />
@@ -700,15 +712,17 @@ function DeliveryChoices({
   selected,
   hasArtwork,
   onChange,
+  state,
 }: {
   orderedAt: string;
+  state: StepState;
   selected: DeliveryId | null;
   hasArtwork: boolean;
   onChange: (delivery: DeliveryId) => void;
 }) {
   return (
-    <fieldset data-step="entrega" className="scroll-mt-4">
-      <legend className="text-sm font-medium">Fecha de entrega estimada</legend>
+    <fieldset data-step="entrega" disabled={state.status === "locked"} className={`step scroll-mt-4 ${state.status === "locked" ? "is-locked" : ""}`}>
+      <StepLegend state={state} legend="Fecha de entrega estimada" />
       <p className="mt-1 mb-3 text-sm leading-6 text-ink-soft">
         Adelantar la entrega cuesta más. El recargo va una vez por pedido y se suma al total.
         {hasArtwork ? "" : " Sin archivo, la cuenta empieza cuando lo envíes."}
@@ -849,15 +863,8 @@ function ArtworkPanel({
           <h2 id="tu-diseno-titulo" className="text-lg font-semibold tracking-tight">
             Tu diseño
           </h2>
-          <p className="mt-0.5 text-sm leading-6 text-ink-soft">¿Cómo nos haces llegar el arte?</p>
+          <p className="mt-0.5 text-sm leading-6 text-ink-soft">Elige cómo nos haces llegar el arte. Puedes cambiarlo cuando quieras.</p>
         </div>
-        <a
-          href={template}
-          className="inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-full border border-line px-3 text-sm font-medium text-ink-soft transition-colors hover:border-ink/30 hover:text-ink"
-        >
-          <PdfIcon />
-          Plantilla
-        </a>
       </div>
 
       {/*
@@ -930,6 +937,9 @@ function ArtworkPanel({
             onPlace={onPlace}
           />
         ) : null}
+
+        {/* La plantilla sirve para armar el archivo: va donde se habla de archivos, no arriba suelta. */}
+        {method === "archivo" || method === "whatsapp" ? <TemplateTip href={template} sizeLabel={sizeLabel} /> : null}
 
         {method === "enlace" ? (
           <div>
@@ -1432,6 +1442,23 @@ function FeatureCheck() {
   );
 }
 
+/** Para quien todavía no tiene el arte: la plantilla con la medida y el sangrado. */
+function TemplateTip({ href, sizeLabel }: { href: string; sizeLabel: string }) {
+  return (
+    <a
+      href={href}
+      className="press mt-3 flex items-center gap-3 rounded-2xl border border-line px-4 py-3 transition-colors hover:border-ink/25 hover:bg-paper-deep/50"
+    >
+      <PdfIcon />
+      <span className="min-w-0 flex-1 text-sm leading-5">
+        <span className="block font-semibold">¿Aún no tienes el arte listo?</span>
+        <span className="block text-ink-soft">Descarga la plantilla de {sizeLabel} con el sangrado marcado.</span>
+      </span>
+      <span className="shrink-0 text-sm font-semibold text-press">Descargar PDF</span>
+    </a>
+  );
+}
+
 function PdfIcon() {
   return (
     <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true" className="shrink-0">
@@ -1577,28 +1604,63 @@ function SummaryLine({ label, note, value, included = false }: { label: string; 
   );
 }
 
+type StepState = { number: number; status: "done" | "current" | "locked"; waitFor: string };
+
 function OptionGroup({
   step,
+  state,
   legend,
   value,
   hint,
   children,
 }: {
   step: string;
+  state: StepState;
   legend: string;
   value?: string;
   hint?: string;
   children: React.ReactNode;
 }) {
+  const locked = state.status === "locked";
   return (
-    <fieldset data-step={step} className="scroll-mt-4">
-      <legend className="text-sm font-medium">
-        {legend}
-        {value ? <span className="font-semibold text-pick-deep">: {value}</span> : null}
-      </legend>
+    <fieldset data-step={step} disabled={locked} className={`step scroll-mt-4 ${locked ? "is-locked" : ""}`}>
+      <StepLegend state={state} legend={legend} value={value} />
       {hint ? <p className="mt-1 mb-3 text-sm leading-6 text-ink-soft">{hint}</p> : <div className="mb-3" />}
       {children}
     </fieldset>
+  );
+}
+
+/** El número del paso: azul el que toca, check verde los hechos, gris los que esperan. */
+function StepLegend({ state, legend, value }: { state: StepState; legend: string; value?: string }) {
+  return (
+    <legend className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-sm font-medium">
+      <span
+        className={`step-badge grid size-6 shrink-0 place-items-center rounded-full text-xs font-semibold tabular-nums ${
+          state.status === "done"
+            ? "bg-press text-white"
+            : state.status === "current"
+              ? "bg-pick text-white ring-4 ring-pick-soft"
+              : "bg-paper-deep text-ink-soft"
+        }`}
+        aria-hidden="true"
+      >
+        {state.status === "done" ? (
+          <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+            <path d="M2.5 6.2 4.8 8.5 9.5 3.8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        ) : (
+          state.number
+        )}
+      </span>
+      <span className="text-base font-semibold">
+        {legend}
+        {value ? <span className="text-pick-deep">: {value}</span> : null}
+      </span>
+      {state.status === "locked" ? (
+        <span className="text-xs font-normal text-ink-soft">Primero elige {state.waitFor}</span>
+      ) : null}
+    </legend>
   );
 }
 
