@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useSyncExternalStore } from "react";
 import { readLastOrder } from "@/components/last-order";
+import { WhatsappLogo } from "@/components/whatsapp-logo";
 import { formatLongDate, formatShortDate } from "@/lib/delivery";
 import { formatUsd } from "@/lib/money";
 import { IVA_LABEL } from "@/lib/tax";
@@ -62,7 +63,7 @@ export function OrderReceipt() {
           rel="noopener noreferrer"
           className="mt-4 inline-flex min-h-12 items-center gap-2 rounded-full bg-press px-5 text-sm font-semibold text-white hover:bg-press-deep"
         >
-          <WhatsappIcon />
+          <WhatsappLogo size={20} />
           Finalizar pedido en WhatsApp
         </a>
       </div>
@@ -137,14 +138,6 @@ export function OrderReceipt() {
         Armar otro pedido
       </Link>
     </>
-  );
-}
-
-function WhatsappIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor" aria-hidden="true" className="shrink-0">
-      <path d="M9 1.5a7.4 7.4 0 0 0-6.35 11.22L1.5 16.5l3.9-1.1A7.4 7.4 0 1 0 9 1.5Zm0 1.6a5.8 5.8 0 1 1-3 10.77l-.27-.17-2.1.6.6-2.05-.18-.28A5.8 5.8 0 0 1 9 3.1Zm-2.5 2.6c-.14 0-.36.05-.55.26-.19.2-.72.7-.72 1.7s.74 1.97.84 2.1c.1.14 1.42 2.26 3.5 3.08 1.74.68 2.1.55 2.47.51.38-.03 1.2-.48 1.37-.96.17-.47.17-.88.12-.96-.05-.09-.19-.14-.4-.24-.2-.1-1.19-.59-1.38-.65-.18-.07-.32-.1-.45.1-.14.2-.52.65-.64.78-.12.14-.23.15-.43.05-.2-.1-.85-.31-1.62-1-.6-.53-1-1.19-1.12-1.39-.11-.2-.01-.3.09-.4.09-.09.2-.23.3-.35.1-.12.13-.2.2-.34.06-.13.03-.25-.02-.35-.05-.1-.44-1.09-.61-1.49-.16-.38-.32-.33-.44-.34h-.5Z" />
-    </svg>
   );
 }
 

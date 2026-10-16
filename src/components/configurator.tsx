@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation";
 import { CardPreview } from "@/components/card-preview";
 import { useCart } from "@/components/cart-provider";
 import { FinishSwatch } from "@/components/finish-swatch";
+import { WhatsappLogo } from "@/components/whatsapp-logo";
 import { LightStage } from "@/components/light-stage";
+import { ProductGallery } from "@/components/product-gallery";
 import type { CartItemInput } from "@/lib/schema";
 import {
   PRODUCT,
@@ -293,33 +295,35 @@ export function Configurator({
           * Las dos caras a la vez. Con un interruptor Frente/Reverso había que
           * descubrir que existía una segunda cara; así se ve de una.
           */}
-        <LightStage
-          id="muestra"
-          className="flex min-h-[340px] scroll-mt-28 touch-pan-y flex-col items-center justify-center gap-6 rounded-[28px] bg-paper-deep/70 px-8 py-12 sm:flex-row sm:gap-5"
-        >
-          <figure className="flex w-full min-w-0 flex-1 flex-col items-center gap-2.5">
-            <CardPreview
-              config={config}
-              face="front"
-              pair={config.sides === 2}
-              artworkUrl={previewFront}
-            />
-            {config.sides === 2 ? (
-              <figcaption className="text-sm text-ink-soft">Frente</figcaption>
-            ) : null}
-          </figure>
-          {config.sides === 2 ? (
+        <ProductGallery config={config} front={previewFront} back={previewBack}>
+          <LightStage
+            id="muestra"
+            className="flex min-h-[340px] scroll-mt-28 touch-pan-y flex-col items-center justify-center gap-6 rounded-[28px] bg-paper-deep/70 px-8 py-12 sm:flex-row sm:gap-5"
+          >
             <figure className="flex w-full min-w-0 flex-1 flex-col items-center gap-2.5">
               <CardPreview
                 config={config}
-                face="back"
-                pair
-                artworkUrl={previewBack}
+                face="front"
+                pair={config.sides === 2}
+                artworkUrl={previewFront}
               />
-              <figcaption className="text-sm text-ink-soft">Reverso</figcaption>
+              {config.sides === 2 ? (
+                <figcaption className="text-sm text-ink-soft">Frente</figcaption>
+              ) : null}
             </figure>
-          ) : null}
-        </LightStage>
+            {config.sides === 2 ? (
+              <figure className="flex w-full min-w-0 flex-1 flex-col items-center gap-2.5">
+                <CardPreview
+                  config={config}
+                  face="back"
+                  pair
+                  artworkUrl={previewBack}
+                />
+                <figcaption className="text-sm text-ink-soft">Reverso</figcaption>
+              </figure>
+            ) : null}
+          </LightStage>
+        </ProductGallery>
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-ink-soft">
           <p>
             {size.sizeLabel} · {config.paper}
@@ -802,14 +806,24 @@ function ArtworkPanel({
   onPlace: (side: "front" | "back") => void;
 }) {
   const template = `/plantilla/${sizeId}?puntas=${rounded ? "1" : "0"}`;
-  const methods: Array<{ id: ArtworkMethod; title: string; hint: string; icon: React.ReactNode; done: boolean }> = [
+  const methods: Array<{ id: ArtworkMethod; label: string; title: string; hint: string; icon: React.ReactNode; done: boolean }> = [
     ...(startHref || canvaDesign
-      ? [{ id: "canva" as const, title: "Diseñar en Canva", hint: "Lienzo listo", icon: <CanvaMark />, done: Boolean(canvaDesign) }]
+      ? [{ id: "canva" as const, label: "Canva", title: "Diseñar en Canva", hint: "Abrimos un lienzo al tamaño exacto, con sangrado.", icon: <CanvaMark />, done: Boolean(canvaDesign) }]
       : []),
-    { id: "archivo", title: "Subir archivo", hint: "PDF, PNG o JPG", icon: <UploadGlyph />, done: Boolean(file || savedName) },
-    { id: "enlace", title: "Enlace de Canva", hint: "Ya lo tengo hecho", icon: <LinkGlyph />, done: canvaReady },
-    { id: "whatsapp", title: "Por WhatsApp", hint: "Al finalizar", icon: <ChatGlyph />, done: false },
+    { id: "archivo", label: "Archivo", title: "Subir archivo", hint: "PDF, PNG o JPG, hasta 8 MB.", icon: <UploadGlyph />, done: Boolean(file || savedName) },
+    { id: "enlace", label: "Enlace", title: "Enlace de Canva", hint: "Ya lo tienes hecho: pega el enlace.", icon: <LinkGlyph />, done: canvaReady },
+    { id: "whatsapp", label: "WhatsApp", title: "Por WhatsApp", hint: "Lo adjuntas en el chat al finalizar.", icon: <WhatsappLogo brand />, done: false },
   ];
+  const activeIndex = Math.max(0, methods.findIndex((option) => option.id === method));
+  const active = methods[activeIndex];
+  /* Hacia dónde entra el contenido: si eliges una opción a la derecha, llega desde la derecha. */
+  const [direction, setDirection] = useState<1 | -1>(1);
+
+  function pick(next: ArtworkMethod) {
+    const nextIndex = methods.findIndex((option) => option.id === next);
+    setDirection(nextIndex >= activeIndex ? 1 : -1);
+    onMethod(next);
+  }
 
   return (
     <section id="tu-diseno" aria-labelledby="tu-diseno-titulo" className="scroll-mt-28 rounded-[28px] border border-line bg-sheet p-5">
@@ -829,41 +843,58 @@ function ArtworkPanel({
         </a>
       </div>
 
+      {/*
+        * Control segmentado: la píldora blanca se desliza hasta la opción elegida.
+        * Las columnas miden lo mismo, así que basta con moverla un ancho por índice.
+        */}
       <div
         role="radiogroup"
         aria-label="Cómo enviar el diseño"
-        className="mt-4 grid grid-cols-2 gap-2"
+        className="relative mt-4 grid rounded-2xl bg-paper-deep p-1"
+        style={{ gridTemplateColumns: `repeat(${methods.length}, minmax(0, 1fr))` }}
       >
+        <span
+          aria-hidden="true"
+          className="segment-thumb absolute bottom-1 left-1 top-1 rounded-xl bg-sheet shadow-[0_1px_2px_rgba(26,29,33,0.08),0_6px_16px_-8px_rgba(26,29,33,0.35)]"
+          style={{
+            width: `calc((100% - 0.5rem) / ${methods.length})`,
+            transform: `translateX(${activeIndex * 100}%)`,
+          }}
+        />
         {methods.map((option) => {
           const checked = method === option.id;
           return (
             <label
               key={option.id}
-              className={`relative flex min-h-[4.5rem] cursor-pointer items-center gap-2.5 rounded-2xl border-2 px-2.5 py-2.5 sm:gap-3 sm:px-3 transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-pick-line ${
-                checked ? "border-pick bg-pick-soft" : "border-line bg-sheet hover:border-pick-line hover:bg-pick-wash"
-              } ${methods.length % 2 === 1 ? "last:col-span-2" : ""}`}
+              className={`segment-option relative z-10 flex min-h-[3.75rem] cursor-pointer flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-center has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-pick-line ${
+                checked ? "text-ink" : "text-ink-soft hover:text-ink"
+              }`}
             >
-              <input type="radio" name="metodo-diseno" checked={checked} onChange={() => onMethod(option.id)} className="sr-only" />
-              <span className={`grid size-9 shrink-0 place-items-center rounded-xl ${checked ? "bg-sheet text-pick-deep" : "bg-paper-deep text-ink-soft"}`} aria-hidden="true">
+              <input type="radio" name="metodo-diseno" checked={checked} onChange={() => pick(option.id)} className="sr-only" />
+              <span className="relative grid size-6 place-items-center" aria-hidden="true">
                 {option.icon}
+                {option.done ? (
+                  <span className="absolute -right-1.5 -top-1 grid size-3.5 place-items-center rounded-full bg-press text-white ring-2 ring-sheet">
+                    <svg width="7" height="7" viewBox="0 0 12 12" fill="none">
+                      <path d="M2.5 6.2 4.8 8.5 9.5 3.8" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </span>
+                ) : null}
               </span>
-              <span className="min-w-0">
-                <span className={`block text-sm leading-5 ${checked ? "font-semibold text-ink" : "font-medium text-ink"}`}>{option.title}</span>
-                <span className="block text-xs leading-4 text-ink-soft">{option.done ? "Listo" : option.hint}</span>
+              <span className={`text-xs leading-4 sm:text-[13px] ${checked ? "font-semibold" : "font-medium"}`}>
+                {option.label}
+                {option.done ? <span className="sr-only"> (listo)</span> : null}
               </span>
-              {option.done ? (
-                <span className="absolute right-2 top-2 grid size-4 place-items-center rounded-full bg-press text-white" aria-label="Listo">
-                  <svg width="9" height="9" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                    <path d="M2.5 6.2 4.8 8.5 9.5 3.8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </span>
-              ) : null}
             </label>
           );
         })}
       </div>
 
-      <div className="mt-4">
+      <div key={method} className={`segment-panel mt-4 ${direction === 1 ? "from-right" : "from-left"}`}>
+        <p className="mb-3 text-sm leading-6">
+          <span className="font-semibold">{active?.title}</span>
+          <span className="text-ink-soft"> · {active?.hint}</span>
+        </p>
         {method === "canva" ? (
           <CanvaBlock startHref={startHref} design={canvaDesign} status={canvaStatus} onRemove={onCanvaRemove} sizeLabel={sizeLabel} twoSided={twoSided} />
         ) : null}
@@ -916,8 +947,8 @@ function ArtworkPanel({
 
         {method === "whatsapp" ? (
           <div className="flex gap-3 rounded-2xl bg-paper-deep px-4 py-3.5 text-sm leading-6">
-            <span className="mt-0.5 text-press" aria-hidden="true">
-              <ChatGlyph />
+            <span className="mt-0.5" aria-hidden="true">
+              <WhatsappLogo brand size={20} />
             </span>
             <p className="text-ink-soft">
               <span className="font-medium text-ink">Al finalizar te dejamos el chat listo.</span> Adjunta ahí tu PDF, PNG o JPG. La fecha de entrega cuenta desde que lo recibimos.
@@ -1083,19 +1114,6 @@ function LinkGlyph() {
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
       <path d="M7.6 10.4a3 3 0 0 0 4.2 0l2.3-2.3a3 3 0 0 0-4.2-4.2l-.9.9" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
       <path d="M10.4 7.6a3 3 0 0 0-4.2 0l-2.3 2.3a3 3 0 0 0 4.2 4.2l.9-.9" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function ChatGlyph() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-      <path
-        d="M9 2.5a6.5 6.5 0 0 0-5.6 9.8L2.5 15.5l3.3-.9A6.5 6.5 0 1 0 9 2.5Z"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinejoin="round"
-      />
     </svg>
   );
 }

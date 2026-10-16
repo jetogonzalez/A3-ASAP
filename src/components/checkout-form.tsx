@@ -1,5 +1,6 @@
 "use client";
 
+import { WhatsappLogo } from "@/components/whatsapp-logo";
 import { startTransition, useActionState, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -278,8 +279,9 @@ export function CheckoutForm() {
           type="submit"
           disabled={pending}
           aria-busy={pending}
-          className="inline-flex min-h-12 cursor-pointer items-center justify-center rounded-full bg-press px-6 font-medium text-white hover:bg-press-deep disabled:cursor-wait disabled:opacity-60"
+          className="inline-flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-full bg-press px-6 font-medium text-white hover:bg-press-deep disabled:cursor-wait disabled:opacity-60"
         >
+          {pending ? null : <WhatsappLogo size={20} />}
           {pending ? "Preparando el pedido…" : `Continuar a WhatsApp · ${formatUsd(total)}`}
         </button>
         <p className="-mt-5 text-sm text-ink-soft">

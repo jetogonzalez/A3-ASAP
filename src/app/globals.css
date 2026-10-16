@@ -273,6 +273,100 @@ label:has(:checked) .swatch-sweep {
   transition: transform 900ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* Galería: las fotos se funden con un leve acercamiento, nada de saltos. */
+.gallery-slide {
+  opacity: 0;
+  transform: scale(0.985);
+  pointer-events: none;
+  transition:
+    opacity 420ms ease,
+    transform 620ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.gallery-slide.is-active {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+}
+
+.gallery-thumb {
+  transition:
+    box-shadow 200ms ease,
+    transform 160ms ease;
+}
+
+.gallery-thumb:active {
+  transform: scale(0.95);
+}
+
+.gallery-arrow {
+  transition:
+    opacity 200ms ease,
+    transform 160ms ease;
+}
+
+.gallery-arrow:active {
+  transform: translateY(-50%) scale(0.92);
+}
+
+@media (hover: hover) {
+  .gallery-arrow {
+    opacity: 0;
+  }
+
+  .group\/gallery:hover .gallery-arrow,
+  .gallery-arrow:focus-visible {
+    opacity: 1;
+  }
+}
+
+/* Control segmentado: la píldora se desliza con un leve rebote al llegar. */
+.segment-thumb {
+  transition: transform 460ms cubic-bezier(0.34, 1.32, 0.5, 1);
+  will-change: transform;
+}
+
+.segment-option {
+  transition:
+    color 200ms ease,
+    transform 160ms ease;
+}
+
+.segment-option:active {
+  transform: scale(0.96);
+}
+
+/* El contenido de cada opción entra desde el lado hacia donde te moviste. */
+@keyframes segment-from-right {
+  from {
+    opacity: 0;
+    transform: translateX(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes segment-from-left {
+  from {
+    opacity: 0;
+    transform: translateX(-18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.segment-panel.from-right {
+  animation: segment-from-right 380ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.segment-panel.from-left {
+  animation: segment-from-left 380ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 /* La tarjeta grande sigue al cursor (o al dedo) para que se vea el reflejo. */
 .light-stage {
   --lx: 30%;

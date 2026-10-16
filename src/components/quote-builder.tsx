@@ -1,5 +1,6 @@
 "use client";
 
+import { WhatsappLogo } from "@/components/whatsapp-logo";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -239,8 +240,9 @@ export function QuoteBuilder({ shared }: { shared: QuotePayload | null }) {
           <button
             type="button"
             onClick={askStore}
-            className="mt-4 inline-flex min-h-12 w-full cursor-pointer items-center justify-center rounded-full bg-press px-5 text-sm font-semibold text-white hover:bg-press-deep"
+            className="mt-4 inline-flex min-h-12 w-full cursor-pointer items-center justify-center rounded-full bg-press px-5 text-sm font-semibold text-white hover:bg-press-deep gap-2"
           >
+            <WhatsappLogo />
             Pedir cotización por WhatsApp
           </button>
         </section>
@@ -277,6 +279,7 @@ function EmptyQuote() {
           rel="noopener noreferrer"
           className={actionClass}
         >
+          <WhatsappLogo brand />
           Cotizar otro producto por WhatsApp
         </a>
       </div>

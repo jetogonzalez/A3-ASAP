@@ -1,3 +1,4 @@
+import { WhatsappLogo } from "@/components/whatsapp-logo";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { customQuoteMessage, whatsappHref } from "@/lib/whatsapp";
@@ -47,8 +48,9 @@ export default async function FamilyPage({ params }: FamilyPageProps) {
           href={whatsappHref(customQuoteMessage(family.label.toLowerCase()))}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex min-h-12 items-center rounded-full bg-press px-5 text-sm font-semibold text-white hover:bg-press-deep"
+          className="inline-flex min-h-12 items-center gap-2 rounded-full bg-press px-5 text-sm font-semibold text-white hover:bg-press-deep"
         >
+          <WhatsappLogo />
           Cotizar {family.label.toLowerCase()} por WhatsApp
         </a>
         <Link

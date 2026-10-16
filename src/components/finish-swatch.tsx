@@ -97,14 +97,19 @@ function FinishScene({ kind }: { kind: SwatchKind }) {
  * Una tarjeta acostada en la mesa. La sombra va pegada al plano de la mesa y
  * el canto son capas a 1 px de distancia, así el grosor sale de la perspectiva.
  */
-function Card3D({
+export function Card3D({
   paper,
   edge,
   width = "76%",
   turn = -16,
+  tilt = 50,
   shiftX = 0,
   shiftY = -3,
   lift = 0,
+  square = false,
+  radius = 2,
+  thickness = CARD_THICKNESS,
+  shadow = 5,
   children,
 }: {
   paper: string;
@@ -112,31 +117,44 @@ function Card3D({
   width?: string;
   /** Giro sobre la mesa, en grados. */
   turn?: number;
+  /** Cuánto se acuesta la tarjeta: 0 es de frente, 90 de canto. */
+  tilt?: number;
   shiftX?: number;
   shiftY?: number;
   /** Altura sobre la mesa: para apilar una tarjeta encima de otra. */
   lift?: number;
+  square?: boolean;
+  radius?: number;
+  thickness?: number;
+  /** Desenfoque de la sombra en px: más grande en escenas grandes. */
+  shadow?: number;
   children?: React.ReactNode;
 }) {
+  const corner = `${radius}px`;
   return (
     <span
-      className="absolute left-1/2 top-1/2 block aspect-[85/55]"
+      className={`absolute left-1/2 top-1/2 block ${square ? "aspect-square" : "aspect-[85/55]"}`}
       style={{
         width,
         transformStyle: "preserve-3d",
-        transform: `translate(-50%, -50%) translate(${shiftX}px, ${shiftY}px) rotateX(50deg) rotateZ(${turn}deg) translateZ(${lift}px)`,
+        transform: `translate(-50%, -50%) translate(${shiftX}px, ${shiftY}px) rotateX(${tilt}deg) rotateZ(${turn}deg) translateZ(${lift}px)`,
       }}
     >
       <span
-        className="absolute inset-0 rounded-[2px]"
-        style={{ background: "rgba(38,28,12,0.5)", filter: "blur(5px)", transform: "translate3d(2px, 5px, -1px) scale(1.03)" }}
+        className="absolute inset-0"
+        style={{
+          borderRadius: corner,
+          background: "rgba(38,28,12,0.5)",
+          filter: `blur(${shadow}px)`,
+          transform: `translate3d(${shadow * 0.4}px, ${shadow}px, -1px) scale(1.03)`,
+        }}
       />
-      {Array.from({ length: CARD_THICKNESS }, (_, layer) => (
-        <span key={layer} className="absolute inset-0 rounded-[2px]" style={{ background: edge, transform: `translateZ(${layer}px)` }} />
+      {Array.from({ length: thickness }, (_, layer) => (
+        <span key={layer} className="absolute inset-0" style={{ borderRadius: corner, background: edge, transform: `translateZ(${layer}px)` }} />
       ))}
       <span
-        className="absolute inset-0 overflow-hidden rounded-[2px] shadow-[inset_0_0_0_0.5px_rgba(0,0,0,0.08)]"
-        style={{ background: paper, transform: `translateZ(${CARD_THICKNESS}px)` }}
+        className="absolute inset-0 overflow-hidden shadow-[inset_0_0_0_0.5px_rgba(0,0,0,0.08)]"
+        style={{ borderRadius: corner, background: paper, transform: `translateZ(${thickness}px)` }}
       >
         {children}
       </span>

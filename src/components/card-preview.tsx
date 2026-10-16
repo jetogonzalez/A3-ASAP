@@ -6,6 +6,7 @@ export function CardPreview({
   face = "front",
   compact = false,
   pair = false,
+  fill = false,
   artworkUrl = null,
   company = "Estudio Norte",
   name = "Tu nombre",
@@ -16,6 +17,8 @@ export function CardPreview({
   compact?: boolean;
   /** Las dos caras juntas: cabe menos, así que el contenido va en tamaño chico. */
   pair?: boolean;
+  /** Solo la cara, ocupando todo el padre: para montarla sobre una tarjeta 3D. */
+  fill?: boolean;
   artworkUrl?: string | null;
   company?: string;
   name?: string;
@@ -23,7 +26,7 @@ export function CardPreview({
 }) {
   const size = SIZES[config.sizeId];
   const square = config.sizeId === "55x55";
-  const small = compact || pair;
+  const small = compact || pair || fill;
   /*
    * El laminado manda sobre el papel: uno mate apaga el brillo del couche
    * brillante. Antes se pintaban los dos y la muestra quedaba rarísima.
@@ -34,7 +37,9 @@ export function CardPreview({
   return (
     <div
       className={`relative inline-flex max-w-full ${
-        compact
+        fill
+          ? "h-full w-full"
+          : compact
           ? "w-[168px]"
           : pair
             ? square
@@ -54,9 +59,13 @@ export function CardPreview({
         </>
       )}
       <article
-        className={`light-card relative w-full overflow-hidden border border-ink/10 bg-sheet shadow-[0_28px_50px_-36px_rgba(28,23,18,0.7)] transition-[border-radius] duration-200 ${
-          square ? "aspect-square" : "aspect-[85/55]"
-        } ${config.rounded ? "rounded-[22px]" : "rounded-[3px]"} ${
+        className={`relative w-full overflow-hidden ${
+          fill
+            ? "h-full"
+            : `light-card border border-ink/10 shadow-[0_28px_50px_-36px_rgba(28,23,18,0.7)] transition-[border-radius] duration-200 ${
+                square ? "aspect-square" : "aspect-[85/55]"
+              } ${config.rounded ? "rounded-[22px]" : "rounded-[3px]"}`
+        } ${
           config.paper === "mate" && config.laminate !== "brillante" ? "bg-[#f7f3ec]" : "bg-white"
         }`}
         aria-label={

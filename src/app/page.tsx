@@ -1,3 +1,4 @@
+import { WhatsappLogo } from "@/components/whatsapp-logo";
 import Link from "next/link";
 import { HomeHero } from "@/components/home-hero";
 import { defaultConfiguration, productHref, QUANTITIES, type Configuration } from "@/lib/catalog";
@@ -168,9 +169,10 @@ export default function HomePage() {
                   href={whatsappHref(customQuoteMessage(family.label.toLowerCase()))}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex min-h-11 shrink-0 items-center text-sm font-semibold text-press underline-offset-4 hover:underline"
+                  className="inline-flex min-h-11 shrink-0 items-center gap-1.5 text-sm font-semibold text-press underline-offset-4 hover:underline"
                   aria-label={`Cotizar ${family.label} por WhatsApp`}
                 >
+                  <WhatsappLogo size={16} brand />
                   Cotizar
                 </a>
               </li>
