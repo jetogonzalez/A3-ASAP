@@ -250,7 +250,7 @@ export function QuoteBuilder({ shared }: { shared: QuotePayload | null }) {
           onClick={order}
           className="inline-flex min-h-12 w-full cursor-pointer items-center justify-center rounded-full bg-ink px-5 text-sm font-semibold text-white hover:bg-ink/85"
         >
-          {shared ? "Hacer este pedido" : "Finalizar pedido"}
+          {shared ? "Hacer este pedido" : "Hacer el pedido"}
         </button>
       </aside>
     </div>

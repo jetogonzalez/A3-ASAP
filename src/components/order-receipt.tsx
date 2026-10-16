@@ -44,15 +44,16 @@ export function OrderReceipt() {
 
   return (
     <>
-      <p className="text-xs uppercase tracking-[0.18em] text-moss">Falta un paso</p>
-      <h1 className="mt-3 whitespace-nowrap font-display text-4xl sm:text-5xl">{order.number}</h1>
-      <p className="mt-3 text-ink-soft">{placed}</p>
+      <p className="text-sm font-semibold text-moss">Último paso</p>
+      <h1 className="mt-2 text-4xl font-semibold tracking-tight text-balance sm:text-5xl">Finaliza tu pedido en WhatsApp</h1>
+      <p className="mt-3 text-ink-soft">
+        Pedido <span className="font-medium text-ink tabular-nums">{order.number}</span> · {placed}
+      </p>
 
-      {/* El pedido todavía no está cerrado: se confirma en el chat. Por eso este bloque va primero. */}
+      {/* El pedido todavía no está cerrado: se cierra en el chat. Por eso este bloque va primero. */}
       <div className="mt-6 rounded-[24px] border border-press/25 bg-moss-soft p-5">
-        <h2 className="font-medium">Envía el pedido por WhatsApp para confirmarlo</h2>
-        <p className="mt-1 text-sm leading-6 text-ink-soft">
-          El mensaje ya va escrito con el pedido, el total y tus datos de factura. Solo tienes que enviarlo y ahí te pasamos los datos para pagar con {order.payment.method === "deuna" ? "Deuna" : "transferencia bancaria"}.
+        <p className="text-sm leading-6 text-ink-soft">
+          El mensaje ya va escrito con el pedido, el total y tus datos de factura. Lo envías y ahí te pasamos los datos para pagar con {order.payment.method === "deuna" ? "Deuna" : "transferencia bancaria"}.
           {missingArtwork ? " Adjunta en el mismo chat el archivo de diseño que te falta." : ""}
         </p>
         <a
@@ -62,7 +63,7 @@ export function OrderReceipt() {
           className="mt-4 inline-flex min-h-12 items-center gap-2 rounded-full bg-press px-5 text-sm font-semibold text-white hover:bg-press-deep"
         >
           <WhatsappIcon />
-          Enviar el pedido {order.number}
+          Finalizar pedido en WhatsApp
         </a>
       </div>
 
