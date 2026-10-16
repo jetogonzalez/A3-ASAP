@@ -28,10 +28,10 @@ Los pedidos y cotizaciones llegan al 096 259 6566. El número está en `src/lib/
 
 El botón abre un lienzo del tamaño de la tarjeta con 3 mm de sangrado a 300 ppp (Canva Connect API). Al tocar «Volver» en Canva, `/api/canva/regreso` exporta el diseño en PDF y PNG, lo guarda en Vercel Blob y vuelve al configurador con el arte puesto. El inicio de sesión de Canva y los tokens viajan en cookies cifradas: no hay base de datos.
 
-En canva.com/developers, la app tiene registradas estas direcciones (cambiarlas al pasar a producción):
+La tienda vive en **https://estoesasap.com**. En canva.com/developers (app ASAP Diseños, Outside Canva):
 
-- Redirect URL: `https://<dominio>/api/canva/callback`
-- Return URL: `https://<dominio>/api/canva/regreso`
+- Redirect URLs: `https://estoesasap.com/api/canva/callback` y la de la vista previa, para probar ramas.
+- Return URL: `https://estoesasap.com/api/canva/regreso`. Canva acepta una sola: mientras se prueba una vista previa, va la dirección de esa vista previa.
 
 ## Variables de entorno
 
