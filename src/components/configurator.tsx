@@ -250,7 +250,7 @@ export function Configurator({
       * viene a hacer es armar su tarjeta, no leer la ficha. En escritorio la grilla
       * devuelve la ficha a su sitio, debajo de la muestra.
       */}
-    <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
+    <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:grid-rows-[auto_1fr]">
       <div className="space-y-8 lg:col-start-1 lg:row-start-1">
       <div>
         {/*
