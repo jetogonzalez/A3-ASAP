@@ -61,7 +61,7 @@ export function CardPreview({
       <article
         className={`relative w-full overflow-hidden ${
           fill
-            ? "h-full"
+            ? "@container h-full"
             : `light-card border border-ink/10 shadow-[0_28px_50px_-36px_rgba(28,23,18,0.7)] transition-[border-radius] duration-200 ${
                 square ? "aspect-square" : "aspect-[85/55]"
               } ${config.rounded ? "rounded-[22px]" : "rounded-[3px]"}`
@@ -80,20 +80,24 @@ export function CardPreview({
             <span className="artwork-sheen pointer-events-none absolute inset-y-0 left-0 w-1/2" aria-hidden="true" />
           </>
         ) : face === "front" ? (
-          <div className={`flex h-full flex-col justify-between ${small ? "p-3.5" : square ? "p-5" : "p-6 sm:p-7"}`}>
+          /*
+           * Montada en una escena o una miniatura, la cara se mide en unidades del
+           * contenedor (cqw): el texto se achica con la tarjeta y no la desborda.
+           */
+          <div className={`flex h-full flex-col justify-between ${fill ? "p-[7cqw]" : small ? "p-3.5" : square ? "p-5" : "p-6 sm:p-7"}`}>
             <div>
-              <p className={`font-display leading-none tracking-tight break-words ${small ? "text-base" : "text-2xl sm:text-3xl"}`}>{company}</p>
-              <p className={`uppercase tracking-[0.16em] text-ink-soft ${small ? "mt-1 text-[9px]" : "mt-2 text-[11px]"}`}>Quito</p>
+              <p className={`font-display leading-none tracking-tight break-words ${fill ? "text-[7.5cqw]" : small ? "text-base" : "text-2xl sm:text-3xl"}`}>{company}</p>
+              <p className={`uppercase tracking-[0.16em] text-ink-soft ${fill ? "mt-[1.5cqw] text-[2.6cqw]" : small ? "mt-1 text-[9px]" : "mt-2 text-[11px]"}`}>Quito</p>
             </div>
-            <div className={small ? "text-[11px] leading-4" : "text-sm leading-5"}>
+            <div className={fill ? "text-[3.4cqw] leading-[1.35]" : small ? "text-[11px] leading-4" : "text-sm leading-5"}>
               <p className="font-medium break-words">{name}</p>
               <p className="text-ink-soft break-words">{role}</p>
             </div>
           </div>
         ) : (
-          <div className={`flex h-full flex-col items-center justify-center gap-2 text-center ${small ? "p-3.5" : "p-6"}`}>
-            <p className={`font-display italic ${small ? "text-lg" : "text-3xl"}`}>ASAP</p>
-            <p className={`uppercase tracking-[0.18em] text-ink-soft ${small ? "text-[9px]" : "text-xs"}`}>Couche 300 g</p>
+          <div className={`flex h-full flex-col items-center justify-center text-center ${fill ? "gap-[2cqw] p-[7cqw]" : small ? "gap-2 p-3.5" : "gap-2 p-6"}`}>
+            <p className={`font-display italic ${fill ? "text-[8cqw]" : small ? "text-lg" : "text-3xl"}`}>ASAP</p>
+            <p className={`uppercase tracking-[0.18em] text-ink-soft ${fill ? "text-[2.6cqw]" : small ? "text-[9px]" : "text-xs"}`}>Couche 300 g</p>
           </div>
         )}
         {config.paper === "mate" && config.laminate === "none" ? (

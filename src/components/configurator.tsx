@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CardPreview } from "@/components/card-preview";
 import { useCart } from "@/components/cart-provider";
-import { FinishSwatch } from "@/components/finish-swatch";
+import { FinishSwatch, type SwatchFaces } from "@/components/finish-swatch";
 import { WhatsappLogo } from "@/components/whatsapp-logo";
 import { LightStage } from "@/components/light-stage";
 import { ProductGallery } from "@/components/product-gallery";
@@ -134,6 +134,15 @@ export function Configurator({
   const [error, setError] = useState<string | null>(null);
 
   const priced = useMemo(() => quote(config), [config]);
+  /* Cada opción se muestra sobre el diseño del cliente, con esa opción aplicada. */
+  function facesWith(variant: Partial<Configuration>): SwatchFaces {
+    const next = { ...config, ...variant };
+    return {
+      front: <CardPreview config={next} face="front" fill artworkUrl={previewFront} />,
+      back: <CardPreview config={next} face="back" fill artworkUrl={previewBack} />,
+    };
+  }
+
   /* Lo que paga por esta tanda: impresión, entrega y envío. El envío va dentro del total, no aparte. */
   const shipping = shippingQuote(packageGrams(config));
   const grandCents = priced.totalCents + shipping.cents;
@@ -284,12 +293,15 @@ export function Configurator({
   return (
     <>
     {/*
-      * En el teléfono las opciones van antes que la descripción: lo que la persona
-      * viene a hacer es armar su tarjeta, no leer la ficha. En escritorio la grilla
-      * devuelve la ficha a su sitio, debajo de la muestra.
+      * Las opciones van antes que la descripción: lo que la persona viene a hacer
+      * es armar su tarjeta, no leer la ficha. La ficha queda al final, a lo ancho.
       */}
-    <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:grid-rows-[auto_1fr]">
-      <div className="space-y-8 lg:col-start-1 lg:row-start-1">
+    <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
+      {/*
+        * La muestra acompaña mientras eliges: en escritorio queda fija arriba y
+        * cada opción que tocas a la derecha se ve en ella sin tener que subir.
+        */}
+      <div className="lg:sticky lg:top-32 lg:col-start-1 lg:row-start-1">
       <div>
         {/*
           * Las dos caras a la vez. Con un interruptor Frente/Reverso había que
@@ -334,48 +346,49 @@ export function Configurator({
           <p>{config.sides === 2 ? "Dos lados" : "Un lado"}</p>
         </div>
       </div>
-      <ArtworkPanel
-        method={method}
-        onMethod={(next) => {
-          setError(null);
-          setMethod(next);
-        }}
-        file={file}
-        savedName={editing?.artwork?.source === "archivo" ? editing.artwork.filename : undefined}
-        uploadsEnabled={uploadsEnabled}
-        canvaUrl={canvaUrl}
-        canvaReady={canvaReady}
-        canvaStartHref={
-          canvaEnabled
-            ? canvaStartHref(config, editId, Array.from(picked))
-            : null
-        }
-        twoSided={config.sides === 2}
-        canvaDesign={canvaDesign}
-        canvaStatus={canvaReturn?.status ?? null}
-        onCanvaRemove={() => setCanvaDesign(null)}
-        onCanvaUrl={(value) => {
-          setError(null);
-          setCanvaUrl(value);
-        }}
-        dragOver={dragOver}
-        onDragOver={() => setDragOver(true)}
-        onDragLeave={() => setDragOver(false)}
-        onFile={takeFile}
-        sizeId={config.sizeId}
-        sizeLabel={size.sizeLabel}
-        rounded={config.rounded}
-        error={error}
-        imageFaces={imageFaces}
-        onPlace={(side) => {
-          const turningOn = !imageFaces[side];
-          setImageFaces((current) => ({ ...current, [side]: !current[side] }));
-          if (side === "back" && turningOn) choose("lados", { sides: 2 });
-        }}
-      />
       </div>
 
-      <div className="space-y-8 pb-28 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:pb-0">
+      <div className="space-y-8 pb-28 lg:col-start-2 lg:row-start-1 lg:pb-0">
+        {/* El arte es el primer paso: todo lo demás se ve sobre tu diseño. */}
+        <ArtworkPanel
+          method={method}
+          onMethod={(next) => {
+            setError(null);
+            setMethod(next);
+          }}
+          file={file}
+          savedName={editing?.artwork?.source === "archivo" ? editing.artwork.filename : undefined}
+          uploadsEnabled={uploadsEnabled}
+          canvaUrl={canvaUrl}
+          canvaReady={canvaReady}
+          canvaStartHref={
+            canvaEnabled
+              ? canvaStartHref(config, editId, Array.from(picked))
+              : null
+          }
+          twoSided={config.sides === 2}
+          canvaDesign={canvaDesign}
+          canvaStatus={canvaReturn?.status ?? null}
+          onCanvaRemove={() => setCanvaDesign(null)}
+          onCanvaUrl={(value) => {
+            setError(null);
+            setCanvaUrl(value);
+          }}
+          dragOver={dragOver}
+          onDragOver={() => setDragOver(true)}
+          onDragLeave={() => setDragOver(false)}
+          onFile={takeFile}
+          sizeId={config.sizeId}
+          sizeLabel={size.sizeLabel}
+          rounded={config.rounded}
+          error={error}
+          imageFaces={imageFaces}
+          onPlace={(side) => {
+            const turningOn = !imageFaces[side];
+            setImageFaces((current) => ({ ...current, [side]: !current[side] }));
+            if (side === "back" && turningOn) choose("lados", { sides: 2 });
+          }}
+        />
         <OptionGroup step="tamano" legend="Tamaño" value={picked.has("tamano") ? size.sizeLabel : undefined} hint="Las dos medidas que imprimimos hoy. El dibujo está a escala.">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {SIZE_IDS.map((id) => (
@@ -402,7 +415,7 @@ export function Configurator({
               title="Mate"
               detail="Incluido"
               tag="Más vendido"
-              media={<FinishSwatch kind="papel-mate" />}
+              media={<FinishSwatch kind="papel-mate" faces={facesWith({ paper: "mate", laminate: "none" })} />}
             />
             <Tile
               name="papel"
@@ -410,7 +423,7 @@ export function Configurator({
               onChange={() => choose("papel", { paper: "brillante" })}
               title="Brillante"
               detail="Incluido"
-              media={<FinishSwatch kind="papel-brillante" />}
+              media={<FinishSwatch kind="papel-brillante" faces={facesWith({ paper: "brillante", laminate: "none" })} />}
             />
           </div>
         </OptionGroup>
@@ -436,7 +449,7 @@ export function Configurator({
               onChange={() => choose("laminado", { laminate: "none" })}
               title="Sin laminado"
               detail="Incluido"
-              media={<FinishSwatch kind="sin-laminado" />}
+              media={<FinishSwatch kind="sin-laminado" faces={facesWith({ laminate: "none" })} />}
             />
             {(["mate", "brillante"] as Finish[]).map((finish) => (
               <Tile
@@ -447,7 +460,7 @@ export function Configurator({
                 title={finish === "mate" ? "Laminado mate" : "Laminado brillante"}
                 detail={`+ ${formatUsd(addons.laminate)}`}
                 tag={finish === "mate" ? "Más vendido" : undefined}
-                media={<FinishSwatch kind={finish === "mate" ? "laminado-mate" : "laminado-brillante"} />}
+                media={<FinishSwatch kind={finish === "mate" ? "laminado-mate" : "laminado-brillante"} faces={facesWith({ laminate: finish })} />}
               />
             ))}
           </div>
@@ -466,7 +479,7 @@ export function Configurator({
               onChange={() => choose("uv", { uv: false })}
               title="Sin UV"
               detail="Incluido"
-              media={<FinishSwatch kind="sin-uv" />}
+              media={<FinishSwatch kind="sin-uv" faces={facesWith({ uv: false })} />}
             />
             <Tile
               name="uv"
@@ -474,7 +487,7 @@ export function Configurator({
               onChange={() => choose("uv", { uv: true })}
               title="UV selectivo"
               detail={`+ ${formatUsd(addons.uv)}`}
-              media={<FinishSwatch kind="uv" />}
+              media={<FinishSwatch kind="uv" faces={facesWith({ uv: true })} />}
             />
           </div>
         </OptionGroup>
@@ -492,7 +505,7 @@ export function Configurator({
               onChange={() => choose("lados", { sides: 1 })}
               title="A una cara"
               detail="Solo el frente"
-              media={<FinishSwatch kind="una-cara" />}
+              media={<FinishSwatch kind="una-cara" faces={facesWith({ sides: 1 })} />}
             />
             <Tile
               name="lados"
@@ -501,7 +514,7 @@ export function Configurator({
               title="A doble cara"
               detail="Frente y reverso"
               tag="Más vendido"
-              media={<FinishSwatch kind="doble-cara" />}
+              media={<FinishSwatch kind="doble-cara" faces={facesWith({ sides: 2 })} />}
             />
           </div>
         </OptionGroup>
@@ -514,7 +527,7 @@ export function Configurator({
               onChange={() => choose("puntas", { rounded: false })}
               title="Rectas"
               detail="Incluido"
-              media={<FinishSwatch kind="esquina-recta" />}
+              media={<FinishSwatch kind="esquina-recta" faces={facesWith({ rounded: false })} />}
             />
             <Tile
               name="puntas"
@@ -522,7 +535,7 @@ export function Configurator({
               onChange={() => choose("puntas", { rounded: true })}
               title="Redondeadas"
               detail={`+ ${formatUsd(addons.corners)}`}
-              media={<FinishSwatch kind="esquina-redonda" />}
+              media={<FinishSwatch kind="esquina-redonda" faces={facesWith({ rounded: true })} />}
             />
           </div>
         </OptionGroup>
@@ -623,7 +636,7 @@ export function Configurator({
         </div>
       </div>
 
-      <div className="lg:col-start-1 lg:row-start-2">
+      <div className="lg:col-span-2 lg:row-start-2">
         <DesignNotes />
       </div>
     </div>

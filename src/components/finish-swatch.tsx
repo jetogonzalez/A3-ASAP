@@ -34,7 +34,14 @@ const MATTE_PAPER = "#f4efe6";
 const PERSPECTIVE = "560px";
 const CARD_THICKNESS = 3;
 
-export function FinishSwatch({ kind }: { kind: SwatchKind }) {
+/**
+ * La cara que se pinta en la muestra. Si llega, es la tarjeta del cliente
+ * (su arte o la muestra de siempre) con la opción aplicada: así las opciones
+ * enseñan su diseño y no uno de ejemplo que se confunda con el suyo.
+ */
+export type SwatchFaces = { front: React.ReactNode; back?: React.ReactNode };
+
+export function FinishSwatch({ kind, faces }: { kind: SwatchKind; faces?: SwatchFaces }) {
   return (
     <span
       className="swatch relative block h-28 w-full overflow-hidden rounded-xl bg-[radial-gradient(110%_95%_at_35%_15%,#f6f4f0,#e2ddd5_62%,#cdc6bb)]"
@@ -44,28 +51,29 @@ export function FinishSwatch({ kind }: { kind: SwatchKind }) {
       {/* Viñeta: la luz cae en el centro de la mesa y se apaga en los bordes. */}
       <span className="pointer-events-none absolute inset-0 shadow-[inset_0_0_28px_rgba(60,50,35,0.18)]" />
       {kind === "esquina-recta" || kind === "esquina-redonda" ? (
-        <CornerScene rounded={kind === "esquina-redonda"} />
+        <CornerScene rounded={kind === "esquina-redonda"} face={faces?.front} />
       ) : kind === "una-cara" || kind === "doble-cara" ? (
-        <SidesScene double={kind === "doble-cara"} />
+        <SidesScene double={kind === "doble-cara"} faces={faces} />
       ) : (
-        <FinishScene kind={kind} />
+        <FinishScene kind={kind} face={faces?.front} />
       )}
     </span>
   );
 }
 
-function FinishScene({ kind }: { kind: SwatchKind }) {
-  const dark = kind === "uv" || kind === "sin-uv";
+function FinishScene({ kind, face }: { kind: SwatchKind; face?: React.ReactNode }) {
+  /* Sin el diseño del cliente, el UV se explica sobre negro; con su diseño, va sobre el suyo. */
+  const dark = !face && (kind === "uv" || kind === "sin-uv");
   const matte = kind === "papel-mate" || kind === "laminado-mate" || kind === "sin-laminado" || dark;
   const glossy = kind === "papel-brillante" || kind === "laminado-brillante";
   const laminated = kind === "laminado-mate" || kind === "laminado-brillante";
 
   return (
     <Card3D paper={dark ? "#1c1e20" : matte ? MATTE_PAPER : "#ffffff"} edge={dark ? "#0b0c0d" : "#d6cfc2"}>
-      <PrintedArt dark={dark} deep={laminated} muted={matte && !laminated && !dark} />
+      {face ?? <PrintedArt dark={dark} deep={laminated} muted={matte && !laminated && !dark} />}
 
-      {/* El grano solo se ve donde no hay capa encima que lo tape. */}
-      {matte && !laminated ? (
+      {/* El grano solo se ve donde no hay capa encima que lo tape. La cara del cliente ya trae el suyo. */}
+      {matte && !laminated && !face ? (
         <span className="absolute inset-0 opacity-70 mix-blend-multiply" style={{ backgroundImage: GRAIN }} />
       ) : null}
 
@@ -86,7 +94,7 @@ function FinishScene({ kind }: { kind: SwatchKind }) {
         </>
       ) : null}
 
-      {kind === "uv" ? <UvShine /> : null}
+      {kind === "uv" && !face ? <UvShine /> : null}
 
       {laminated ? <FilmCorner glossy={kind === "laminado-brillante"} /> : null}
     </Card3D>
@@ -217,7 +225,7 @@ function FilmCorner({ glossy }: { glossy: boolean }) {
 }
 
 /** De cerca, la esquina. Detrás asoma otra tarjeta para que se lea el canto. */
-function CornerScene({ rounded }: { rounded: boolean }) {
+function CornerScene({ rounded, face }: { rounded: boolean; face?: React.ReactNode }) {
   const radius = rounded ? "22px" : "2px";
   return (
     <>
@@ -234,23 +242,32 @@ function CornerScene({ rounded }: { rounded: boolean }) {
           boxShadow: "0 1px 0 #ddd6c9, 0 2px 0 #cdc5b6, 0 3px 0 #c2b9a9, 0 16px 18px -10px rgba(40,32,20,0.5)",
         }}
       >
-        <span className="absolute inset-0 opacity-60 mix-blend-multiply" style={{ backgroundImage: GRAIN }} />
-        <span className="absolute left-[10%] top-[16%] h-[18%] aspect-square rounded-full" style={{ background: INK }} />
-        <span className="absolute left-[36%] top-[20%] h-[6%] w-[30%] rounded-[1px]" style={{ background: INK }} />
+        {face ? (
+          /* La esquina de su tarjeta: la cara se dibuja al doble para que se lea de cerca. */
+          <span className="absolute left-0 top-0 block h-[77%] w-[91%]">{face}</span>
+        ) : (
+          <>
+            <span className="absolute inset-0 opacity-60 mix-blend-multiply" style={{ backgroundImage: GRAIN }} />
+            <span className="absolute left-[10%] top-[16%] h-[18%] aspect-square rounded-full" style={{ background: INK }} />
+            <span className="absolute left-[36%] top-[20%] h-[6%] w-[30%] rounded-[1px]" style={{ background: INK }} />
+          </>
+        )}
       </span>
     </>
   );
 }
 
 /** Dos tarjetas en abanico: la de abajo muestra el reverso, impreso o en blanco. */
-function SidesScene({ double }: { double: boolean }) {
+function SidesScene({ double, faces }: { double: boolean; faces?: SwatchFaces }) {
   return (
     <>
-      <Card3D paper={double ? INK : "#fbf9f5"} edge={double ? "#09391f" : "#d6cfc2"} width="58%" turn={8} shiftX={14} shiftY={-6}>
-        {double ? <span className="absolute right-[12%] top-[24%] h-[34%] aspect-square rounded-full bg-[#f4efe6]" /> : null}
+      <Card3D paper={double && !faces ? INK : "#fbf9f5"} edge={double && !faces ? "#09391f" : "#d6cfc2"} width="58%" turn={8} shiftX={14} shiftY={-6}>
+        {double ? (
+          (faces?.back ?? <span className="absolute right-[12%] top-[24%] h-[34%] aspect-square rounded-full bg-[#f4efe6]" />)
+        ) : null}
       </Card3D>
       <Card3D paper="#fbf9f5" edge="#d6cfc2" width="58%" turn={-18} shiftX={-16} shiftY={6} lift={4}>
-        <PrintedArt dark={false} deep={false} muted={false} />
+        {faces?.front ?? <PrintedArt dark={false} deep={false} muted={false} />}
       </Card3D>
     </>
   );
