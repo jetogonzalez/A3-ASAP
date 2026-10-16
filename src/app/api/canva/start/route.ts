@@ -5,16 +5,16 @@ import {
   authorizeUrl,
   canvaCredentials,
   canvaEnabled,
-  cookieOptions,
   createDesign,
   freshSession,
   newPkce,
   OAUTH_COOKIE,
   RETURN_COOKIE,
   safeBackPath,
-  seal,
   SESSION_COOKIE,
-  unseal,
+  readSealed,
+  writeSealed,
+  clearSealed,
   type CanvaJob,
   type CanvaSession,
 } from "@/server/canva";
@@ -41,14 +41,14 @@ export async function GET(request: NextRequest) {
     correlation: randomBytes(12).toString("base64url"),
   };
 
-  const saved = unseal<CanvaSession>(request.cookies.get(SESSION_COOKIE)?.value, credentials.clientSecret);
+  const saved = readSealed<CanvaSession>(request.cookies, SESSION_COOKIE, credentials.clientSecret);
   if (saved) {
     try {
       const session = await freshSession(credentials, saved);
       const editUrl = await createDesign(session.accessToken, job);
       const response = NextResponse.redirect(editUrl);
-      response.cookies.set(SESSION_COOKIE, seal(session, credentials.clientSecret), cookieOptions(60 * 60 * 24 * 30));
-      response.cookies.set(RETURN_COOKIE, seal(job, credentials.clientSecret), cookieOptions(60 * 60 * 24));
+      writeSealed(response.cookies, SESSION_COOKIE, session, credentials.clientSecret, 60 * 60 * 24 * 30);
+      writeSealed(response.cookies, RETURN_COOKIE, job, credentials.clientSecret, 60 * 60 * 24);
       return response;
     } catch {
       /* La sesión venció o se revocó: se vuelve a entrar a Canva. */
@@ -58,11 +58,7 @@ export async function GET(request: NextRequest) {
   const pkce = newPkce();
   const redirectUri = `${request.nextUrl.origin}/api/canva/callback`;
   const response = NextResponse.redirect(authorizeUrl(credentials, pkce.challenge, pkce.state, redirectUri));
-  response.cookies.set(
-    OAUTH_COOKIE,
-    seal({ ...job, verifier: pkce.verifier, state: pkce.state }, credentials.clientSecret),
-    cookieOptions(60 * 15),
-  );
-  response.cookies.delete(SESSION_COOKIE);
+  writeSealed(response.cookies, OAUTH_COOKIE, { ...job, verifier: pkce.verifier, state: pkce.state }, credentials.clientSecret, 60 * 15);
+  clearSealed(response.cookies, SESSION_COOKIE);
   return response;
 }

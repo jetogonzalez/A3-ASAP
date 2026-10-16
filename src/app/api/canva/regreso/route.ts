@@ -2,13 +2,13 @@ import { put } from "@vercel/blob";
 import { NextResponse, type NextRequest } from "next/server";
 import {
   canvaCredentials,
-  cookieOptions,
   exportDesign,
   freshSession,
   RETURN_COOKIE,
-  seal,
   SESSION_COOKIE,
-  unseal,
+  readSealed,
+  writeSealed,
+  clearSealed,
   verifyReturn,
   type CanvaJob,
   type CanvaSession,
@@ -27,20 +27,28 @@ export async function GET(request: NextRequest) {
   const origin = request.nextUrl.origin;
   const credentials = canvaCredentials();
   const job = credentials
-    ? unseal<CanvaJob>(request.cookies.get(RETURN_COOKIE)?.value, credentials.clientSecret)
+    ? readSealed<CanvaJob>(request.cookies, RETURN_COOKIE, credentials.clientSecret)
     : null;
   const back = job?.back ?? "/producto/tarjetas-de-presentacion";
   const fail = (status: string) => NextResponse.redirect(new URL(withCanvaStatus(back, status), origin));
 
   const token = request.nextUrl.searchParams.get("correlation_jwt");
   const saved = credentials
-    ? unseal<CanvaSession>(request.cookies.get(SESSION_COOKIE)?.value, credentials.clientSecret)
+    ? readSealed<CanvaSession>(request.cookies, SESSION_COOKIE, credentials.clientSecret)
     : null;
-  if (!credentials || !job || !token || !saved) return fail("error");
+  if (!credentials || !token || !saved) {
+    /* Queda en los registros de Vercel para saber qué faltó. */
+    console.error("canva_return_missing", { credentials: Boolean(credentials), token: Boolean(token), session: Boolean(saved), job: Boolean(job) });
+    return fail("error");
+  }
 
   try {
     const { designId, correlation } = await verifyReturn(credentials, token);
-    if (correlation !== job.correlation) return fail("error");
+    /* Sin la cookie del trabajo igual se trae el diseño: solo se pierde a qué página volver. */
+    if (job && correlation !== job.correlation) {
+      console.error("canva_return_correlation_mismatch");
+      return fail("error");
+    }
     const session = await freshSession(credentials, saved);
 
     const [pdfUrls, pngUrls] = await Promise.all([
@@ -68,8 +76,8 @@ export async function GET(request: NextRequest) {
     const response = NextResponse.redirect(
       new URL(withCanvaDesign(back, { pdf, front, back: back2 }), origin),
     );
-    response.cookies.set(SESSION_COOKIE, seal(session, credentials.clientSecret), cookieOptions(60 * 60 * 24 * 30));
-    response.cookies.delete(RETURN_COOKIE);
+    writeSealed(response.cookies, SESSION_COOKIE, session, credentials.clientSecret, 60 * 60 * 24 * 30);
+    clearSealed(response.cookies, RETURN_COOKIE);
     return response;
   } catch (error) {
     console.error("canva_return_failed", error instanceof Error ? error.message : "unknown");

@@ -58,6 +58,43 @@ export function unseal<T>(sealed: string | undefined, secret: string): T | null 
   }
 }
 
+/*
+ * Los tokens de Canva son largos y una cookie cifrada con los dos pasa de los
+ * 4 KB que acepta el navegador, que la descarta sin avisar. Por eso la sesión
+ * se guarda en pedazos: nombre.0, nombre.1…
+ */
+const CHUNK = 3600;
+const MAX_CHUNKS = 6;
+
+type CookieReader = { get(name: string): { value: string } | undefined };
+type CookieWriter = {
+  set(name: string, value: string, options: ReturnType<typeof cookieOptions>): unknown;
+  delete(name: string): unknown;
+};
+
+export function readSealed<T>(cookies: CookieReader, name: string, secret: string): T | null {
+  let joined = "";
+  for (let index = 0; index < MAX_CHUNKS; index += 1) {
+    const part = cookies.get(`${name}.${index}`)?.value;
+    if (!part) break;
+    joined += part;
+  }
+  return unseal<T>(joined || undefined, secret);
+}
+
+export function writeSealed(cookies: CookieWriter, name: string, value: unknown, secret: string, maxAge: number): void {
+  const sealed = seal(value, secret);
+  for (let index = 0; index < MAX_CHUNKS; index += 1) {
+    const part = sealed.slice(index * CHUNK, (index + 1) * CHUNK);
+    if (part) cookies.set(`${name}.${index}`, part, cookieOptions(maxAge));
+    else cookies.delete(`${name}.${index}`);
+  }
+}
+
+export function clearSealed(cookies: CookieWriter, name: string): void {
+  for (let index = 0; index < MAX_CHUNKS; index += 1) cookies.delete(`${name}.${index}`);
+}
+
 export const cookieOptions = (maxAge: number) => ({
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",

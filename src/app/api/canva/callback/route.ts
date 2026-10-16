@@ -1,14 +1,14 @@
 import { NextResponse, type NextRequest } from "next/server";
 import {
   canvaCredentials,
-  cookieOptions,
   createDesign,
   exchangeCode,
   OAUTH_COOKIE,
   RETURN_COOKIE,
-  seal,
   SESSION_COOKIE,
-  unseal,
+  readSealed,
+  writeSealed,
+  clearSealed,
   type CanvaJob,
   type OAuthPending,
 } from "@/server/canva";
@@ -19,17 +19,20 @@ export async function GET(request: NextRequest) {
   const origin = request.nextUrl.origin;
   const credentials = canvaCredentials();
   const pending = credentials
-    ? unseal<OAuthPending>(request.cookies.get(OAUTH_COOKIE)?.value, credentials.clientSecret)
+    ? readSealed<OAuthPending>(request.cookies, OAUTH_COOKIE, credentials.clientSecret)
     : null;
   const back = pending?.back ?? "/producto/tarjetas-de-presentacion";
   const fail = (status: string) => {
     const response = NextResponse.redirect(new URL(withCanvaStatus(back, status), origin));
-    response.cookies.delete(OAUTH_COOKIE);
+    clearSealed(response.cookies, OAUTH_COOKIE);
     return response;
   };
 
   const params = request.nextUrl.searchParams;
-  if (!credentials || !pending) return fail("error");
+  if (!credentials || !pending) {
+    console.error("canva_callback_missing", { credentials: Boolean(credentials), pending: Boolean(pending) });
+    return fail("error");
+  }
   if (params.get("error")) return fail("cancelado");
   const code = params.get("code");
   if (!code || params.get("state") !== pending.state) return fail("error");
@@ -44,9 +47,9 @@ export async function GET(request: NextRequest) {
     };
     const editUrl = await createDesign(session.accessToken, job);
     const response = NextResponse.redirect(editUrl);
-    response.cookies.delete(OAUTH_COOKIE);
-    response.cookies.set(SESSION_COOKIE, seal(session, credentials.clientSecret), cookieOptions(60 * 60 * 24 * 30));
-    response.cookies.set(RETURN_COOKIE, seal(job, credentials.clientSecret), cookieOptions(60 * 60 * 24));
+    clearSealed(response.cookies, OAUTH_COOKIE);
+    writeSealed(response.cookies, SESSION_COOKIE, session, credentials.clientSecret, 60 * 60 * 24 * 30);
+    writeSealed(response.cookies, RETURN_COOKIE, job, credentials.clientSecret, 60 * 60 * 24);
     return response;
   } catch (error) {
     console.error("canva_callback_failed", error instanceof Error ? error.message : "unknown");

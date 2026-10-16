@@ -39,3 +39,20 @@ describe("canva", () => {
     assert.equal(bad?.design, null);
   });
 });
+
+describe("cookies en pedazos", async () => {
+  const { readSealed, writeSealed } = await import("./canva");
+  it("guarda una sesión larga en varias cookies y la vuelve a leer", () => {
+    const jar = new Map<string, string>();
+    const writer = {
+      set: (name: string, value: string) => jar.set(name, value),
+      delete: (name: string) => jar.delete(name),
+    };
+    const session = { accessToken: "a".repeat(5000), refreshToken: "r".repeat(1200), expiresAt: 1 };
+    writeSealed(writer, "sesion", session, "secreto", 60);
+    assert.ok(jar.size > 1);
+    for (const value of jar.values()) assert.ok(value.length <= 3600);
+    const reader = { get: (name: string) => (jar.has(name) ? { value: jar.get(name) ?? "" } : undefined) };
+    assert.deepEqual(readSealed(reader, "sesion", "secreto"), session);
+  });
+});
