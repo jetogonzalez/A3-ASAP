@@ -19,6 +19,15 @@ export function SiteFooter() {
           <Link href="/carrito" className="hover:text-ink">
             Tu carrito
           </Link>
+          <Link href="/ayuda" className="hover:text-ink">
+            Ayuda
+          </Link>
+          <Link href="/terminos" className="hover:text-ink">
+            Términos
+          </Link>
+          <Link href="/privacidad" className="hover:text-ink">
+            Privacidad
+          </Link>
         </div>
       </div>
     </footer>
