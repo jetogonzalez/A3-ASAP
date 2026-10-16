@@ -20,10 +20,10 @@ export default async function QuotePage({ searchParams }: QuotePageProps) {
     <div className="mx-auto w-full max-w-6xl px-5 py-12 md:px-8 md:py-16 print:p-0">
       <div className="print:hidden">
         <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">Proforma</h1>
-        <p className="mt-3 max-w-xl leading-7 text-ink-soft">
+        <p className="mt-3 max-w-2xl text-balance leading-7 text-ink-soft">
           {shared
             ? "Te compartieron esta proforma. Los precios salen de la tabla de hoy y puedes convertirla en pedido."
-            : "Ponle el nombre de tu empresa, guárdala en PDF o compártela para que la aprueben. También te la podemos enviar."}
+            : "Pon el nombre de tu empresa y guárdala en PDF o compártela para que la aprueben. Si prefieres, te la enviamos nosotros."}
         </p>
       </div>
       <div className="mt-8 print:mt-0">
