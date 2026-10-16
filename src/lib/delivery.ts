@@ -42,13 +42,13 @@ export function formatLongDate(isoDate: string): string {
 }
 
 /**
- * Tres ritmos de entrega, al estilo de un portal de impresión.
- * El recargo es de demostración: no está en la hoja PVP.
- * El envío por provincia se sigue sumando al pagar.
+ * Tres ritmos de entrega. Los días cuentan desde el pedido hasta la puerta,
+ * producción y mensajería incluidas. El recargo va una sola vez por pedido:
+ * si dos tarjetas piden ritmos distintos, todo sale al más rápido.
  */
 export const DELIVERY_OPTIONS = [
   { id: "standard", name: "Estándar", cents: 0, earliestDays: 5, latestDays: 8 },
-  { id: "priority", name: "Prioritario", cents: 800, earliestDays: 3, latestDays: 5 },
+  { id: "priority", name: "Prioritaria", cents: 800, earliestDays: 3, latestDays: 5 },
   { id: "express", name: "Exprés", cents: 1500, earliestDays: 2, latestDays: 3 },
 ] as const;
 
@@ -64,4 +64,14 @@ export function deliveryWindow(orderedAtIso: string, id: DeliverySpeed = "standa
     earliest: addBusinessDays(orderedAtIso, option.earliestDays),
     latest: addBusinessDays(orderedAtIso, option.latestDays),
   };
+}
+
+/** El ritmo más rápido entre los que se pidieron: con ese sale todo el pedido. */
+export function fastestDelivery(ids: readonly string[]) {
+  let fastest: (typeof DELIVERY_OPTIONS)[number] = DELIVERY_OPTIONS[0];
+  for (const id of ids) {
+    const option = deliveryOption(id);
+    if (DELIVERY_OPTIONS.indexOf(option) > DELIVERY_OPTIONS.indexOf(fastest)) fastest = option;
+  }
+  return fastest;
 }

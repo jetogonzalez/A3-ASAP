@@ -49,11 +49,11 @@ export function shippingQuote(grams: number): ShippingQuote {
     cents: FIRST_KILO_CENTS + EXTRA_KILO_CENTS * (kilos - 1),
     grams,
     label: "Envío en Quito y valles",
-    detail: "Llega en 4 días hábiles.",
+    detail: "Entrega a domicilio, con la fecha del ritmo que elegiste.",
   };
 }
 
-export const SHIPPING_TABLE: Array<{ zone: string; price: string; time: string }> = [
-  { zone: "Quito y valles · hasta 1 kg", price: "$3.50", time: "4 días hábiles" },
-  { zone: "Cada kilo adicional", price: "+ $0.75", time: "4 días hábiles" },
+export const SHIPPING_TABLE: Array<{ zone: string; price: string }> = [
+  { zone: "Quito y valles · hasta 1 kg", price: "$3.50" },
+  { zone: "Cada kilo adicional", price: "+ $0.75" },
 ];

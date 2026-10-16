@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { isArtworkUrl } from "@/lib/artwork";
+import type { Order } from "@/lib/order";
 
 export const configurationSchema = z.object({
   sizeId: z.enum(["85x55", "55x55"]),
@@ -19,8 +21,7 @@ export const configurationSchema = z.object({
 
 export const artworkRefSchema = z
   .object({
-    id: z.uuid(),
-    token: z.string().regex(/^[a-f0-9]{64}$/),
+    url: z.string().max(500).refine(isArtworkUrl, "El archivo no es válido"),
     filename: z.string().regex(/^[\p{L}\p{N} ._()-]{1,80}$/u),
   })
   .nullable();
@@ -39,7 +40,7 @@ export type OrderState = {
   ok: boolean;
   message?: string;
   fieldErrors?: Record<string, string>;
-  orderId?: string;
+  order?: Order;
 };
 
 export const initialOrderState: OrderState = { ok: false };

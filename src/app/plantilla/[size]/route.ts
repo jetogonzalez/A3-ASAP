@@ -20,7 +20,7 @@ export async function GET(request: Request, { params }: TemplateRouteProps) {
     },
     rounded,
   );
-  const filename = `pliego-tarjeta-${size}${rounded ? "-puntas" : ""}.pdf`;
+  const filename = `asap-tarjeta-${size}${rounded ? "-puntas" : ""}.pdf`;
 
   return new Response(Buffer.from(pdf), {
     headers: {

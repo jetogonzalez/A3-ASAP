@@ -18,11 +18,11 @@ import {
 import { DELIVERY_OPTIONS, deliveryWindow, formatLongDate, formatShortDate } from "@/lib/delivery";
 import { shippingQuote } from "@/lib/ecuador";
 import { formatUsd } from "@/lib/money";
+import { upload } from "@vercel/blob/client";
+import { ARTWORK_TYPES, MAX_ARTWORK_BYTES } from "@/lib/artwork";
 import { addonCents, quote, type Quote } from "@/lib/pricing";
+import { safeFilename } from "@/lib/text";
 import { formatWeight, packageGrams } from "@/lib/weight";
-import { uploadArtwork } from "@/server/actions";
-
-const MAX_FILE = 8 * 1024 * 1024;
 
 /*
  * El `behavior: "smooth"` del navegador llega de golpe. Esto baja lo mismo pero
@@ -73,10 +73,13 @@ export function Configurator({
   initial,
   editId,
   orderedAt,
+  uploadsEnabled,
 }: {
   initial: Configuration;
   editId?: string;
   orderedAt: string;
+  /** Sin Vercel Blob conectado, el arte se ve en la muestra pero se manda por WhatsApp. */
+  uploadsEnabled: boolean;
 }) {
   const router = useRouter();
   const cart = useCart();
@@ -121,15 +124,17 @@ export function Configurator({
     return () => observer.disconnect();
   }, []);
 
-  useEffect(() => {
-    if (!file || !isPreviewImage(file)) {
-      setArtworkUrl(null);
-      return;
-    }
-    const url = URL.createObjectURL(file);
-    setArtworkUrl(url);
-    return () => URL.revokeObjectURL(url);
-  }, [file]);
+  /* La vista previa se arma al elegir el archivo y se suelta al cambiarlo o al salir. */
+  const previewRef = useRef<string | null>(null);
+  useEffect(() => () => {
+    if (previewRef.current) URL.revokeObjectURL(previewRef.current);
+  }, []);
+
+  function showPreview(next: File | null) {
+    if (previewRef.current) URL.revokeObjectURL(previewRef.current);
+    previewRef.current = next && isPreviewImage(next) ? URL.createObjectURL(next) : null;
+    setArtworkUrl(previewRef.current);
+  }
 
   function patch(partial: Partial<Configuration>) {
     setError(null);
@@ -166,19 +171,20 @@ export function Configurator({
     setError(null);
     if (!next) {
       setFile(null);
+      showPreview(null);
       setImageFaces({ front: true, back: false });
       return;
     }
-    const allowed = ["application/pdf", "image/png", "image/jpeg"];
-    if (next.type && !allowed.includes(next.type)) {
+    if (next.type && !ARTWORK_TYPES.some((type) => type === next.type)) {
       setError("Solo PDF, PNG o JPG.");
       return;
     }
-    if (next.size > MAX_FILE) {
+    if (next.size > MAX_ARTWORK_BYTES) {
       setError("El archivo supera 8 MB.");
       return;
     }
     setFile(next);
+    showPreview(next);
     if (isPreviewImage(next)) {
       document.getElementById("muestra")?.scrollIntoView({ behavior: "smooth", block: "center" });
     }
@@ -190,22 +196,20 @@ export function Configurator({
     setError(null);
     try {
       let artwork = editing?.artwork ?? null;
-      if (file) {
-        const body = new FormData();
-        body.set("artwork", file);
-        const uploaded = await uploadArtwork(body);
-        if (!uploaded.ok) {
-          setError(uploaded.message);
-          setPending(false);
-          return;
-        }
-        artwork = uploaded;
+      if (file && uploadsEnabled) {
+        const filename = safeFilename(file.name);
+        const blob = await upload(`artes/${filename}`, file, {
+          access: "public",
+          handleUploadUrl: "/api/arte",
+          contentType: file.type || undefined,
+        });
+        artwork = { url: blob.url, filename };
       }
       if (editing) cart.updateItem(editing.id, config, artwork);
       else cart.addItem(config, artwork);
       router.push("/carrito");
     } catch {
-      setError("No pudimos guardar el archivo. Inténtalo de nuevo.");
+      setError("No pudimos subir el archivo. Inténtalo de nuevo, o quítalo y mándalo por WhatsApp al confirmar.");
       setPending(false);
     }
   }
@@ -263,6 +267,7 @@ export function Configurator({
       <ArtworkPanel
         file={file}
         savedName={editing?.artwork?.filename}
+        uploadsEnabled={uploadsEnabled}
         dragOver={dragOver}
         onDragOver={() => setDragOver(true)}
         onDragLeave={() => setDragOver(false)}
@@ -450,7 +455,7 @@ export function Configurator({
                * dejaba 500 y 1.000 con el mismo porcentaje.
                */
               const saving = Math.round(
-                (1 - row.totalCents / quantity / (smallestRun.totalCents / QUANTITIES[0])) * 100,
+                (1 - row.printingCents / quantity / (smallestRun.printingCents / QUANTITIES[0])) * 100,
               );
               return (
                 <label
@@ -490,7 +495,7 @@ export function Configurator({
                         checked ? "font-semibold" : "font-medium"
                       }`}
                     >
-                      {formatUsd(row.totalCents)}
+                      {formatUsd(row.printingCents)}
                     </span>
                     <span
                       className="block text-xs tabular-nums text-ink-soft"
@@ -507,7 +512,7 @@ export function Configurator({
         <DeliveryChoices
           orderedAt={orderedAt}
           selected={picked.has("entrega") ? config.delivery : null}
-          hasArtwork={Boolean(file || editing?.artwork)}
+          hasArtwork={Boolean((uploadsEnabled && file) || editing?.artwork)}
           onChange={(delivery) => choose("entrega", { delivery })}
         />
         <div ref={summaryRef} data-step="resumen" className="scroll-mt-4">
@@ -596,7 +601,7 @@ function DeliveryChoices({
     <fieldset data-step="entrega" className="scroll-mt-4">
       <legend className="text-sm font-medium">Fecha de entrega estimada</legend>
       <p className="mt-1 mb-3 text-sm leading-6 text-ink-soft">
-        Adelantar la producción cuesta más y el recargo se suma al total.
+        Adelantar la entrega cuesta más. El recargo va una vez por pedido y se suma al total.
         {hasArtwork ? "" : " Sin archivo, la cuenta empieza cuando lo envíes."}
       </p>
       <div className="grid gap-2" role="radiogroup" aria-label="Fecha de entrega estimada">
@@ -656,6 +661,7 @@ function DeliveryChoices({
 function ArtworkPanel({
   file,
   savedName,
+  uploadsEnabled,
   dragOver,
   onDragOver,
   onDragLeave,
@@ -670,6 +676,7 @@ function ArtworkPanel({
 }: {
   file: File | null;
   savedName?: string;
+  uploadsEnabled: boolean;
   dragOver: boolean;
   onDragOver: () => void;
   onDragLeave: () => void;
@@ -692,15 +699,21 @@ function ArtworkPanel({
     : invalid
       ? error
       : file
-        ? formatFileSize(file.size)
+        ? uploadsEnabled
+          ? formatFileSize(file.size)
+          : `${formatFileSize(file.size)} · solo para la muestra, lo mandas por WhatsApp`
         : savedName
           ? "Ya está en este pedido. Puedes cambiarlo."
-          : "También puedes enviarlo después de pedir.";
+          : "También puedes mandarlo por WhatsApp al confirmar.";
 
   return (
     <section id="tu-diseno" aria-label="Tu diseño" className="scroll-mt-28 rounded-[28px] border border-line bg-sheet p-5">
       <h2 className="text-lg font-semibold tracking-tight">Tu diseño</h2>
-      <p className="mt-1 text-sm leading-6 text-ink-soft">PDF, PNG o JPG de hasta 8 MB.</p>
+      <p className="mt-1 text-sm leading-6 text-ink-soft">
+        {uploadsEnabled
+          ? "PDF, PNG o JPG de hasta 8 MB. Nos llega junto con el pedido."
+          : "PDF, PNG o JPG de hasta 8 MB. Míralo aquí en la muestra y mándanos el archivo por WhatsApp al confirmar."}
+      </p>
       {/* El input vive fuera de la zona de arrastre porque "Cambiar" también lo abre. */}
       <input
         id="archivo"
@@ -870,7 +883,7 @@ const DESIGN_RULES = [
   "La cobertura de tinta no debe pasar del 300 %.",
   "Evita un marco pegado al borde: el corte puede comerlo.",
   "Si pides puntas redondeadas, aparta el contenido de las esquinas.",
-  "PDF, PNG o JPG, hasta 8 MB. Puedes pedirlo ahora y mandar el arte después.",
+  "PDF, PNG o JPG, hasta 8 MB. Puedes pedir ahora y mandar el arte por WhatsApp.",
 ] as const;
 
 const TEMPLATES = [
@@ -895,7 +908,7 @@ const QUESTIONS = [
   },
   {
     q: "¿Cuál es el plazo más corto?",
-    a: "La entrega exprés sale entre 2 y 3 días hábiles en Quito y los valles. Es un recargo de demostración. Sin archivo, el plazo empieza cuando lo recibimos.",
+    a: "La entrega exprés llega a tu puerta entre 2 y 3 días hábiles, en Quito y los valles. Se cobra una sola vez por pedido. Sin archivo, el plazo empieza cuando lo recibimos por WhatsApp.",
   },
   {
     q: "¿Cómo se imprimen?",

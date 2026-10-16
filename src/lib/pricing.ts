@@ -21,8 +21,14 @@ export type Quote = {
   uvCents: number;
   cornersCents: number;
   deliveryCents: number;
+  /** Solo la impresión y los acabados, sin el recargo de entrega. */
+  printingCents: number;
+  /** El total de esta tarjeta sola, con su recargo de entrega. */
   totalCents: number;
+  /** Precio por tarjeta, sin el recargo: la entrega no cambia lo que cuesta imprimir. */
   unitCents: number;
+  /** Los renglones de impresión, sin la entrega (va una sola vez por pedido). */
+  printingLines: QuoteLine[];
   lines: QuoteLine[];
 };
 
@@ -33,7 +39,8 @@ export function quote(config: Configuration): Quote {
   const uvCents = config.uv ? toCents(tier.uv) : 0;
   const cornersCents = config.rounded ? toCents(tier.corners) : 0;
   const deliveryCents = deliveryOption(config.delivery).cents;
-  const totalCents = baseCents + laminateCents + uvCents + cornersCents + deliveryCents;
+  const printingCents = baseCents + laminateCents + uvCents + cornersCents;
+  const totalCents = printingCents + deliveryCents;
 
   const lines: QuoteLine[] = [
     {
@@ -55,6 +62,7 @@ export function quote(config: Configuration): Quote {
   }
   if (config.uv) lines.push({ label: "UV selectivo", cents: uvCents });
   if (config.rounded) lines.push({ label: "Puntas redondeadas", cents: cornersCents });
+  const printingLines = [...lines];
   const speed = deliveryOption(config.delivery);
   lines.push({
     label: `Entrega ${speed.name.toLowerCase()}`,
@@ -69,9 +77,11 @@ export function quote(config: Configuration): Quote {
     uvCents,
     cornersCents,
     deliveryCents,
+    printingCents,
     totalCents,
-    unitCents: Math.round(totalCents / config.quantity),
+    unitCents: Math.round(printingCents / config.quantity),
     lines,
+    printingLines,
   };
 }
 
@@ -99,6 +109,5 @@ export function describeConfiguration(config: Configuration): string {
   if (config.laminate !== "none") parts.push(`laminado ${config.laminate}`);
   if (config.uv) parts.push("UV selectivo");
   if (config.rounded) parts.push("puntas redondeadas");
-  parts.push(`entrega ${deliveryOption(config.delivery).name.toLowerCase()}`);
   return parts.join(" · ");
 }

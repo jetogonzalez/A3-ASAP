@@ -39,7 +39,12 @@ export default async function ProductPage({ params, searchParams }: ProductPageP
         </div>
       </div>
       <div className="mt-8">
-        <Configurator initial={initial} editId={editId} orderedAt={new Date().toISOString()} />
+        <Configurator
+          initial={initial}
+          editId={editId}
+          orderedAt={new Date().toISOString()}
+          uploadsEnabled={Boolean(process.env.BLOB_READ_WRITE_TOKEN)}
+        />
       </div>
     </div>
   );

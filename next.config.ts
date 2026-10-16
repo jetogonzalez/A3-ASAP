@@ -8,7 +8,8 @@ const contentSecurityPolicy = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self'",
-  `connect-src 'self'${isDev ? " ws: wss:" : ""}`,
+  /* vercel.com/api/blob es a donde el navegador sube el arte. */
+  `connect-src 'self' https://vercel.com${isDev ? " ws: wss:" : ""}`,
   "frame-src 'none'",
   "frame-ancestors 'none'",
   "base-uri 'self'",
@@ -76,11 +77,6 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
-  experimental: {
-    serverActions: {
-      bodySizeLimit: "8mb",
-    },
-  },
   async headers() {
     return [
       {
