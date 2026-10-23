@@ -8,12 +8,15 @@
   --ink: #141414;
   --ink-soft: #5c6570;
   --line: #e3e6ea;
+  /* El azul de la marca se usa de acento: logo, links, foco y etiquetas chicas. */
   --brand: #4660ff;
-  --press: #4660ff;
-  --press-deep: #2f47db;
-  /* «Incluido» y «en línea» van en el azul de la marca. */
-  --moss: #4660ff;
-  --moss-soft: #edf0ff;
+  --brand-soft: #eef0ff;
+  /* Botones principales en negro de marca: sobrios, y dejan que el azul destaque poco y bien. */
+  --press: #141414;
+  --press-deep: #3a3a3a;
+  /* Verde solo para lo que ya va incluido o salió bien. */
+  --moss: #1d7f46;
+  --moss-soft: #e8f6ee;
   /*
    * La selección va en negro de marca: con el azul ya puesto en los botones,
    * un segundo azul para lo elegido se confundía con «toca aquí».
@@ -24,6 +27,17 @@
   /* Grises tenues para el hover: insinúan la selección sin competir con ella. */
   --pick-line: #c9ccd2;
   --pick-wash: #f7f8f9;
+  /*
+   * Tintas de imprenta para las categorías: un fondo suave y un acento del
+   * mismo tono. Le dan color al sitio sin que todo sea azul.
+   */
+  --tint-cyan: #e0f3fb;
+  --tint-magenta: #fce6f1;
+  --tint-yellow: #fff5cf;
+  --tint-green: #e3f6e8;
+  --tint-peach: #ffe9df;
+  --tint-lilac: #ecebff;
+  --tint-teal: #def3ef;
   /* Colores de los tres ritmos de entrega, los mismos del material de marca. */
   --speed-standard: #2db84b;
   --speed-priority: #ffc727;
@@ -47,6 +61,7 @@
   --color-ink-soft: var(--ink-soft);
   --color-line: var(--line);
   --color-brand: var(--brand);
+  --color-brand-soft: var(--brand-soft);
   --color-press: var(--press);
   --color-press-deep: var(--press-deep);
   --color-moss: var(--moss);
@@ -59,6 +74,13 @@
   --color-speed-standard: var(--speed-standard);
   --color-speed-priority: var(--speed-priority);
   --color-speed-express: var(--speed-express);
+  --color-tint-cyan: var(--tint-cyan);
+  --color-tint-magenta: var(--tint-magenta);
+  --color-tint-yellow: var(--tint-yellow);
+  --color-tint-green: var(--tint-green);
+  --color-tint-peach: var(--tint-peach);
+  --color-tint-lilac: var(--tint-lilac);
+  --color-tint-teal: var(--tint-teal);
   --color-flag: var(--flag);
   --color-flag-ink: var(--flag-ink);
   --color-alert: var(--alert);
@@ -208,7 +230,7 @@ details[open] > summary .disclosure-mark {
 }
 
 :focus-visible {
-  outline: 2px solid var(--pick);
+  outline: 2px solid var(--brand);
   outline-offset: 2px;
 }
 
@@ -339,7 +361,17 @@ label:has(:checked) .swatch-sweep {
     border-color 200ms ease;
 }
 
+.family-card .product-art-stage,
+.family-card .product-illustration-body {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
 .family-card .product-art-stage {
+  transition: transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.family-card .product-illustration-body {
   transition: transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -357,7 +389,8 @@ label:has(:checked) .swatch-sweep {
     box-shadow: 0 24px 40px -28px rgba(20, 20, 20, 0.55);
   }
 
-  .family-card:hover .product-art-stage {
+  .family-card:hover .product-art-stage,
+  .family-card:hover .product-illustration-body {
     transform: scale(1.06);
   }
 
@@ -550,17 +583,16 @@ label:has(:checked) > .method-logo {
 }
 
 /*
- * La mesa de corte del taller: cuadrícula fina cada 6 mm y una más marcada
- * cada 3 cm. Es el único fondo con carácter del sitio; todo lo demás va blanco.
- * Va en un azul de marca más hondo que el del logo, para que el texto blanco lea bien.
+ * La mesa de corte del taller, en claro: cuadrícula fina cada 6 mm y una más
+ * marcada cada 3 cm, en gris apenas visible. El color lo ponen los productos.
  */
 .cutting-mat {
-  background-color: #2d43d6;
+  background-color: #f6f7f9;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.16) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.16) 1px, transparent 1px),
-    linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+    linear-gradient(rgba(20, 20, 20, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(20, 20, 20, 0.06) 1px, transparent 1px),
+    linear-gradient(rgba(20, 20, 20, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(20, 20, 20, 0.025) 1px, transparent 1px);
   background-size:
     120px 120px,
     120px 120px,
@@ -569,16 +601,27 @@ label:has(:checked) > .method-logo {
   background-position: -1px -1px;
 }
 
-/* La regla del borde: una raya por milímetro (4 px) y una larga por centímetro. */
-.mat-ruler {
-  background-image:
-    linear-gradient(90deg, rgba(255, 255, 255, 0.55) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.3) 1px, transparent 1px);
-  background-size:
-    40px 12px,
-    4px 6px;
-  background-repeat: repeat-x;
-  background-position: 0 0;
+/*
+ * La barra de color que traen los pliegos impresos para calibrar las tintas:
+ * cian, magenta, amarillo y negro, más los colores de la marca.
+ */
+.color-bar {
+  display: flex;
+  height: 10px;
+}
+
+.color-bar > span {
+  flex: 1;
+}
+
+/* El slider se mueve con el dedo o las flechas: la barra del navegador sobra. */
+.product-rail {
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+}
+
+.product-rail::-webkit-scrollbar {
+  display: none;
 }
 
 .mat-field {

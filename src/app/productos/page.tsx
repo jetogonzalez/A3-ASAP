@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { CatalogCard } from "@/components/catalog-card";
 import { FamilyGrid } from "@/components/family-grid";
-import { LaunchProductCard } from "@/components/launch-product-card";
+import { LaunchProductTile } from "@/components/launch-product-tile";
 import { PRODUCT } from "@/lib/catalog";
 import { searchLaunchProducts } from "@/lib/launch-products";
 
@@ -32,7 +32,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       </p>
       <div className="mt-8">
         {q && matches ? (
-          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
             {cardsMatch ? (
               <li>
                 <CatalogCard />
@@ -40,7 +40,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
             ) : null}
             {launchMatches.map((product) => (
               <li key={product.id}>
-                <LaunchProductCard product={product} />
+                <LaunchProductTile product={product} />
               </li>
             ))}
           </ul>

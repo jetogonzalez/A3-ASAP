@@ -246,13 +246,13 @@ export function QuoteBuilder({ shared }: { shared: QuotePayload | null }) {
             </a>
           </div>
           {notice ? (
-            <p role="status" className="mt-3 text-sm text-press-deep">
+            <p role="status" className="mt-3 text-sm text-moss">
               {notice}
             </p>
           ) : null}
         </section>
 
-        <section className="rounded-[20px] border border-press/25 bg-moss-soft p-5">
+        <section className="rounded-[20px] border border-moss/30 bg-moss-soft p-5">
           <h2 className="text-lg font-semibold">¿Te la enviamos nosotros?</h2>
           <p className="mt-1 text-sm leading-6 text-ink-soft">
             Te escribimos por WhatsApp con la proforma formal a nombre de tu empresa.

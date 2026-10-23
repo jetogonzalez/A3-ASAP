@@ -4,7 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BrandLogo } from "@/components/brand-logo";
 import { useCart } from "@/components/cart-provider";
+import { PRODUCT } from "@/lib/catalog";
 import { FAMILIES, familyHref } from "@/lib/families";
+import { launchProductsFor } from "@/lib/launch-products";
 
 const NAV = [
   { href: "/productos", label: "Productos", match: (path: string) => path === "/productos" },
@@ -12,7 +14,10 @@ const NAV = [
     href: familyHref(family),
     label: family.label,
     match: (path: string) =>
-      family.live ? path.startsWith("/producto/") : path === `/productos/${family.slug}`,
+      family.live
+        ? path.startsWith(`/producto/${PRODUCT.slug}`)
+        : path === `/productos/${family.slug}` ||
+          launchProductsFor(family.slug).some((product) => path === `/producto/${product.slug}`),
   })),
   { href: "/envio", label: "Envío", match: (path: string) => path.startsWith("/envio") },
 ];

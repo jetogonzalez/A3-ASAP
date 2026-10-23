@@ -52,7 +52,7 @@ export function OrderReceipt() {
       </p>
 
       {/* El pedido todavía no está cerrado: se cierra en el chat. Por eso este bloque va primero. */}
-      <div className="mt-6 rounded-[24px] border border-press/25 bg-moss-soft p-5">
+      <div className="mt-6 rounded-[24px] border border-moss/30 bg-moss-soft p-5">
         <p className="text-sm leading-6 text-ink-soft">
           El mensaje ya va escrito con el pedido, el total y tus datos de factura. Lo envías y ahí te pasamos los datos para pagar con {order.payment.method === "deuna" ? "Deuna" : "transferencia bancaria"}.
           {missingArtwork ? " Adjunta en el mismo chat el archivo de diseño que te falta." : ""}

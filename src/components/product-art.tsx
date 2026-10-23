@@ -1,3 +1,5 @@
+import { inkFor } from "@/lib/palette";
+
 /*
  * Ilustración de cada familia de productos, hecha con CSS: tarjetas, hojas,
  * revistas, pendones… sobre la mesa, con sombra y grosor. Sirve en el inicio,
@@ -5,20 +7,26 @@
  * familia nueva es sumar un caso aquí.
  */
 
-/* Azul oficial de la marca. */
-const INK = "#4660ff";
+/* Las escenas pintan con el acento de su familia. */
+const INK = "var(--art-accent)";
 const CREAM = "#f6f1e7";
-const SHADOW = "0 18px 24px -14px rgba(38,28,12,0.55), 0 2px 4px rgba(38,28,12,0.15)";
+const SHADOW = "0 18px 24px -14px rgba(20,20,30,0.38), 0 2px 4px rgba(20,20,30,0.1)";
 
 export type ArtKind = "tarjetas" | "promocionales" | "papeleria" | "catalogos" | "gran-formato" | "pegatinas" | "empaque" | "textil";
 
 export function ProductArt({ kind, className = "" }: { kind: string; className?: string }) {
+  const { tint, accent } = inkFor(kind);
   return (
     <span
-      className={`product-art relative block overflow-hidden bg-[radial-gradient(110%_95%_at_35%_15%,#f7f5f1,#e6e1d9_60%,#d3ccc1)] ${className}`}
+      className={`product-art relative block overflow-hidden ${className}`}
+      style={
+        {
+          "--art-accent": accent,
+          background: `radial-gradient(110% 95% at 35% 15%, #ffffff, ${tint} 62%)`,
+        } as React.CSSProperties
+      }
       aria-hidden="true"
     >
-      <span className="pointer-events-none absolute inset-0 shadow-[inset_0_0_40px_rgba(60,50,35,0.14)]" />
       <span className="product-art-stage absolute inset-0">{scene(kind)}</span>
     </span>
   );
@@ -137,7 +145,7 @@ function Banner() {
     <>
       <span
         className="absolute left-1/2 top-[8%] block h-[74%] w-[30%] -translate-x-1/2 overflow-hidden rounded-[2px]"
-        style={{ background: "linear-gradient(180deg,#2d43d6,#4660ff)", boxShadow: SHADOW }}
+        style={{ background: "var(--art-accent)", boxShadow: SHADOW }}
       >
         <span className="absolute left-[14%] top-[10%] h-[6%] w-[60%] rounded-full bg-[#f6f1e7]" />
         <span className="absolute left-[14%] top-[20%] h-[3%] w-[44%] rounded-full bg-[#f6f1e7]/60" />
@@ -153,7 +161,7 @@ function Stickers() {
     { x: "22%", y: "22%", s: "22%", c: INK },
     { x: "50%", y: "18%", s: "18%", c: "#e5a823" },
     { x: "34%", y: "50%", s: "20%", c: "#d6553b" },
-    { x: "60%", y: "48%", s: "24%", c: "#141414" },
+    { x: "60%", y: "48%", s: "24%", c: "#4660ff" },
   ];
   return (
     <span
@@ -206,7 +214,7 @@ function Mug() {
         <span className="absolute inset-y-0 right-0 w-[22%] rounded-r-full" style={{ background: INK }} />
       </span>
       <span className="absolute left-[30%] top-[16%] block h-[58%] w-[36%]">
-        <span className="absolute right-[-22%] top-[22%] h-[44%] w-[34%] rounded-r-full border-[6px] border-l-0 border-[#e9e6e0]" />
+        <span className="absolute right-[-22%] top-[22%] h-[44%] w-[34%] rounded-r-full border-[7px] border-l-0 border-[#d9dbe2]" />
         <span
           className="absolute inset-0 overflow-hidden rounded-b-[14px] rounded-t-[4px]"
           style={{ background: "linear-gradient(90deg,#e7e4de,#ffffff 38%,#f1eee9)", boxShadow: SHADOW }}

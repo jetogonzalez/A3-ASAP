@@ -5,7 +5,7 @@ import { customQuoteMessage, whatsappHref } from "@/lib/whatsapp";
 import { notFound, redirect } from "next/navigation";
 import { productHref } from "@/lib/catalog";
 import { familyBySlug } from "@/lib/families";
-import { LaunchProductCard } from "@/components/launch-product-card";
+import { LaunchProductTile } from "@/components/launch-product-tile";
 import { ProductArt } from "@/components/product-art";
 import { launchProductsFor } from "@/lib/launch-products";
 
@@ -45,9 +45,8 @@ export default async function FamilyPage({ params }: FamilyPageProps) {
       <div className="mt-4 grid items-center gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]">
         <div>
           {products.length > 0 ? (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-moss-soft px-2.5 py-1 text-xs font-semibold text-press-deep">
-              <WhatsappLogo size={13} brand />
-              Se cotiza por WhatsApp
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-moss-soft px-2.5 py-1 text-xs font-semibold text-moss">
+              {products.length} productos para armar
             </span>
           ) : (
             <span className="inline-flex items-center rounded-full bg-flag px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-flag-ink">
@@ -58,7 +57,7 @@ export default async function FamilyPage({ params }: FamilyPageProps) {
           <p className="mt-3 max-w-xl text-sm leading-6 text-ink-soft">{family.note}</p>
           <p className="mt-2 max-w-xl text-sm leading-6 text-ink-soft">
             {products.length > 0
-              ? "Todavía no se arma en la web. Elige el producto, escríbenos con la cantidad y te respondemos con precio y plazo."
+              ? "Elige un producto, arma tu pedido y envíalo por WhatsApp. Te respondemos con precio y plazo."
               : "Todavía no se arma en la web, pero ya lo cotizamos por WhatsApp: cuéntanos qué necesitas y te respondemos con precio y plazo."}
           </p>
         </div>
@@ -69,7 +68,7 @@ export default async function FamilyPage({ params }: FamilyPageProps) {
         <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {products.map((product) => (
             <li key={product.id}>
-              <LaunchProductCard product={product} />
+              <LaunchProductTile product={product} />
             </li>
           ))}
         </ul>
