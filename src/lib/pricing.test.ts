@@ -78,3 +78,15 @@ describe("quote", () => {
     assert.equal(priced.totalCents, 2561);
   });
 });
+
+describe("código de producto", () => {
+  it("arma el SKU de la configuración", async () => {
+    const { skuFor } = await import("./sku");
+    const { defaultConfiguration } = await import("./catalog");
+    assert.equal(skuFor({ ...defaultConfiguration("85x55"), quantity: 500, sides: 2 }), "TPR-8555-2L-M-0500");
+    assert.equal(
+      skuFor({ ...defaultConfiguration("55x55"), quantity: 1000, sides: 1, paper: "brillante", laminate: "brillante", uv: true, rounded: true }),
+      "TPR-5555-1L-B-LB-UV-R-1000",
+    );
+  });
+});

@@ -8,10 +8,12 @@ import { useMemo, useState } from "react";
 import { useCart } from "@/components/cart-provider";
 import type { Configuration } from "@/lib/catalog";
 import { DELIVERY_OPTIONS } from "@/lib/delivery";
-import { formatUsd } from "@/lib/money";
+import { formatUnitUsd, formatUsd } from "@/lib/money";
 import { IVA_LABEL } from "@/lib/tax";
 import { orderTotals } from "@/lib/order";
+import { COMPANY } from "@/lib/company";
 import { describeConfiguration, quote } from "@/lib/pricing";
+import { skuFor } from "@/lib/sku";
 import { encodeQuote, quoteNumber, quoteValidUntil, QUOTE_VALID_DAYS, type QuotePayload } from "@/lib/quote";
 import { cleanText } from "@/lib/text";
 import { customQuoteMessage, quoteRequestMessage, whatsappHref } from "@/lib/whatsapp";
@@ -35,6 +37,8 @@ export function QuoteBuilder({ shared }: { shared: QuotePayload | null }) {
   const [issued] = useState(() => new Date().toISOString());
   const [clientName, setClientName] = useState(shared?.client.name ?? "");
   const [clientDocument, setClientDocument] = useState(shared?.client.document ?? "");
+  const [clientEmail, setClientEmail] = useState(shared?.client.email ?? "");
+  const [clientPhone, setClientPhone] = useState(shared?.client.phone ?? "");
   const [notice, setNotice] = useState<string | null>(null);
 
   const items: Configuration[] = useMemo(
@@ -45,10 +49,15 @@ export function QuoteBuilder({ shared }: { shared: QuotePayload | null }) {
     () => ({
       v: 1,
       issued: shared?.issued ?? issued,
-      client: { name: cleanText(clientName, 120), document: cleanText(clientDocument, 20) },
+      client: {
+        name: cleanText(clientName, 120),
+        document: cleanText(clientDocument, 20),
+        email: cleanText(clientEmail, 120),
+        phone: cleanText(clientPhone, 20),
+      },
       items,
     }),
-    [shared, issued, clientName, clientDocument, items],
+    [shared, issued, clientName, clientDocument, clientEmail, clientPhone, items],
   );
   const totals = useMemo(() => orderTotals(items, payload.issued), [items, payload.issued]);
 
@@ -60,7 +69,7 @@ export function QuoteBuilder({ shared }: { shared: QuotePayload | null }) {
   const expired = new Date(validUntil).getTime() < new Date(issued).getTime();
   const link = () => `${window.location.origin}/proforma?c=${encodeQuote(payload)}`;
   const summary = items.map(
-    (config) => `${describeConfiguration(config)} — ${formatUsd(quote(config).printingCents)}`,
+    (config) => `${skuFor(config)} · ${describeConfiguration(config)} — ${formatUsd(quote(config).printingCents)}`,
   );
 
   async function share() {
@@ -109,7 +118,16 @@ export function QuoteBuilder({ shared }: { shared: QuotePayload | null }) {
         <header className="flex flex-wrap items-start justify-between gap-6 border-b-2 border-ink pb-6">
           <div>
             <BrandLogo className="h-12 w-auto text-ink [print-color-adjust:exact]" />
-            <p className="mt-2 text-sm text-ink-soft">Productos personalizados · Quito, Ecuador · estoesasap.com</p>
+            {/* Los datos de la empresa salen de lib/company.ts; los que faltan no se muestran. */}
+            <div className="mt-3 space-y-0.5 text-sm text-ink-soft">
+              {COMPANY.legalName ? <p className="font-medium text-ink">{COMPANY.legalName}</p> : null}
+              {COMPANY.ruc ? <p>RUC {COMPANY.ruc}</p> : null}
+              <p>{COMPANY.address ?? COMPANY.city}</p>
+              <p>
+                WhatsApp {COMPANY.whatsapp} · {COMPANY.web}
+                {COMPANY.email ? ` · ${COMPANY.email}` : ""}
+              </p>
+            </div>
           </div>
           <div className="text-right">
             <p className="text-sm text-ink-soft">Proforma</p>
@@ -121,7 +139,9 @@ export function QuoteBuilder({ shared }: { shared: QuotePayload | null }) {
           <div>
             <dt className="text-ink-soft">Cliente</dt>
             <dd className="mt-0.5 font-medium">{payload.client.name || "Sin nombre"}</dd>
-            {payload.client.document ? <dd className="text-ink-soft">{payload.client.document}</dd> : null}
+            {payload.client.document ? <dd className="text-ink-soft">RUC/CI {payload.client.document}</dd> : null}
+            {payload.client.email ? <dd className="text-ink-soft">{payload.client.email}</dd> : null}
+            {payload.client.phone ? <dd className="text-ink-soft">{payload.client.phone}</dd> : null}
           </div>
           <div>
             <dt className="text-ink-soft">Emitida</dt>
@@ -139,9 +159,11 @@ export function QuoteBuilder({ shared }: { shared: QuotePayload | null }) {
         <table className="mt-8 w-full border-collapse text-left text-sm">
           <thead>
             <tr className="border-b border-line text-ink-soft">
+              <th scope="col" className="hidden py-2 pr-4 font-medium sm:table-cell print:table-cell">Código</th>
               <th scope="col" className="py-2 pr-4 font-medium">Detalle</th>
-              <th scope="col" className="py-2 pr-4 text-right font-medium">Cantidad</th>
-              <th scope="col" className="py-2 text-right font-medium">Valor</th>
+              <th scope="col" className="py-2 pr-4 text-right font-medium">Cant.</th>
+              <th scope="col" className="whitespace-nowrap py-2 pr-4 text-right font-medium">P. unit.</th>
+              <th scope="col" className="py-2 text-right font-medium">Total</th>
             </tr>
           </thead>
           <tbody>
@@ -149,11 +171,14 @@ export function QuoteBuilder({ shared }: { shared: QuotePayload | null }) {
               const priced = quote(config);
               return (
                 <tr key={index} className="border-b border-line/70 align-top">
+                  <td className="hidden py-3 pr-4 font-mono text-xs leading-5 text-ink-soft sm:table-cell print:table-cell">{skuFor(config)}</td>
                   <td className="py-3 pr-4">
                     <p className="font-medium">Tarjetas de presentación</p>
                     <p className="text-ink-soft">{describeConfiguration(config)}</p>
+                    <p className="font-mono text-xs text-ink-soft sm:hidden print:hidden">{skuFor(config)}</p>
                   </td>
                   <td className="py-3 pr-4 text-right tabular-nums">{config.quantity.toLocaleString("es-EC")}</td>
+                  <td className="py-3 pr-4 text-right tabular-nums">{formatUnitUsd(priced.printingCents, config.quantity)}</td>
                   <td className="py-3 text-right tabular-nums">{formatUsd(priced.printingCents)}</td>
                 </tr>
               );
@@ -214,7 +239,7 @@ export function QuoteBuilder({ shared }: { shared: QuotePayload | null }) {
                 onChange={(event) => setClientName(event.target.value)}
                 maxLength={120}
                 autoComplete="organization"
-                placeholder="Estudio Norte Cía. Ltda.…"
+                placeholder="Nombre de tu empresa"
                 className="field mt-1.5"
               />
             </label>
@@ -227,6 +252,33 @@ export function QuoteBuilder({ shared }: { shared: QuotePayload | null }) {
                 maxLength={20}
                 inputMode="numeric"
                 placeholder="1790012345001…"
+                className="field mt-1.5"
+              />
+            </label>
+            <label className="block text-sm font-medium" htmlFor="quote-email">
+              Correo <span className="font-normal text-ink-soft">(opcional)</span>
+              <input
+                id="quote-email"
+                type="email"
+                value={clientEmail}
+                onChange={(event) => setClientEmail(event.target.value)}
+                maxLength={120}
+                autoComplete="email"
+                placeholder="compras@tuempresa.com"
+                className="field mt-1.5"
+              />
+            </label>
+            <label className="block text-sm font-medium" htmlFor="quote-phone">
+              Teléfono <span className="font-normal text-ink-soft">(opcional)</span>
+              <input
+                id="quote-phone"
+                type="tel"
+                value={clientPhone}
+                onChange={(event) => setClientPhone(event.target.value)}
+                maxLength={20}
+                autoComplete="tel"
+                inputMode="tel"
+                placeholder="099 123 4567"
                 className="field mt-1.5"
               />
             </label>

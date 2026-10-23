@@ -11,11 +11,13 @@ import { FAMILIES } from "@/lib/families";
 import { LAUNCH_PRODUCTS } from "@/lib/launch-products";
 import { deliveryWindow, formatLongDate, formatShortDate } from "@/lib/delivery";
 import { FIRST_KILO_CENTS } from "@/lib/ecuador";
-import { formatUsd } from "@/lib/money";
+import { formatUnitUsd, formatUsd } from "@/lib/money";
 import { quote } from "@/lib/pricing";
 import { QUOTE_VALID_DAYS, quoteValidUntil } from "@/lib/quote";
 import { IVA_LABEL } from "@/lib/tax";
 import { orderTotals } from "@/lib/order";
+import { COMPANY } from "@/lib/company";
+import { skuFor } from "@/lib/sku";
 import { customQuoteMessage, whatsappHref } from "@/lib/whatsapp";
 
 /* La fecha de entrega cambia con el día: se vuelve a armar cada 10 minutos. */
@@ -373,9 +375,9 @@ function SampleQuote() {
   /* El mismo cálculo que la proforma real: impresión, peso, envío e IVA. */
   const totals = orderTotals(configs, issued);
   const lines = [
-    { label: "Tarjetas clásicas a doble cara", detail: "8,5 × 5,5 cm · couché 300 g", quantity: 500, cents: quote(configs[0]).printingCents },
-    { label: "Tarjetas cuadradas", detail: "5,5 × 5,5 cm · un lado", quantity: 250, cents: quote(configs[1]).printingCents },
-  ];
+    { label: "Tarjetas clásicas a doble cara", config: configs[0] },
+    { label: "Tarjetas cuadradas", config: configs[1] },
+  ].map((line) => ({ ...line, sku: skuFor(line.config), quantity: line.config.quantity, priced: quote(line.config) }));
   const shippingCents = totals.shipping.cents + totals.delivery.cents;
   const totalCents = totals.totalCents;
   const iva = totals.iva;
@@ -387,7 +389,9 @@ function SampleQuote() {
         <div className="flex items-start justify-between gap-4 border-b-2 border-ink pb-4">
           <div>
             <BrandLogo className="h-9 w-auto text-ink" />
-            <p className="mt-1.5 text-xs text-ink-soft">Quito, Ecuador · estoesasap.com</p>
+            <p className="mt-1.5 text-xs text-ink-soft">
+              {COMPANY.city} · WhatsApp {COMPANY.whatsapp}
+            </p>
           </div>
           <div className="text-right">
             <p className="text-xs text-ink-soft">Proforma</p>
@@ -415,7 +419,8 @@ function SampleQuote() {
             <tr className="border-b border-line text-left text-xs text-ink-soft">
               <th className="pb-2 font-medium">Detalle</th>
               <th className="pb-2 text-right font-medium">Cant.</th>
-              <th className="pb-2 text-right font-medium">Valor</th>
+              <th className="pb-2 pl-2 text-right font-medium">P. unit.</th>
+              <th className="pb-2 pl-2 text-right font-medium">Total</th>
             </tr>
           </thead>
           <tbody>
@@ -423,10 +428,11 @@ function SampleQuote() {
               <tr key={line.label} className="border-b border-line/70">
                 <td className="py-2.5 pr-3">
                   <span className="block font-medium">{line.label}</span>
-                  <span className="block text-xs text-ink-soft">{line.detail}</span>
+                  <span className="block font-mono text-[11px] text-ink-soft">{line.sku}</span>
                 </td>
                 <td className="py-2.5 text-right tabular-nums">{line.quantity}</td>
-                <td className="py-2.5 text-right tabular-nums">{formatUsd(line.cents)}</td>
+                <td className="py-2.5 pl-2 text-right tabular-nums text-ink-soft">{formatUnitUsd(line.priced.printingCents, line.quantity)}</td>
+                <td className="py-2.5 pl-2 text-right tabular-nums">{formatUsd(line.priced.printingCents)}</td>
               </tr>
             ))}
             <tr className="border-b border-line/70">
@@ -435,7 +441,8 @@ function SampleQuote() {
                 <span className="block text-xs text-ink-soft">Quito y valles</span>
               </td>
               <td />
-              <td className="py-2.5 text-right tabular-nums">{formatUsd(shippingCents)}</td>
+              <td />
+              <td className="py-2.5 pl-2 text-right tabular-nums">{formatUsd(shippingCents)}</td>
             </tr>
           </tbody>
         </table>

@@ -19,3 +19,12 @@ export function toCents(amount: string): number {
 export function formatUsd(cents: number): string {
   return usd.format(cents / 100);
 }
+
+/**
+ * Precio por unidad con 4 decimales, como en las facturas: en tarjetas cada
+ * unidad cuesta fracciones de centavo, y redondeado a 2 no cuadraba con el
+ * total de la línea (250 × $0,35 ≠ $87,30).
+ */
+export function formatUnitUsd(totalCents: number, quantity: number): string {
+  return `$${(totalCents / quantity / 100).toFixed(4)}`;
+}

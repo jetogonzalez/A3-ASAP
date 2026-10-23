@@ -57,7 +57,7 @@ describe("proforma", async () => {
   const payload = {
     v: 1 as const,
     issued: "2026-10-16T14:00:00.000Z",
-    client: { name: "Ñandú Diseño Cía. Ltda.", document: "1790012345001" },
+    client: { name: "Ñandú Diseño Cía. Ltda.", document: "1790012345001", email: "compras@ñandú.ec", phone: "099 123 4567" },
     items: [card("express")],
   };
 
@@ -111,5 +111,16 @@ describe("whatsapp", async () => {
   it("manda los pedidos al número de la tienda", () => {
     assert.equal(WHATSAPP_NUMBER, "593962956566");
     assert.match(whatsappHref("Hola"), /^https:\/\/wa\.me\/593962956566\?text=Hola$/);
+  });
+});
+
+describe("proforma compartida antes del correo y teléfono", () => {
+  it("un enlace viejo sin esos campos se sigue abriendo", async () => {
+    const { decodeQuote, encodeQuote } = await import("./quote");
+    const { defaultConfiguration } = await import("./catalog");
+    const old = { v: 1 as const, issued: "2026-10-02T14:00:00.000Z", client: { name: "Cliente", document: "" }, items: [defaultConfiguration("85x55")] };
+    const decoded = decodeQuote(encodeQuote(old));
+    assert.equal(decoded?.client.name, "Cliente");
+    assert.equal(decoded?.client.email, "");
   });
 });

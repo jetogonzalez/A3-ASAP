@@ -12,6 +12,9 @@ const quotePayloadSchema = z.object({
   client: z.object({
     name: z.string().max(120),
     document: z.string().max(20),
+    /* Opcionales: los enlaces compartidos antes no los traen. */
+    email: z.string().max(120).optional().default(""),
+    phone: z.string().max(20).optional().default(""),
   }),
   items: z.array(configurationSchema).min(1).max(20),
 });
@@ -23,7 +26,7 @@ const quotePayloadSchema = z.object({
 export type QuotePayload = {
   v: 1;
   issued: string;
-  client: { name: string; document: string };
+  client: { name: string; document: string; email?: string; phone?: string };
   items: Configuration[];
 };
 
