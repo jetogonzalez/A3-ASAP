@@ -178,6 +178,119 @@
   color: var(--ink-soft) !important;
 }
 
+/* ---------- Aviso de cookies ---------- */
+:root[data-cookies="ok"] .cookie-banner {
+  display: none;
+}
+
+.cookie-banner {
+  animation: reveal-up 520ms cubic-bezier(0.22, 1, 0.36, 1) 600ms both;
+}
+
+/* La galletita se mece una vez al aparecer, sin rebote. */
+@keyframes cookie-bob {
+  0% {
+    transform: rotate(-14deg) scale(0.8);
+  }
+  60% {
+    transform: rotate(6deg) scale(1);
+  }
+  100% {
+    transform: rotate(0deg) scale(1);
+  }
+}
+
+.cookie-bob {
+  animation: cookie-bob 900ms cubic-bezier(0.22, 1, 0.36, 1) 750ms both;
+}
+
+/* ---------- Botón de accesibilidad ---------- */
+/* Encima de la barra fija de precio de las fichas de producto. */
+body:has(.bottom-bar) .a11y-fab {
+  bottom: calc(6rem + env(safe-area-inset-bottom));
+}
+
+/* En el teléfono el aviso de cookies ocupa el borde de abajo: el botón espera. */
+@media (max-width: 639px) {
+  :root:not([data-cookies="ok"]) .a11y-fab {
+    display: none;
+  }
+}
+
+/* La primera visita: un latido suave en anillo, tres veces, para que se note. */
+@keyframes a11y-ping {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--brand) 55%, transparent);
+  }
+  70% {
+    box-shadow: 0 0 0 18px color-mix(in srgb, var(--brand) 0%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--brand) 0%, transparent);
+  }
+}
+
+@keyframes a11y-wave {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  20% {
+    transform: rotate(-14deg);
+  }
+  40% {
+    transform: rotate(10deg);
+  }
+  60% {
+    transform: rotate(-6deg);
+  }
+}
+
+.a11y-pulse {
+  animation: a11y-ping 1.6s cubic-bezier(0.22, 1, 0.36, 1) 3;
+}
+
+.a11y-pulse svg {
+  animation: a11y-wave 1.1s ease-in-out 200ms 2;
+}
+
+.a11y-hint {
+  transform-origin: calc(100% - 1.75rem) 100%;
+  animation: hint-pop 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.a11y-panel {
+  transform-origin: calc(100% - 1.75rem) 100%;
+  animation: hint-pop 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes hint-pop {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ---------- Búsqueda del teléfono ---------- */
+.search-sheet {
+  animation: sheet-in 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* ---------- Tamaño del texto ---------- */
 :root[data-text="lg"] {
   font-size: 112.5%;

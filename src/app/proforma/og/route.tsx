@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
 
   const totals = payload ? orderTotals(payload.items, payload.issued) : null;
   const lines = payload
-    ? payload.items.slice(0, 3).map((item) => `${item.quantity.toLocaleString("es-EC")} tarjetas ${SIZES[item.sizeId].name.toLowerCase()} · ${item.sides} lado${item.sides === 2 ? "s" : ""}`)
+    ? payload.items.slice(0, 3).map((item) => `${item.quantity.toLocaleString("es-EC")} tarjetas ${SIZES[item.sizeId].name.toLowerCase()}s · ${item.sides} lado${item.sides === 2 ? "s" : ""}`)
     : [];
   const more = payload && payload.items.length > 3 ? payload.items.length - 3 : 0;
 

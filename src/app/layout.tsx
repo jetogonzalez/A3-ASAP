@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Outfit } from "next/font/google";
 import { CartProvider } from "@/components/cart-provider";
+import { A11yButton } from "@/components/a11y-panel";
+import { CookieBanner } from "@/components/cookie-banner";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { JsonLd } from "@/components/json-ld";
@@ -71,11 +73,12 @@ export const viewport: Viewport = {
 };
 
 /*
- * Aplica las preferencias de accesibilidad antes de pintar (sin parpadeo).
+ * Aplica las preferencias de accesibilidad antes de pintar (sin parpadeo),
+ * y esconde el aviso de cookies si ya se aceptó.
  * Lo guardado manda; si no hay nada guardado, se siguen los ajustes del
  * sistema: tema oscuro, más contraste y menos movimiento.
  */
-const A11Y_BOOT = `(function(){try{var d=document.documentElement,s=JSON.parse(localStorage.getItem("asap-a11y")||"{}"),m=function(q){return window.matchMedia&&window.matchMedia(q).matches};var t=s.theme||"light";if(t==="system")t=m("(prefers-color-scheme: dark)")?"dark":"light";if(t==="dark")d.dataset.theme="dark";if(s.contrast==="high"||(!s.contrast&&m("(prefers-contrast: more)")))d.dataset.contrast="high";if(s.text&&s.text!=="md")d.dataset.text=s.text;if(s.motion==="reduce")d.dataset.motion="reduce";if(s.links==="underline")d.dataset.links="underline"}catch(e){}})();`;
+const A11Y_BOOT = `(function(){try{var d=document.documentElement,s=JSON.parse(localStorage.getItem("asap-a11y")||"{}"),m=function(q){return window.matchMedia&&window.matchMedia(q).matches};var t=s.theme||"light";if(t==="system")t=m("(prefers-color-scheme: dark)")?"dark":"light";if(t==="dark")d.dataset.theme="dark";if(s.contrast==="high"||(!s.contrast&&m("(prefers-contrast: more)")))d.dataset.contrast="high";if(s.text&&s.text!=="md")d.dataset.text=s.text;if(s.motion==="reduce")d.dataset.motion="reduce";if(s.links==="underline")d.dataset.links="underline";if(localStorage.getItem("asap-cookies")==="ok")d.dataset.cookies="ok"}catch(e){}})();`;
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
@@ -102,6 +105,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             {children}
           </main>
           <SiteFooter />
+          <A11yButton />
+          <CookieBanner />
         </CartProvider>
       </body>
     </html>

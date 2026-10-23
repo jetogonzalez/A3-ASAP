@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, type FocusEvent } from "react";
-import { A11yButton } from "@/components/a11y-panel";
 import { BrandLogo } from "@/components/brand-logo";
+import { MobileSearch } from "@/components/mobile-search";
 import { useCart } from "@/components/cart-provider";
 import { PRODUCT } from "@/lib/catalog";
 import { ProductPhoto } from "@/components/product-photo";
@@ -60,7 +60,10 @@ export function SiteHeader() {
           <Link href="/" className="shrink-0 text-ink" aria-label="Esto es ASAP, inicio">
             <BrandLogo className="h-8 w-auto md:h-9" />
           </Link>
-          <form action="/productos" className="min-w-0 flex-1" role="search">
+          {/* En el teléfono el campo no cabía: ahí es una lupa que abre la búsqueda a pantalla completa. */}
+          <div className="flex-1 md:hidden" />
+          <MobileSearch />
+          <form action="/productos" className="hidden min-w-0 flex-1 md:block" role="search">
             <label className="sr-only" htmlFor="buscar">
               Buscar productos
             </label>
@@ -82,7 +85,6 @@ export function SiteHeader() {
               </button>
             </div>
           </form>
-          <A11yButton />
           <CartLink pathname={pathname} count={count} ready={ready} />
         </div>
         <DesktopNav pathname={pathname} />
@@ -273,7 +275,7 @@ function MobileNav({ pathname }: { pathname: string }) {
           );
         })}
       </ul>
-      <span className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-white to-transparent" aria-hidden="true" />
+      <span className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-sheet to-transparent" aria-hidden="true" />
     </nav>
   );
 }

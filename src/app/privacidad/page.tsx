@@ -13,7 +13,7 @@ export default function PrivacyPage() {
   return (
     <LegalPage
       title="Privacidad"
-      updated="16 de octubre de 2026"
+      updated="23 de octubre de 2026"
       intro="ASAP imprime productos personalizados en Quito, Ecuador. Usamos tus datos solo para preparar, facturar y entregar tu pedido, de acuerdo con la Ley Orgánica de Protección de Datos Personales del Ecuador."
     >
       <section>
@@ -40,6 +40,16 @@ export default function PrivacyPage() {
         <p>
           El permiso de Canva queda guardado en una cookie cifrada en tu navegador, no en nuestros servidores. Puedes quitarlo cuando quieras desde tu cuenta de Canva, en Configuración, Apps conectadas.
         </p>
+      </section>
+      <section id="cookies" className="scroll-mt-28">
+        <h2>Cookies y almacenamiento</h2>
+        <p>No usamos cookies de publicidad, analítica ni seguimiento. Solo guardamos en tu navegador lo que hace funcionar la tienda:</p>
+        <ul>
+          <li>Tu carrito y el recibo de tu último pedido, para que no los pierdas al cerrar la página.</li>
+          <li>Tus ajustes de accesibilidad (tema, contraste, tamaño del texto) y que ya viste este aviso.</li>
+          <li>Si diseñas en Canva, el permiso de tu cuenta en una cookie cifrada.</li>
+        </ul>
+        <p>Puedes borrar todo esto cuando quieras desde la configuración de tu navegador. Si lo haces, se vacía el carrito.</p>
       </section>
       <section>
         <h2>Con quién lo compartimos</h2>

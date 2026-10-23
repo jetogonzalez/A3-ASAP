@@ -10,7 +10,16 @@ import { useEffect, useId, useRef, useState } from "react";
  *
  * Accesible en sí mismo: se abre con el botón, el foco entra al panel, Escape
  * o un clic afuera lo cierran y el foco vuelve al botón.
+ *
+ * Es un botón flotante abajo a la derecha: en el encabezado se amontonaba con
+ * el buscador y el carrito. La primera visita late un par de veces y muestra
+ * un globito que dice para qué sirve; al cerrarlo o abrir el panel no vuelve.
+ * En el teléfono espera a que se cierre el aviso de cookies, que ocupa ese
+ * espacio (globals.css lo esconde mientras tanto).
  */
+
+const HINT_KEY = "asap-a11y-hint";
+export const COOKIES_EVENT = "asap:cookies";
 
 type Settings = {
   theme: "light" | "dark" | "system";
@@ -53,9 +62,51 @@ export function A11yButton() {
   const panelId = useId();
   const buttonRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const [hint, setHint] = useState(false);
+
+  useEffect(() => {
+    try {
+      if (localStorage.getItem(HINT_KEY)) return;
+    } catch {
+      return;
+    }
+    let timer: number | undefined;
+    let hide: number | undefined;
+    /* Se muestra una sola vez: queda marcado al aparecer y se va solo a los 9 s. */
+    const schedule = () => {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        setHint(true);
+        try {
+          localStorage.setItem(HINT_KEY, "1");
+        } catch {
+          /* nada */
+        }
+        hide = window.setTimeout(() => setHint(false), 9000);
+      }, 1400);
+    };
+    const ready = () => document.documentElement.dataset.cookies === "ok" || window.matchMedia("(min-width: 640px)").matches;
+    if (ready()) schedule();
+    window.addEventListener(COOKIES_EVENT, schedule);
+    return () => {
+      window.clearTimeout(timer);
+      window.clearTimeout(hide);
+      window.removeEventListener(COOKIES_EVENT, schedule);
+    };
+  }, []);
+
+  function dismissHint() {
+    setHint(false);
+    try {
+      localStorage.setItem(HINT_KEY, "1");
+    } catch {
+      /* Sin almacenamiento, el globito vuelve en la próxima visita. */
+    }
+  }
 
   /* Lo guardado se lee al abrir, no al montar: así el servidor y el cliente pintan lo mismo. */
   function toggle() {
+    if (hint) dismissHint();
     if (!open) setSettings(read());
     setOpen((current) => !current);
   }
@@ -103,7 +154,24 @@ export function A11yButton() {
   }, [open]);
 
   return (
-    <div className="relative shrink-0">
+    <div className="a11y-fab fixed right-4 bottom-4 z-40 sm:right-5 sm:bottom-5 print:hidden">
+      {hint && !open ? (
+        <div role="status" className="a11y-hint absolute right-0 bottom-full mb-3 w-[min(17rem,calc(100vw-2rem))] rounded-2xl bg-ink p-3.5 pr-10 text-sm leading-5 text-paper shadow-[0_18px_36px_-18px_rgba(20,20,20,0.6)]">
+          <p className="font-semibold">¿Te cuesta leer?</p>
+          <p className="mt-0.5 text-paper/80">Aquí cambias el contraste, el tamaño del texto y el modo oscuro.</p>
+          <button
+            type="button"
+            onClick={dismissHint}
+            aria-label="Cerrar sugerencia"
+            className="absolute top-1.5 right-1.5 grid size-8 cursor-pointer place-items-center rounded-full hover:bg-paper/15"
+          >
+            <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+            </svg>
+          </button>
+          <span aria-hidden="true" className="absolute -bottom-1.5 right-5 size-3 rotate-45 bg-ink" />
+        </div>
+      ) : null}
       <button
         ref={buttonRef}
         type="button"
@@ -112,7 +180,7 @@ export function A11yButton() {
         aria-label="Accesibilidad"
         title="Accesibilidad"
         onClick={toggle}
-        className="press grid size-11 cursor-pointer place-items-center rounded-full border border-line bg-sheet text-ink hover:border-ink/30"
+        className={`press relative grid size-14 cursor-pointer place-items-center rounded-full bg-brand text-sheet shadow-[0_12px_28px_-10px_rgba(20,20,40,0.55)] ring-4 ring-sheet hover:bg-brand-deep ${hint ? "a11y-pulse" : ""}`}
       >
         <A11yIcon />
       </button>
@@ -122,7 +190,7 @@ export function A11yButton() {
           id={panelId}
           role="dialog"
           aria-label="Ajustes de accesibilidad"
-          className="absolute right-0 top-full z-50 mt-2 w-[min(22rem,calc(100vw-2rem))] rounded-2xl border border-line bg-sheet p-4 text-ink shadow-[0_24px_48px_-24px_rgba(20,20,20,0.45)]"
+          className="a11y-panel absolute right-0 bottom-full mb-3 max-h-[calc(100dvh-7rem)] w-[min(22rem,calc(100vw-2rem))] overflow-y-auto overscroll-contain rounded-2xl border border-line bg-sheet p-4 text-ink shadow-[0_24px_48px_-24px_rgba(20,20,20,0.45)]"
         >
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-base font-semibold">Accesibilidad</h2>
@@ -262,7 +330,7 @@ function Toggle({ label, checked, onChange }: { label: string; checked: boolean;
 /* Figura universal de accesibilidad. */
 function A11yIcon() {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <circle cx="12" cy="12" r="10" />
       <circle cx="12" cy="7.2" r="1.3" fill="currentColor" stroke="none" />
       <path d="M7 10h10M12 10v4M12 14l-2.5 4.5M12 14l2.5 4.5" />
