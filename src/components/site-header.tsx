@@ -2,8 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { BrandLogo } from "@/components/brand-logo";
 import { useCart } from "@/components/cart-provider";
+import { PRODUCT } from "@/lib/catalog";
 import { FAMILIES, familyHref } from "@/lib/families";
+import { launchProductsFor } from "@/lib/launch-products";
 
 const NAV = [
   { href: "/productos", label: "Productos", match: (path: string) => path === "/productos" },
@@ -11,7 +14,10 @@ const NAV = [
     href: familyHref(family),
     label: family.label,
     match: (path: string) =>
-      family.live ? path.startsWith("/producto/") : path === `/productos/${family.slug}`,
+      family.live
+        ? path.startsWith(`/producto/${PRODUCT.slug}`)
+        : path === `/productos/${family.slug}` ||
+          launchProductsFor(family.slug).some((product) => path === `/producto/${product.slug}`),
   })),
   { href: "/envio", label: "Envío", match: (path: string) => path.startsWith("/envio") },
 ];
@@ -29,8 +35,8 @@ export function SiteHeader() {
     <>
       <header className="sticky top-0 z-40 border-b border-line bg-white print:hidden">
         <div className="mx-auto flex w-full max-w-6xl items-center gap-2.5 px-4 py-2.5 md:gap-5 md:px-8 md:py-3">
-          <Link href="/" className="shrink-0 text-xl font-semibold tracking-tight" aria-label="ASAP, inicio">
-            ASAP
+          <Link href="/" className="shrink-0 text-ink" aria-label="Esto es ASAP, inicio">
+            <BrandLogo className="h-8 w-auto md:h-9" />
           </Link>
           <form action="/productos" className="min-w-0 flex-1" role="search">
             <label className="sr-only" htmlFor="buscar">

@@ -760,7 +760,11 @@ function DeliveryChoices({
                   className="control control-radio"
                 />
                 <span className="min-w-0">
-                  <span className={`block ${checked ? "font-semibold" : "font-medium"}`}>
+                  <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-ink-soft">
+                    <span className={`size-2 rounded-full ${option.tone}`} aria-hidden="true" />
+                    {option.name}
+                  </span>
+                  <span className={`mt-0.5 block ${checked ? "font-semibold" : "font-medium"}`}>
                     {formatLongDate(window.earliest)}
                   </span>
                   <span className="mt-0.5 block text-sm text-ink-soft">
@@ -774,7 +778,7 @@ function DeliveryChoices({
                     Más rápida
                   </span>
                 ) : null}
-                <span className={`text-sm font-medium tabular-nums ${option.cents === 0 ? "text-press-deep" : ""}`}>
+                <span className={`text-sm font-medium tabular-nums ${option.cents === 0 ? "text-moss" : ""}`}>
                   {option.cents === 0 ? "Incluido" : `+ ${formatUsd(option.cents)}`}
                 </span>
               </span>
@@ -965,7 +969,7 @@ function ArtworkPanel({
             <p
               id="canva-help"
               className={`mt-2 text-sm leading-6 ${
-                canvaUrl.trim() && !canvaReady ? "font-medium text-alert-deep" : canvaReady ? "font-medium text-press-deep" : "text-ink-soft"
+                canvaUrl.trim() && !canvaReady ? "font-medium text-alert-deep" : canvaReady ? "font-medium text-moss" : "text-ink-soft"
               }`}
             >
               {canvaUrl.trim() && !canvaReady
@@ -1178,7 +1182,7 @@ function CanvaBlock({
 }) {
   if (design) {
     return (
-      <div className="flex items-center gap-3 rounded-2xl border border-press/30 bg-moss-soft px-3.5 py-3">
+      <div className="flex items-center gap-3 rounded-2xl border border-moss/30 bg-moss-soft px-3.5 py-3">
         {/* eslint-disable-next-line @next/next/no-img-element -- miniatura de Vercel Blob, ya del tamaño justo */}
         <img src={design.front} alt="Tu diseño de Canva" className="h-12 w-auto shrink-0 rounded-[3px] border border-ink/10 bg-white" />
         <span className="min-w-0 flex-1">
@@ -1305,7 +1309,7 @@ const QUESTIONS = [
   },
   {
     q: "¿Cuál es el plazo más corto?",
-    a: "La entrega exprés llega a tu puerta entre 2 y 3 días hábiles, en Quito y los valles. Se cobra una sola vez por pedido. Sin archivo, el plazo empieza cuando lo recibimos por WhatsApp.",
+    a: "La entrega Express llega a tu puerta entre 2 y 3 días hábiles, en Quito y los valles. Se cobra una sola vez por pedido. Sin archivo, el plazo empieza cuando lo recibimos por WhatsApp.",
   },
   {
     q: "¿Cómo se imprimen?",
@@ -1440,7 +1444,7 @@ function Chevron() {
 /* Visto, no un más: el círculo con cruz parecía un botón para desplegar algo. */
 function FeatureCheck() {
   return (
-    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" className="shrink-0 text-press">
+    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" className="shrink-0 text-brand">
       <circle cx="9" cy="9" r="8" fill="currentColor" />
       <path d="M5.4 9.2 7.9 11.7 12.6 6.6" fill="none" stroke="var(--sheet)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
@@ -1459,7 +1463,7 @@ function TemplateTip({ href, sizeLabel }: { href: string; sizeLabel: string }) {
         <span className="block font-semibold">¿Aún no tienes el arte listo?</span>
         <span className="block text-ink-soft">Descarga la plantilla de {sizeLabel} con el sangrado marcado.</span>
       </span>
-      <span className="shrink-0 text-sm font-semibold text-press">Descargar PDF</span>
+      <span className="shrink-0 text-sm font-semibold text-brand">Descargar PDF</span>
     </a>
   );
 }
@@ -1604,7 +1608,7 @@ function SummaryLine({ label, note, value, included = false }: { label: string; 
         {label}
         {note ? <span className="ml-1.5 text-xs">· {note}</span> : null}
       </span>
-      <span className={`shrink-0 font-medium tabular-nums ${included ? "text-press-deep" : ""}`}>{value}</span>
+      <span className={`shrink-0 font-medium tabular-nums ${included ? "text-moss" : ""}`}>{value}</span>
     </li>
   );
 }
@@ -1689,7 +1693,7 @@ function CornerTag({ children, overlay = false }: { children: string; overlay?: 
 function SavingTag({ percent, onPick }: { percent: number; onPick: boolean }) {
   return (
     <span
-      className={`inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-xs font-semibold text-press-deep ${
+      className={`inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-xs font-semibold text-moss ${
         onPick ? "bg-sheet" : "bg-moss-soft"
       }`}
     >
@@ -1759,7 +1763,7 @@ function Tile({
       {/* El verde es el color del dinero en el sitio, así que "Incluido" se lee solo. */}
       <span
         className={`text-sm leading-5 ${
-          detail === "Incluido" ? "font-medium text-press-deep" : "text-ink-soft"
+          detail === "Incluido" ? "font-medium text-moss" : "text-ink-soft"
         }`}
       >
         {detail}

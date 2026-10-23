@@ -23,7 +23,8 @@ export type SwatchKind =
 export const GRAIN =
   "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.15' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.45 0 0 0 0 0.4 0 0 0 0 0.33 0 0 0 0.55 0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E\")";
 
-const INK = "#0e5a33";
+/* Azul oficial de la marca. */
+const INK = "#4660ff";
 const MATTE_PAPER = "#f4efe6";
 
 /*
@@ -44,7 +45,7 @@ export type SwatchFaces = { front: React.ReactNode; back?: React.ReactNode };
 export function FinishSwatch({ kind, faces }: { kind: SwatchKind; faces?: SwatchFaces }) {
   return (
     <span
-      className="swatch relative block h-28 w-full overflow-hidden rounded-xl bg-[radial-gradient(110%_95%_at_35%_15%,#f6f4f0,#e2ddd5_62%,#cdc6bb)]"
+      className="swatch relative block h-28 w-full overflow-hidden rounded-xl bg-[radial-gradient(110%_95%_at_35%_15%,#ffffff,#ecebff_62%,#d9daf6)]"
       style={{ perspective: PERSPECTIVE }}
       aria-hidden="true"
     >
@@ -261,7 +262,7 @@ function CornerScene({ rounded, face }: { rounded: boolean; face?: React.ReactNo
 function SidesScene({ double, faces }: { double: boolean; faces?: SwatchFaces }) {
   return (
     <>
-      <Card3D paper={double && !faces ? INK : "#fbf9f5"} edge={double && !faces ? "#09391f" : "#d6cfc2"} width="58%" turn={8} shiftX={14} shiftY={-6}>
+      <Card3D paper={double && !faces ? INK : "#fbf9f5"} edge={double && !faces ? "#2436b0" : "#d6cfc2"} width="58%" turn={8} shiftX={14} shiftY={-6}>
         {double ? (
           (faces?.back ?? <span className="absolute right-[12%] top-[24%] h-[34%] aspect-square rounded-full bg-[#f4efe6]" />)
         ) : null}

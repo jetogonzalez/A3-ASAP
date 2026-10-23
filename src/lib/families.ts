@@ -7,7 +7,11 @@ export type Family = {
   note: string;
 };
 
-/** El portal es de productos personalizados. Hoy solo las tarjetas se piden. */
+/**
+ * El portal es de productos personalizados. Las tarjetas se arman y piden en
+ * línea; las familias con productos de lanzamiento (launch-products.ts) los
+ * muestran y se cotizan por WhatsApp; las demás quedan como «pronto».
+ */
 export const FAMILIES: Family[] = [
   {
     slug: "tarjetas",
@@ -16,10 +20,34 @@ export const FAMILIES: Family[] = [
     note: "Tarjetas de presentación en couche 300 g.",
   },
   {
+    slug: "promocionales",
+    label: "Promocionales",
+    live: false,
+    note: "Esferos, toma todos y tazas con tu marca.",
+  },
+  {
+    slug: "textil",
+    label: "Textil",
+    live: false,
+    note: "Camisetas, hoodies, gorras y tote bags en DTF.",
+  },
+  {
+    slug: "empaque",
+    label: "Empaque y etiquetas",
+    live: false,
+    note: "Papel de regalo, etiquetas y tarjetas de regalo.",
+  },
+  {
     slug: "papeleria",
     label: "Papelería",
     live: false,
-    note: "Hojas, sobres y cuadernos con la marca.",
+    note: "Calendarios y cuadernos con tu marca.",
+  },
+  {
+    slug: "pegatinas",
+    label: "Pegatinas",
+    live: false,
+    note: "Adhesivos en hoja o en rollo.",
   },
   {
     slug: "catalogos",
@@ -32,24 +60,6 @@ export const FAMILIES: Family[] = [
     label: "Gran formato",
     live: false,
     note: "Lonas, pendones y señalización.",
-  },
-  {
-    slug: "pegatinas",
-    label: "Pegatinas",
-    live: false,
-    note: "Adhesivos en hoja o en rollo.",
-  },
-  {
-    slug: "empaque",
-    label: "Empaque",
-    live: false,
-    note: "Bolsas, cajas y etiquetas de producto.",
-  },
-  {
-    slug: "textil",
-    label: "Textil y regalos",
-    live: false,
-    note: "Ropa, bolsas de tela y objetos de marca.",
   },
 ];
 

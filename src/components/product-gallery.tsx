@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { CardPreview } from "@/components/card-preview";
 import { Card3D } from "@/components/finish-swatch";
+import { ProductPhoto } from "@/components/product-photo";
 import type { Configuration } from "@/lib/catalog";
 
 /*
@@ -39,6 +40,7 @@ export function ProductGallery({
     { id: "mesa", label: "Sobre la mesa", scene: <TableScene config={config} front={front} back={back} /> },
     { id: "pila", label: "En pila", scene: <StackScene config={config} front={front} /> },
     { id: "detalle", label: "De cerca", scene: <DetailScene config={config} front={front} /> },
+    { id: "foto", label: "Foto de referencia", scene: <PhotoScene /> },
   ];
 
   function go(next: number) {
@@ -114,14 +116,23 @@ export function ProductGallery({
   );
 }
 
-/** La mesa: un fondo cálido con luz arriba y perspectiva para las tarjetas 3D. */
+/** Foto de estudio de referencia: las demás escenas muestran tu tarjeta tal como la armas. */
+function PhotoScene() {
+  return (
+    <div className="absolute inset-0">
+      <ProductPhoto slug="tarjetas-de-presentacion" alt="Tarjetas de presentación, foto de referencia" sizes="(min-width: 1024px) 560px, 100vw" />
+    </div>
+  );
+}
+
+/** La mesa: un fondo lila de la marca con luz arriba y perspectiva para las tarjetas 3D. */
 function Stage({ children }: { children: React.ReactNode }) {
   return (
     <div
-      className="relative h-full min-h-[340px] w-full overflow-hidden rounded-[28px] bg-[radial-gradient(110%_95%_at_35%_12%,#f7f5f1,#e4dfd7_60%,#cbc4b8)]"
+      className="relative h-full min-h-[340px] w-full overflow-hidden rounded-[28px] bg-[radial-gradient(110%_95%_at_35%_12%,#ffffff,#ecebff_60%,#d9daf6)]"
       style={{ perspective: "1100px" }}
     >
-      <span className="pointer-events-none absolute inset-0 shadow-[inset_0_0_60px_rgba(60,50,35,0.18)]" />
+      <span className="pointer-events-none absolute inset-0 shadow-[inset_0_0_60px_rgba(40,40,90,0.12)]" />
       {children}
     </div>
   );

@@ -69,7 +69,7 @@ export function quote(config: Configuration): Quote {
   const printingLines = [...lines];
   const speed = deliveryOption(config.delivery);
   lines.push({
-    label: `Entrega ${speed.name.toLowerCase()}`,
+    label: `Entrega ${speed.name}`,
     cents: deliveryCents,
     included: deliveryCents === 0,
   });
