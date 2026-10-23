@@ -43,7 +43,7 @@ import { formatWeight, packageGrams } from "@/lib/weight";
  * con una curva larga y suave, y se corta apenas la persona toca la rueda o la
  * pantalla: si decide ir a otro lado, mandamos nosotros menos que ella.
  */
-function glideTo(top: number): void {
+export function glideTo(top: number): void {
   const start = window.scrollY;
   const distance = top - start;
   const duration = Math.min(1100, Math.max(520, Math.abs(distance) * 1.25));
@@ -1413,7 +1413,7 @@ function DesignNotes() {
   );
 }
 
-function Note({
+export function Note({
   title,
   open = false,
   children,
@@ -1433,7 +1433,7 @@ function Note({
   );
 }
 
-function Chevron() {
+export function Chevron() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" className="disclosure-mark shrink-0 text-ink-soft transition-transform duration-200">
       <path d="M3.5 6 8 10.5 12.5 6" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
@@ -1442,7 +1442,7 @@ function Chevron() {
 }
 
 /* Visto, no un más: el círculo con cruz parecía un botón para desplegar algo. */
-function FeatureCheck() {
+export function FeatureCheck() {
   return (
     <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" className="shrink-0 text-brand">
       <circle cx="9" cy="9" r="8" fill="currentColor" />
@@ -1613,9 +1613,9 @@ function SummaryLine({ label, note, value, included = false }: { label: string; 
   );
 }
 
-type StepState = { number: number; status: "done" | "current" | "locked"; waitFor: string };
+export type StepState = { number: number; status: "done" | "current" | "locked"; waitFor: string };
 
-function OptionGroup({
+export function OptionGroup({
   step,
   state,
   legend,
@@ -1641,7 +1641,7 @@ function OptionGroup({
 }
 
 /** El número del paso: azul el que toca, check verde los hechos, gris los que esperan. */
-function StepLegend({ state, legend, value }: { state: StepState; legend: string; value?: string }) {
+export function StepLegend({ state, legend, value }: { state: StepState; legend: string; value?: string }) {
   return (
     <legend className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-sm font-medium">
       <span
@@ -1674,7 +1674,7 @@ function StepLegend({ state, legend, value }: { state: StepState; legend: string
 }
 
 /** Etiqueta de esquina. Ámbar porque el azul ya significa "esto elegiste" y el verde, "ahorro". */
-function CornerTag({ children, overlay = false }: { children: string; overlay?: boolean }) {
+export function CornerTag({ children, overlay = false }: { children: string; overlay?: boolean }) {
   return (
     <span
       className={`absolute z-10 bg-flag px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-flag-ink ${
@@ -1702,7 +1702,7 @@ function SavingTag({ percent, onPick }: { percent: number; onPick: boolean }) {
   );
 }
 
-function CheckMark() {
+export function CheckMark() {
   return (
     <span
       className="absolute right-2 top-2 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-pick text-white"

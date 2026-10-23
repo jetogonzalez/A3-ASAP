@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/brand-logo";
 import { GRAIN } from "@/components/finish-swatch";
 import { SIZES, type Configuration } from "@/lib/catalog";
 
@@ -96,7 +97,7 @@ export function CardPreview({
           </div>
         ) : (
           <div className={`flex h-full flex-col items-center justify-center text-center ${fill ? "gap-[2cqw] p-[7cqw]" : small ? "gap-2 p-3.5" : "gap-2 p-6"}`}>
-            <p className={`font-display italic ${fill ? "text-[8cqw]" : small ? "text-lg" : "text-3xl"}`}>ASAP</p>
+            <BrandLogo className={`w-auto text-ink ${fill ? "h-[10cqw]" : small ? "h-6" : "h-10"}`} />
             <p className={`uppercase tracking-[0.18em] text-ink-soft ${fill ? "text-[2.6cqw]" : small ? "text-[9px]" : "text-xs"}`}>Couche 300 g</p>
           </div>
         )}
