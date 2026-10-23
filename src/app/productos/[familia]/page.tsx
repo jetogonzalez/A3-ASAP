@@ -56,7 +56,7 @@ export default async function FamilyPage({ params }: FamilyPageProps) {
         <span aria-hidden="true"> / </span>
         <span className="text-ink">{family.label}</span>
       </nav>
-      <div className="mt-4 grid items-center gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]">
+      <div className="mt-4 grid items-start gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,18rem)]">
         <div>
           {products.length > 0 ? (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-moss-soft px-2.5 py-1 text-xs font-semibold text-moss">

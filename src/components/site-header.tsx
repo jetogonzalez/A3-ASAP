@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState, type FocusEvent } from "react";
 import { A11yButton } from "@/components/a11y-panel";
 import { BrandLogo } from "@/components/brand-logo";
 import { useCart } from "@/components/cart-provider";
@@ -105,6 +106,24 @@ function linkClass(active: boolean): string {
  */
 function DesktopNav({ pathname }: { pathname: string }) {
   const soonActive = SOON.some((item) => item.match(pathname));
+  /*
+   * Un solo menú abierto a la vez. Antes cada uno se abría con CSS (hover o
+   * foco dentro): tras un clic el foco se quedaba en uno y al pasar el mouse
+   * por otro quedaban los dos abiertos, encimados.
+   */
+  const [open, setOpen] = useState<string | null>(null);
+  const menu = (key: string) => ({
+    onMouseEnter: () => setOpen(key),
+    onMouseLeave: () => setOpen((current) => (current === key ? null : current)),
+    onFocus: () => setOpen(key),
+    onBlur: (event: FocusEvent<HTMLLIElement>) => {
+      if (!event.currentTarget.contains(event.relatedTarget)) setOpen((current) => (current === key ? null : current));
+    },
+    onKeyDown: (event: React.KeyboardEvent<HTMLLIElement>) => {
+      if (event.key === "Escape") setOpen(null);
+    },
+    onClick: () => setOpen(null),
+  });
   return (
     <nav aria-label="Categorías" className="hidden border-t border-line md:block">
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 md:px-8">
@@ -117,13 +136,13 @@ function DesktopNav({ pathname }: { pathname: string }) {
           {MAIN.map((item) => {
             const active = item.match(pathname);
             return (
-              <li key={item.label} className="group relative">
+              <li key={item.label} className="relative" {...(item.products ? menu(item.label) : {})}>
                 <Link href={item.href} aria-current={active ? "page" : undefined} className={linkClass(active)}>
                   {item.label}
-                  {item.products ? <Caret /> : null}
+                  {item.products ? <Caret open={open === item.label} /> : null}
                 </Link>
                 {item.products ? (
-                  <Dropdown label={item.label}>
+                  <Dropdown label={item.label} open={open === item.label}>
                     <ul className="grid gap-1">
                       {item.products.map((product) => (
                         <li key={product.id}>
@@ -154,12 +173,21 @@ function DesktopNav({ pathname }: { pathname: string }) {
             );
           })}
           {SOON.length > 0 ? (
-            <li className="group relative">
-              <button type="button" aria-haspopup="true" className={`${linkClass(soonActive)} cursor-pointer`}>
+            <li className="relative" {...menu("mas")}>
+              <button
+                type="button"
+                aria-haspopup="true"
+                aria-expanded={open === "mas"}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setOpen((current) => (current === "mas" ? null : "mas"));
+                }}
+                className={`${linkClass(soonActive)} cursor-pointer`}
+              >
                 Más
-                <Caret />
+                <Caret open={open === "mas"} />
               </button>
-              <Dropdown label="Más categorías">
+              <Dropdown label="Más categorías" open={open === "mas"}>
                 <p className="px-2 pb-1 text-xs font-medium text-ink-soft">Próximamente · se cotizan por WhatsApp</p>
                 <ul className="grid gap-1">
                   {SOON.map((item) => (
@@ -199,21 +227,30 @@ function DesktopNav({ pathname }: { pathname: string }) {
 }
 
 /* El panel se muestra al pasar el mouse o con el foco dentro (teclado), con un leve deslizamiento. */
-function Dropdown({ label, children }: { label: string; children: React.ReactNode }) {
+function Dropdown({ label, open, children }: { label: string; open: boolean; children: React.ReactNode }) {
   return (
     <div
       role="region"
       aria-label={label}
-      className="invisible absolute left-0 top-full z-50 w-[21rem] translate-y-1 pt-1 opacity-0 transition-[opacity,transform,visibility] duration-150 ease-out group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100"
+      className={`absolute left-0 top-full z-50 w-[21rem] pt-1 transition-[opacity,transform,visibility] duration-150 ease-out ${
+        open ? "visible translate-y-0 opacity-100" : "invisible translate-y-1 opacity-0"
+      }`}
     >
       <div className="rounded-2xl border border-line bg-sheet p-2 shadow-[0_24px_48px_-24px_rgba(20,20,20,0.35)]">{children}</div>
     </div>
   );
 }
 
-function Caret() {
+function Caret({ open }: { open: boolean }) {
   return (
-    <svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true" className="mt-px text-ink-soft transition-transform duration-150 group-hover:rotate-180">
+    <svg
+      width="10"
+      height="10"
+      viewBox="0 0 12 12"
+      fill="none"
+      aria-hidden="true"
+      className={`mt-px text-ink-soft transition-transform duration-150 ${open ? "rotate-180" : ""}`}
+    >
       <path d="M2.5 4.5 6 8l3.5-3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
