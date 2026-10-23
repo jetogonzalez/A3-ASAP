@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { BrandLogo } from "@/components/brand-logo";
-import { CardPreview } from "@/components/card-preview";
 import { FamilyGrid } from "@/components/family-grid";
 import { CardsTile } from "@/components/cards-tile";
 import { LaunchProductTile } from "@/components/launch-product-tile";
@@ -10,11 +9,13 @@ import { WhatsappLogo } from "@/components/whatsapp-logo";
 import { defaultConfiguration, productHref, type Configuration } from "@/lib/catalog";
 import { FAMILIES } from "@/lib/families";
 import { LAUNCH_PRODUCTS } from "@/lib/launch-products";
-import { deliveryWindow, formatLongDate } from "@/lib/delivery";
+import { deliveryWindow, formatLongDate, formatShortDate } from "@/lib/delivery";
 import { FIRST_KILO_CENTS } from "@/lib/ecuador";
 import { formatUsd } from "@/lib/money";
 import { quote } from "@/lib/pricing";
-import { QUOTE_VALID_DAYS } from "@/lib/quote";
+import { QUOTE_VALID_DAYS, quoteValidUntil } from "@/lib/quote";
+import { IVA_LABEL } from "@/lib/tax";
+import { orderTotals } from "@/lib/order";
 import { customQuoteMessage, whatsappHref } from "@/lib/whatsapp";
 
 /* La fecha de entrega cambia con el día: se vuelve a armar cada 10 minutos. */
@@ -262,22 +263,7 @@ export default function HomePage() {
               Hacer una proforma
             </Link>
           </div>
-          <div className="rounded-[22px] border border-line bg-sheet p-6 shadow-[0_24px_50px_-34px_rgba(20,20,20,0.45)]" aria-hidden="true">
-            <div className="flex items-center justify-between border-b-2 border-ink pb-4">
-              <BrandLogo className="h-8 w-auto text-ink" />
-              <span className="text-sm text-ink-soft">Proforma de ejemplo</span>
-            </div>
-            <div className="mt-4 space-y-2 text-sm">
-              <div className="flex justify-between gap-4">
-                <span className="text-ink-soft">Tarjetas clásicas a doble cara · 500 u.</span>
-                <span className="tabular-nums">{formatUsd(priceFor({ sizeId: "85x55", sides: 2 }, 500).cents)}</span>
-              </div>
-              <div className="flex justify-between gap-4">
-                <span className="text-ink-soft">Entrega Standard</span>
-                <span className="font-medium text-moss">Incluida</span>
-              </div>
-            </div>
-          </div>
+          <SampleQuote />
         </div>
       </section>
 
@@ -328,25 +314,149 @@ export default function HomePage() {
 }
 
 /*
- * La tarjeta de verdad, la misma muestra del configurador: así cada opción se
- * ve distinta (clásica, a doble cara, cuadrada) y coincide con lo que se pide.
+ * Solo la forma de la tarjeta, a escala (8,5 × 5,5 o 5,5 × 5,5 cm), con las
+ * marcas de corte de imprenta y su medida. Sin textos de relleno: el diseño
+ * lo pone cada cliente.
  */
 function CardStage({ config }: { config: Configuration }) {
-  const pair = config.sides === 2;
+  const square = config.sizeId === "55x55";
+  const faces = config.sides === 2 ? ["Frente", "Reverso"] : [null];
   return (
     <span
-      className="flex aspect-[16/10] w-full items-center justify-center gap-3 bg-[radial-gradient(110%_95%_at_35%_12%,#ffffff,#ecebff_60%,#d9daf6)] px-6"
+      className="flex aspect-[16/10] w-full items-center justify-center gap-6 bg-[radial-gradient(110%_95%_at_35%_12%,#ffffff,var(--tint-lilac)_62%)] px-6"
       aria-hidden="true"
     >
-      <span className={`block ${pair ? "w-[42%]" : config.sizeId === "55x55" ? "w-[38%]" : "w-[60%]"}`}>
-        <CardPreview config={config} face="front" pair={pair} compact />
-      </span>
-      {pair ? (
-        <span className="block w-[42%]">
-          <CardPreview config={config} face="back" pair compact />
+      {faces.map((face, index) => (
+        <span key={index} className="flex flex-col items-center gap-2">
+          <CardShape square={square} back={face === "Reverso"} />
+          <span className="text-xs font-medium text-ink-soft">
+            {face ? `${face} · ` : ""}
+            {square ? "5,5 × 5,5 cm" : "8,5 × 5,5 cm"}
+          </span>
         </span>
-      ) : null}
+      ))}
     </span>
+  );
+}
+
+/* Rectángulo a escala con las cuatro marcas de corte en las esquinas. El reverso va en azul de marca. */
+function CardShape({ square, back }: { square: boolean; back: boolean }) {
+  const width = square ? 74 : 114;
+  return (
+    <span className="relative block p-2.5">
+      {(["left-0 top-0 border-l border-t", "right-0 top-0 border-r border-t", "left-0 bottom-0 border-l border-b", "right-0 bottom-0 border-r border-b"] as const).map(
+        (corner) => (
+          <span key={corner} className={`absolute size-2.5 border-ink/35 ${corner}`} />
+        ),
+      )}
+      <span
+        className={`block rounded-[3px] shadow-[0_14px_22px_-14px_rgba(20,20,40,0.45),0_1px_0_rgba(0,0,0,0.06)] ${
+          back ? "bg-[#4660ff]" : "bg-white ring-1 ring-black/5"
+        }`}
+        style={{ width, height: 74 }}
+      />
+    </span>
+  );
+}
+
+/*
+ * La proforma de ejemplo: la misma estructura que la real (número, cliente,
+ * fechas, detalle, IVA y total), con precios de verdad calculados con la
+ * tabla de hoy. Va un poco girada, como una hoja sobre la mesa.
+ */
+function SampleQuote() {
+  const issued = new Date().toISOString();
+  const configs: Configuration[] = [
+    { ...defaultConfiguration("85x55"), sides: 2, quantity: 500 },
+    { ...defaultConfiguration("55x55"), sides: 1, quantity: 250 },
+  ];
+  /* El mismo cálculo que la proforma real: impresión, peso, envío e IVA. */
+  const totals = orderTotals(configs, issued);
+  const lines = [
+    { label: "Tarjetas clásicas a doble cara", detail: "8,5 × 5,5 cm · couché 300 g", quantity: 500, cents: quote(configs[0]).printingCents },
+    { label: "Tarjetas cuadradas", detail: "5,5 × 5,5 cm · un lado", quantity: 250, cents: quote(configs[1]).printingCents },
+  ];
+  const shippingCents = totals.shipping.cents + totals.delivery.cents;
+  const totalCents = totals.totalCents;
+  const iva = totals.iva;
+
+  return (
+    <div className="relative lg:rotate-[1.5deg]" aria-hidden="true">
+      <span className="absolute -top-3 right-6 z-10 rounded-full bg-flag px-3 py-1 text-xs font-semibold text-flag-ink shadow-sm">Ejemplo</span>
+      <div className="rounded-[22px] border border-line bg-sheet p-6 shadow-[0_28px_60px_-34px_rgba(20,20,20,0.5)] sm:p-7">
+        <div className="flex items-start justify-between gap-4 border-b-2 border-ink pb-4">
+          <div>
+            <BrandLogo className="h-9 w-auto text-ink" />
+            <p className="mt-1.5 text-xs text-ink-soft">Quito, Ecuador · estoesasap.com</p>
+          </div>
+          <div className="text-right">
+            <p className="text-xs text-ink-soft">Proforma</p>
+            <p className="text-sm font-semibold tabular-nums">PRO-0001</p>
+          </div>
+        </div>
+
+        <dl className="mt-4 grid grid-cols-3 gap-3 text-xs">
+          <div>
+            <dt className="text-ink-soft">Cliente</dt>
+            <dd className="mt-0.5 font-medium">Tu empresa</dd>
+          </div>
+          <div>
+            <dt className="text-ink-soft">Emitida</dt>
+            <dd className="mt-0.5 font-medium">{formatShortDate(issued)}</dd>
+          </div>
+          <div>
+            <dt className="text-ink-soft">Válida hasta</dt>
+            <dd className="mt-0.5 font-medium">{formatShortDate(quoteValidUntil(issued))}</dd>
+          </div>
+        </dl>
+
+        <table className="mt-5 w-full text-sm">
+          <thead>
+            <tr className="border-b border-line text-left text-xs text-ink-soft">
+              <th className="pb-2 font-medium">Detalle</th>
+              <th className="pb-2 text-right font-medium">Cant.</th>
+              <th className="pb-2 text-right font-medium">Valor</th>
+            </tr>
+          </thead>
+          <tbody>
+            {lines.map((line) => (
+              <tr key={line.label} className="border-b border-line/70">
+                <td className="py-2.5 pr-3">
+                  <span className="block font-medium">{line.label}</span>
+                  <span className="block text-xs text-ink-soft">{line.detail}</span>
+                </td>
+                <td className="py-2.5 text-right tabular-nums">{line.quantity}</td>
+                <td className="py-2.5 text-right tabular-nums">{formatUsd(line.cents)}</td>
+              </tr>
+            ))}
+            <tr className="border-b border-line/70">
+              <td className="py-2.5 pr-3">
+                <span className="block font-medium">Entrega Standard y envío</span>
+                <span className="block text-xs text-ink-soft">Quito y valles</span>
+              </td>
+              <td />
+              <td className="py-2.5 text-right tabular-nums">{formatUsd(shippingCents)}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <dl className="ml-auto mt-4 max-w-[15rem] space-y-1 text-sm">
+          <div className="flex justify-between gap-4 text-ink-soft">
+            <dt>Subtotal sin IVA</dt>
+            <dd className="tabular-nums">{formatUsd(iva.baseCents)}</dd>
+          </div>
+          <div className="flex justify-between gap-4 text-ink-soft">
+            <dt>{IVA_LABEL}</dt>
+            <dd className="tabular-nums">{formatUsd(iva.ivaCents)}</dd>
+          </div>
+          <div className="flex items-baseline justify-between gap-4 border-t-2 border-ink pt-2">
+            <dt className="font-semibold">Total</dt>
+            <dd className="text-2xl font-semibold tabular-nums">{formatUsd(totalCents)}</dd>
+          </div>
+        </dl>
+        <p className="mt-4 text-xs text-ink-soft">Válida {QUOTE_VALID_DAYS} días hábiles. Precios en dólares, con IVA.</p>
+      </div>
+    </div>
   );
 }
 
