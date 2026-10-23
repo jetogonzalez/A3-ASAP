@@ -163,7 +163,7 @@ export function QuoteBuilder({ shared }: { shared: QuotePayload | null }) {
         <dl className="ml-auto mt-6 max-w-xs space-y-2 text-sm">
           <Row label="Impresión" value={formatUsd(totals.printingCents)} />
           <Row
-            label={`Entrega ${totals.delivery.name.toLowerCase()}`}
+            label={`Entrega ${totals.delivery.name}`}
             value={totals.delivery.cents === 0 ? "Incluida" : formatUsd(totals.delivery.cents)}
           />
           <Row label={`Envío Quito y valles · ${formatWeight(totals.shipping.grams)}`} value={formatUsd(totals.shipping.cents)} />

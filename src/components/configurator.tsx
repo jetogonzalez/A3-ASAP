@@ -760,7 +760,11 @@ function DeliveryChoices({
                   className="control control-radio"
                 />
                 <span className="min-w-0">
-                  <span className={`block ${checked ? "font-semibold" : "font-medium"}`}>
+                  <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-ink-soft">
+                    <span className={`size-2 rounded-full ${option.tone}`} aria-hidden="true" />
+                    {option.name}
+                  </span>
+                  <span className={`mt-0.5 block ${checked ? "font-semibold" : "font-medium"}`}>
                     {formatLongDate(window.earliest)}
                   </span>
                   <span className="mt-0.5 block text-sm text-ink-soft">
@@ -1305,7 +1309,7 @@ const QUESTIONS = [
   },
   {
     q: "¿Cuál es el plazo más corto?",
-    a: "La entrega exprés llega a tu puerta entre 2 y 3 días hábiles, en Quito y los valles. Se cobra una sola vez por pedido. Sin archivo, el plazo empieza cuando lo recibimos por WhatsApp.",
+    a: "La entrega Express llega a tu puerta entre 2 y 3 días hábiles, en Quito y los valles. Se cobra una sola vez por pedido. Sin archivo, el plazo empieza cuando lo recibimos por WhatsApp.",
   },
   {
     q: "¿Cómo se imprimen?",

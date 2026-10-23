@@ -25,12 +25,12 @@ function siteUrl(): URL {
 export const metadata: Metadata = {
   metadataBase: siteUrl(),
   title: {
-    default: "ASAP — Productos personalizados",
+    default: "Esto es ASAP — Productos personalizados",
     template: "%s · ASAP",
   },
   description:
-    "Productos personalizados. Hoy se piden tarjetas de presentación en dólares, con envío en Quito y los valles.",
-  applicationName: "ASAP",
+    "Productos personalizados: tarjetas en línea, y promocionales, textil, empaque y papelería por cotización. En dólares, con envío en Quito y los valles.",
+  applicationName: "Esto es ASAP",
   robots: { index: false, follow: false },
 };
 

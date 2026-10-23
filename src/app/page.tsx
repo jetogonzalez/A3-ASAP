@@ -39,7 +39,7 @@ const FAQ = [
   },
   { q: "¿Cómo pago?", a: "Al finalizar se abre WhatsApp con tu pedido escrito. Ahí te pasamos la cuenta para transferir o el código de Deuna." },
   { q: "¿Hacen factura?", a: "Sí. Pones tu RUC o cédula al hacer el pedido y la factura sale a tu nombre." },
-  { q: "¿Hacen otros productos?", a: "Sí: papelería, catálogos, gran formato, pegatinas, empaque y textil. Por ahora se cotizan por WhatsApp." },
+  { q: "¿Hacen otros productos?", a: "Sí: esferos, tazas, toma todos, camisetas, gorras, tote bags, etiquetas, papel de regalo, calendarios y cuadernos. Por ahora se cotizan por WhatsApp." },
 ] as const;
 
 function priceFor(partial: Partial<Configuration>, quantity: Configuration["quantity"]) {
@@ -90,8 +90,8 @@ export default function HomePage() {
           {/* Collage de productos: deja claro de entrada que no son solo tarjetas. */}
           <div className="grid h-[320px] grid-cols-6 grid-rows-5 gap-3 sm:h-[400px] lg:h-[420px]" aria-hidden="true">
             <Collage className="col-span-4 row-span-3" kind="tarjetas" delay={60} />
-            <Collage className="col-span-2 row-span-3" kind="gran-formato" delay={140} />
-            <Collage className="col-span-2 row-span-2" kind="pegatinas" delay={220} />
+            <Collage className="col-span-2 row-span-3" kind="promocionales" delay={140} />
+            <Collage className="col-span-2 row-span-2" kind="textil" delay={220} />
             <Collage className="col-span-2 row-span-2" kind="empaque" delay={300} />
             <Collage className="col-span-2 row-span-2" kind="papeleria" delay={380} />
           </div>
@@ -207,7 +207,7 @@ export default function HomePage() {
                 <span className="tabular-nums">{formatUsd(priceFor({ sizeId: "85x55", sides: 2 }, 500).cents)}</span>
               </div>
               <div className="flex justify-between gap-4">
-                <span className="text-ink-soft">Entrega estándar</span>
+                <span className="text-ink-soft">Entrega Standard</span>
                 <span className="font-medium text-press-deep">Incluida</span>
               </div>
             </div>

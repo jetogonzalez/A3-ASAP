@@ -81,7 +81,7 @@ export function CartView() {
             <dd>{formatUsd(totals.printingCents)}</dd>
           </div>
           <div className="flex justify-between gap-4">
-            <dt className="text-ink-soft">Entrega {totals.delivery.name.toLowerCase()}</dt>
+            <dt className="text-ink-soft">Entrega {totals.delivery.name}</dt>
             <dd>{totals.delivery.cents === 0 ? "Incluida" : formatUsd(totals.delivery.cents)}</dd>
           </div>
           <div className="flex justify-between gap-4">

@@ -97,7 +97,7 @@ export function OrderReceipt() {
       <dl className="mt-6 space-y-2 rounded-[24px] bg-paper-deep/80 p-5 text-sm">
         <Row label="Impresión" value={formatUsd(order.printingCents)} />
         <Row
-          label={`Entrega ${order.delivery.name.toLowerCase()}`}
+          label={`Entrega ${order.delivery.name}`}
           value={order.delivery.cents === 0 ? "Incluida" : formatUsd(order.delivery.cents)}
         />
         <Row label={`${order.shipping.label} · ${formatWeight(order.shipping.grams)}`} value={formatUsd(order.shipping.cents)} />

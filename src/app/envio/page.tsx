@@ -49,7 +49,12 @@ export default function ShippingPage() {
         <tbody>
           {DELIVERY_OPTIONS.map((option) => (
             <tr key={option.id} className="border-b border-line/80">
-              <th scope="row" className="py-3 pr-4 font-medium">{option.name}</th>
+              <th scope="row" className="py-3 pr-4 font-medium">
+                <span className="inline-flex items-center gap-2">
+                  <span className={`size-2.5 rounded-full ${option.tone}`} aria-hidden="true" />
+                  {option.name}
+                </span>
+              </th>
               <td className="py-3 pr-4">
                 {option.earliestDays} a {option.latestDays} días hábiles
               </td>

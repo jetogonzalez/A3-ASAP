@@ -5,6 +5,9 @@ import { customQuoteMessage, whatsappHref } from "@/lib/whatsapp";
 import { notFound, redirect } from "next/navigation";
 import { productHref } from "@/lib/catalog";
 import { familyBySlug } from "@/lib/families";
+import { LaunchProductCard } from "@/components/launch-product-card";
+import { ProductArt } from "@/components/product-art";
+import { launchProductsFor } from "@/lib/launch-products";
 
 type FamilyPageProps = {
   params: Promise<{ familia: string }>;
@@ -14,9 +17,12 @@ export async function generateMetadata({ params }: FamilyPageProps): Promise<Met
   const { familia } = await params;
   const family = familyBySlug(familia);
   if (!family || family.live) return { title: "Productos" };
+  const hasProducts = launchProductsFor(family.slug).length > 0;
   return {
     title: family.label,
-    description: `${family.note} Todavía no abrimos esta categoría.`,
+    description: hasProducts
+      ? `${family.note} Se cotizan por WhatsApp.`
+      : `${family.note} Todavía no abrimos esta categoría.`,
   };
 }
 
@@ -25,6 +31,7 @@ export default async function FamilyPage({ params }: FamilyPageProps) {
   const family = familyBySlug(familia);
   if (!family) notFound();
   if (family.live) redirect(productHref());
+  const products = launchProductsFor(family.slug);
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-8 md:px-8 md:py-10">
@@ -35,24 +42,51 @@ export default async function FamilyPage({ params }: FamilyPageProps) {
         <span aria-hidden="true"> / </span>
         <span className="text-ink">{family.label}</span>
       </nav>
-      <span className="mt-4 inline-flex items-center rounded-full bg-flag px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-flag-ink">
-        Pronto
-      </span>
-      <h1 className="mt-3 text-3xl font-semibold tracking-tight">{family.label}</h1>
-      <p className="mt-3 max-w-xl text-sm leading-6 text-ink-soft">{family.note}</p>
-      <p className="mt-2 max-w-xl text-sm leading-6 text-ink-soft">
-        Todavía no se arma en la web, pero ya lo cotizamos por WhatsApp: cuéntanos qué necesitas y te respondemos con precio y plazo.
-      </p>
-      <div className="mt-6 flex flex-wrap gap-3">
-        <a
-          href={whatsappHref(customQuoteMessage(family.label.toLowerCase()))}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex min-h-12 items-center gap-2 rounded-full bg-press px-5 text-sm font-semibold text-white hover:bg-press-deep"
-        >
-          <WhatsappLogo />
-          Cotizar {family.label.toLowerCase()} por WhatsApp
-        </a>
+      <div className="mt-4 grid items-center gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]">
+        <div>
+          {products.length > 0 ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-moss-soft px-2.5 py-1 text-xs font-semibold text-press-deep">
+              <WhatsappLogo size={13} brand />
+              Se cotiza por WhatsApp
+            </span>
+          ) : (
+            <span className="inline-flex items-center rounded-full bg-flag px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-flag-ink">
+              Pronto
+            </span>
+          )}
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight">{family.label}</h1>
+          <p className="mt-3 max-w-xl text-sm leading-6 text-ink-soft">{family.note}</p>
+          <p className="mt-2 max-w-xl text-sm leading-6 text-ink-soft">
+            {products.length > 0
+              ? "Todavía no se arma en la web. Elige el producto, escríbenos con la cantidad y te respondemos con precio y plazo."
+              : "Todavía no se arma en la web, pero ya lo cotizamos por WhatsApp: cuéntanos qué necesitas y te respondemos con precio y plazo."}
+          </p>
+        </div>
+        <ProductArt kind={family.slug} className="hidden aspect-[4/3] w-full rounded-[22px] md:block" />
+      </div>
+
+      {products.length > 0 ? (
+        <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {products.map((product) => (
+            <li key={product.id}>
+              <LaunchProductCard product={product} />
+            </li>
+          ))}
+        </ul>
+      ) : null}
+
+      <div className="mt-8 flex flex-wrap gap-3">
+        {products.length > 0 ? null : (
+          <a
+            href={whatsappHref(customQuoteMessage(family.label.toLowerCase()))}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex min-h-12 items-center gap-2 rounded-full bg-press px-5 text-sm font-semibold text-white hover:bg-press-deep"
+          >
+            <WhatsappLogo />
+            Cotizar {family.label.toLowerCase()} por WhatsApp
+          </a>
+        )}
         <Link
           href={productHref()}
           className="inline-flex min-h-12 items-center rounded-full border border-line px-5 text-sm font-semibold hover:border-ink/30"

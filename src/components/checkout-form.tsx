@@ -304,7 +304,7 @@ export function CheckoutForm() {
           ))}
           <li className="flex justify-between gap-3 border-t border-line pt-3">
             <span className="text-ink-soft">
-              Entrega {delivery.name.toLowerCase()}
+              Entrega {delivery.name}
               <span className="block text-xs">Una vez por pedido</span>
             </span>
             <span>{delivery.cents === 0 ? "Incluida" : formatUsd(delivery.cents)}</span>

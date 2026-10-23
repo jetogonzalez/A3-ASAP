@@ -3,6 +3,7 @@ import { ProductArt } from "@/components/product-art";
 import { WhatsappLogo } from "@/components/whatsapp-logo";
 import { defaultConfiguration } from "@/lib/catalog";
 import { FAMILIES, familyHref } from "@/lib/families";
+import { launchProductsFor } from "@/lib/launch-products";
 import { formatUsd } from "@/lib/money";
 import { quote } from "@/lib/pricing";
 
@@ -44,7 +45,9 @@ export function FamilyGrid() {
                 ) : (
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-paper-deep px-2.5 py-1 text-xs font-semibold text-ink-soft">
                     <WhatsappLogo size={13} brand />
-                    Cotiza por WhatsApp
+                    {launchProductsFor(family.slug).length > 0
+                      ? `${launchProductsFor(family.slug).length} productos · cotiza`
+                      : "Cotiza por WhatsApp"}
                   </span>
                 )}
               </span>

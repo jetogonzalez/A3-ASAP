@@ -4,24 +4,34 @@
   --paper: #ffffff;
   --paper-deep: #f3f4f6;
   --sheet: #ffffff;
-  --ink: #1a1d21;
+  /* Negro y azul oficiales de la marca, tomados de ESTOESASAP_LOGO.svg. */
+  --ink: #141414;
   --ink-soft: #5c6570;
   --line: #e3e6ea;
-  --press: #0d7a3b;
-  --press-deep: #0a6230;
-  --moss: #0d7a3b;
-  --moss-soft: #e7f5ec;
-  /* Azul: solo marca lo que el usuario eligió. El verde queda para la marca y los precios incluidos. */
-  --pick: #1557d6;
-  --pick-deep: #0f44a8;
-  --pick-soft: #eaf1fd;
-  /* Azules tenues para el hover: insinúan la selección sin competir con ella. */
-  --pick-line: #cddcf6;
-  --pick-wash: #f5f9ff;
+  --brand: #4660ff;
+  --press: #4660ff;
+  --press-deep: #2f47db;
+  /* «Incluido» y «en línea» van en el azul de la marca. */
+  --moss: #4660ff;
+  --moss-soft: #edf0ff;
+  /*
+   * La selección va en negro de marca: con el azul ya puesto en los botones,
+   * un segundo azul para lo elegido se confundía con «toca aquí».
+   */
+  --pick: #141414;
+  --pick-deep: #000000;
+  --pick-soft: #f1f2f4;
+  /* Grises tenues para el hover: insinúan la selección sin competir con ella. */
+  --pick-line: #c9ccd2;
+  --pick-wash: #f7f8f9;
+  /* Colores de los tres ritmos de entrega, los mismos del material de marca. */
+  --speed-standard: #2db84b;
+  --speed-priority: #ffc727;
+  --speed-express: #ff5a2c;
   /* Ámbar solo para etiquetas informativas, para que no se confundan con una selección. */
   --flag: #fdf0d2;
   --flag-ink: #8a5300;
-  /* Rojo de error. Antes los avisos usaban el verde de marca y no se leían como error. */
+  /* Rojo de error. */
   --alert: #c62a1d;
   --alert-deep: #8e1b11;
   --alert-soft: #fdecea;
@@ -36,6 +46,7 @@
   --color-ink: var(--ink);
   --color-ink-soft: var(--ink-soft);
   --color-line: var(--line);
+  --color-brand: var(--brand);
   --color-press: var(--press);
   --color-press-deep: var(--press-deep);
   --color-moss: var(--moss);
@@ -45,6 +56,9 @@
   --color-pick-soft: var(--pick-soft);
   --color-pick-line: var(--pick-line);
   --color-pick-wash: var(--pick-wash);
+  --color-speed-standard: var(--speed-standard);
+  --color-speed-priority: var(--speed-priority);
+  --color-speed-express: var(--speed-express);
   --color-flag: var(--flag);
   --color-flag-ink: var(--flag-ink);
   --color-alert: var(--alert);
@@ -189,7 +203,7 @@ details[open] > summary .disclosure-mark {
 }
 
 ::selection {
-  background: #d9f0e2;
+  background: #dce1ff;
   color: var(--ink);
 }
 
@@ -340,7 +354,7 @@ label:has(:checked) .swatch-sweep {
   .family-card:hover {
     transform: translateY(-4px);
     border-color: color-mix(in srgb, var(--ink) 18%, transparent);
-    box-shadow: 0 24px 40px -28px rgba(26, 29, 33, 0.55);
+    box-shadow: 0 24px 40px -28px rgba(20, 20, 20, 0.55);
   }
 
   .family-card:hover .product-art-stage {
@@ -538,9 +552,10 @@ label:has(:checked) > .method-logo {
 /*
  * La mesa de corte del taller: cuadrícula fina cada 6 mm y una más marcada
  * cada 3 cm. Es el único fondo con carácter del sitio; todo lo demás va blanco.
+ * Va en un azul de marca más hondo que el del logo, para que el texto blanco lea bien.
  */
 .cutting-mat {
-  background-color: #0e5a33;
+  background-color: #2d43d6;
   background-image:
     linear-gradient(rgba(255, 255, 255, 0.16) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.16) 1px, transparent 1px),

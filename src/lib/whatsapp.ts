@@ -34,8 +34,8 @@ export function orderMessage(order: Order): string {
 
   const delivery =
     order.delivery.cents > 0
-      ? `Entrega ${order.delivery.name.toLowerCase()}: ${formatUsd(order.delivery.cents)}`
-      : `Entrega ${order.delivery.name.toLowerCase()}: incluida`;
+      ? `Entrega ${order.delivery.name}: ${formatUsd(order.delivery.cents)}`
+      : `Entrega ${order.delivery.name}: incluida`;
 
   return [
     `Hola ASAP, quiero confirmar el pedido *${order.number}*.`,

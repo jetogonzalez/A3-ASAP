@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { BrandLogo } from "@/components/brand-logo";
 import { useCart } from "@/components/cart-provider";
 import { FAMILIES, familyHref } from "@/lib/families";
 
@@ -29,8 +30,8 @@ export function SiteHeader() {
     <>
       <header className="sticky top-0 z-40 border-b border-line bg-white print:hidden">
         <div className="mx-auto flex w-full max-w-6xl items-center gap-2.5 px-4 py-2.5 md:gap-5 md:px-8 md:py-3">
-          <Link href="/" className="shrink-0 text-xl font-semibold tracking-tight" aria-label="ASAP, inicio">
-            ASAP
+          <Link href="/" className="shrink-0 text-ink" aria-label="Esto es ASAP, inicio">
+            <BrandLogo className="h-8 w-auto md:h-9" />
           </Link>
           <form action="/productos" className="min-w-0 flex-1" role="search">
             <label className="sr-only" htmlFor="buscar">
