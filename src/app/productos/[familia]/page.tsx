@@ -8,7 +8,17 @@ import { familyBySlug } from "@/lib/families";
 import { LaunchProductTile } from "@/components/launch-product-tile";
 import { ProductArt } from "@/components/product-art";
 import { ProductPhoto, hasProductPhoto } from "@/components/product-photo";
-import { launchProductsFor } from "@/lib/launch-products";
+import { LAUNCH_PRODUCTS, launchProductsFor } from "@/lib/launch-products";
+
+/*
+ * Para las familias que aún no se arman en la web: productos parecidos que sí
+ * se pueden pedir ya, para que la página no sea un callejón sin salida.
+ */
+const RELATED: Record<string, string[]> = {
+  pegatinas: ["etiquetas", "papel-regalo", "tarjetas-de-regalo"],
+  catalogos: ["cuadernos", "calendarios", "tarjetas-de-regalo"],
+  "gran-formato": ["tote-bags", "camisetas-hoodies", "gorras"],
+};
 
 type FamilyPageProps = {
   params: Promise<{ familia: string }>;
@@ -33,6 +43,9 @@ export default async function FamilyPage({ params }: FamilyPageProps) {
   if (!family) notFound();
   if (family.live) redirect(productHref());
   const products = launchProductsFor(family.slug);
+  const related = (RELATED[family.slug] ?? [])
+    .map((slug) => LAUNCH_PRODUCTS.find((product) => product.slug === slug))
+    .filter((product) => product !== undefined);
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-8 md:px-8 md:py-10">
@@ -72,7 +85,7 @@ export default async function FamilyPage({ params }: FamilyPageProps) {
       </div>
 
       {products.length > 0 ? (
-        <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {products.map((product) => (
             <li key={product.id}>
               <LaunchProductTile product={product} />
@@ -87,19 +100,38 @@ export default async function FamilyPage({ params }: FamilyPageProps) {
             href={whatsappHref(customQuoteMessage(family.label.toLowerCase()))}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex min-h-12 items-center gap-2 rounded-full bg-press px-5 text-sm font-semibold text-white hover:bg-press-deep"
+            className="press inline-flex min-h-12 items-center gap-2 rounded-full bg-press px-5 text-sm font-semibold text-white hover:bg-press-deep"
           >
             <WhatsappLogo />
             Cotizar {family.label.toLowerCase()} por WhatsApp
           </a>
         )}
         <Link
-          href={productHref()}
-          className="inline-flex min-h-12 items-center rounded-full border border-line px-5 text-sm font-semibold hover:border-ink/30"
+          href="/productos"
+          className="press inline-flex min-h-12 items-center gap-2 rounded-full border border-line px-5 text-sm font-semibold hover:border-ink/30"
         >
-          Ver tarjetas de presentación
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true" className="rotate-180">
+            <path d="m6 3 5 5-5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          Ver todos los productos
         </Link>
       </div>
+
+      {related.length > 0 ? (
+        <section className="mt-14 border-t border-line pt-10" aria-labelledby="mientras-tanto">
+          <h2 id="mientras-tanto" className="text-2xl font-semibold tracking-tight">
+            Mientras tanto, esto ya lo puedes armar
+          </h2>
+          <p className="mt-2 max-w-xl text-sm leading-6 text-ink-soft">Productos parecidos que se arman aquí y se piden por WhatsApp.</p>
+          <ul className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {related.map((product) => (
+              <li key={product.id}>
+                <LaunchProductTile product={product} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
     </div>
   );
 }
