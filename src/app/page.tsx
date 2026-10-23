@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { BrandLogo } from "@/components/brand-logo";
 import { FamilyGrid } from "@/components/family-grid";
@@ -22,6 +23,10 @@ import { customQuoteMessage, whatsappHref } from "@/lib/whatsapp";
 
 /* La fecha de entrega cambia con el día: se vuelve a armar cada 10 minutos. */
 export const revalidate = 600;
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/", types: { "text/markdown": "/llms.txt" } },
+};
 
 /* El inicio es para alguien que nunca imprimió nada: frases cortas, un paso a la vez. */
 

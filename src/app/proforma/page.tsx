@@ -1,16 +1,28 @@
 import type { Metadata } from "next";
 import { QuoteBuilder } from "@/components/quote-builder";
-import { decodeQuote } from "@/lib/quote";
-
-export const metadata: Metadata = {
-  title: "Proforma",
-  description: "Proforma de tarjetas de presentación en USD, para guardar en PDF, compartir o pedir por WhatsApp.",
-  robots: { index: false, follow: false },
-};
+import { decodeQuote, quoteNumber } from "@/lib/quote";
 
 type QuotePageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
+
+/* Una proforma compartida muestra al pegar el enlace su número, cliente y total. */
+export async function generateMetadata({ searchParams }: QuotePageProps): Promise<Metadata> {
+  const { c } = await searchParams;
+  const shared = typeof c === "string" ? decodeQuote(c) : null;
+  const title = shared ? `Proforma ${quoteNumber(shared)}` : "Proforma";
+  const description = shared
+    ? `Proforma de Esto es ASAP${shared.client.name ? ` para ${shared.client.name}` : ""}. Ábrela para verla, guardarla en PDF o convertirla en pedido.`
+    : "Proforma de tarjetas de presentación en USD, para guardar en PDF, compartir o pedir por WhatsApp.";
+  const image = { url: shared && typeof c === "string" ? `/proforma/og?c=${c}` : "/proforma/og", width: 1200, height: 630, alt: title };
+  return {
+    title,
+    description,
+    robots: { index: false, follow: false },
+    openGraph: { type: "website", siteName: "Esto es ASAP", locale: "es_EC", title, description, images: [image] },
+    twitter: { card: "summary_large_image", title, description, images: [image.url] },
+  };
+}
 
 export default async function QuotePage({ searchParams }: QuotePageProps) {
   const { c } = await searchParams;

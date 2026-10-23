@@ -1,5 +1,6 @@
 import { WhatsappLogo } from "@/components/whatsapp-logo";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/site";
 import Link from "next/link";
 import { customQuoteMessage, whatsappHref } from "@/lib/whatsapp";
 import { notFound, redirect } from "next/navigation";
@@ -29,12 +30,13 @@ export async function generateMetadata({ params }: FamilyPageProps): Promise<Met
   const family = familyBySlug(familia);
   if (!family || family.live) return { title: "Productos" };
   const hasProducts = launchProductsFor(family.slug).length > 0;
-  return {
-    title: family.label,
+  return pageMetadata({
+    title: `${family.label} con tu marca en Quito`,
     description: hasProducts
-      ? `${family.note} Se cotizan por WhatsApp.`
+      ? `${family.note} Con tu marca, se cotizan por WhatsApp y se entregan en Quito y los valles.`
       : `${family.note} Todavía no abrimos esta categoría.`,
-  };
+    path: `/productos/${family.slug}`,
+  });
 }
 
 export default async function FamilyPage({ params }: FamilyPageProps) {

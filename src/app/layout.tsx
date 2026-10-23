@@ -3,6 +3,9 @@ import { Outfit } from "next/font/google";
 import { CartProvider } from "@/components/cart-provider";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { JsonLd } from "@/components/json-ld";
+import { isProductionSite, siteUrl } from "@/lib/site";
+import { siteGraph } from "@/lib/structured-data";
 import "./globals.css";
 
 const outfit = Outfit({
@@ -12,26 +15,53 @@ const outfit = Outfit({
   weight: ["400", "500", "600"],
 });
 
-function siteUrl(): URL {
-  const explicit = process.env.NEXT_PUBLIC_SITE_URL;
-  if (explicit) return new URL(explicit);
-  const production = process.env.VERCEL_PROJECT_PRODUCTION_URL;
-  if (production) return new URL(`https://${production}`);
-  const deployment = process.env.VERCEL_URL;
-  if (deployment) return new URL(`https://${deployment}`);
-  return new URL("http://localhost:3000");
-}
+const DESCRIPTION =
+  "Tarjetas de presentación, promocionales, camisetas, tazas, etiquetas y empaque con tu marca en Quito. Precio final en dólares con IVA, diseño en Canva y entrega a domicilio en Quito y los valles.";
 
 export const metadata: Metadata = {
   metadataBase: siteUrl(),
   title: {
-    default: "Esto es ASAP — Productos personalizados",
+    default: "Esto es ASAP · Productos personalizados e impresión en Quito",
     template: "%s · ASAP",
   },
-  description:
-    "Productos personalizados: tarjetas en línea, y promocionales, textil, empaque y papelería por cotización. En dólares, con envío en Quito y los valles.",
+  description: DESCRIPTION,
   applicationName: "Esto es ASAP",
-  robots: { index: false, follow: false },
+  keywords: [
+    "tarjetas de presentación Quito",
+    "imprenta Quito",
+    "impresión digital Quito",
+    "productos personalizados Ecuador",
+    "merchandising Quito",
+    "regalos corporativos Quito",
+    "camisetas personalizadas Quito",
+    "tazas personalizadas",
+    "etiquetas adhesivas",
+    "stickers personalizados",
+    "empaque personalizado",
+    "Cumbayá",
+    "Tumbaco",
+    "Los Chillos",
+  ],
+  category: "shopping",
+  alternates: { types: { "text/markdown": "/llms.txt" } },
+  /* Solo producción se indexa; las vistas previas de Vercel no. */
+  robots: isProductionSite()
+    ? { index: true, follow: true, googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1 } }
+    : { index: false, follow: false },
+  openGraph: {
+    type: "website",
+    locale: "es_EC",
+    siteName: "Esto es ASAP",
+    title: "Esto es ASAP · Productos personalizados en Quito",
+    description: DESCRIPTION,
+    url: "/",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Esto es ASAP · Productos personalizados en Quito",
+    description: DESCRIPTION,
+  },
+  formatDetection: { telephone: false },
 };
 
 export const viewport: Viewport = {
@@ -65,6 +95,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         >
           Saltar al contenido
         </a>
+        <JsonLd data={siteGraph()} />
         <CartProvider>
           <SiteHeader />
           <main id="contenido" className="flex-1">

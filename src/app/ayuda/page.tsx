@@ -1,13 +1,18 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/site";
 import Link from "next/link";
 import { LegalPage } from "@/components/legal-page";
 import { productHref } from "@/lib/catalog";
 import { whatsappHref } from "@/lib/whatsapp";
+import { JsonLd } from "@/components/json-ld";
+import { FAQS } from "@/lib/faq";
+import { faqGraph } from "@/lib/structured-data";
 
-export const metadata: Metadata = {
-  title: "Ayuda",
-  description: "Cómo pedir en ASAP, cómo enviar tu diseño y cómo funciona Diseñar en Canva.",
-};
+export const metadata: Metadata = pageMetadata({
+  title: "Ayuda y preguntas frecuentes",
+  description: "Cómo pedir en ASAP, cómo enviar tu diseño, plazos de entrega, IVA y pedido mínimo. Respuestas rápidas sobre impresión personalizada en Quito.",
+  path: "/ayuda",
+});
 
 export default function HelpPage() {
   return (
@@ -45,6 +50,16 @@ export default function HelpPage() {
           <li>Cuando termines, toca «Volver» arriba en el editor. ASAP descarga tu diseño en PDF y lo muestra en la vista previa del producto.</li>
           <li>Tu diseño también queda guardado en tu cuenta de Canva, por si quieres cambiarlo después.</li>
         </ul>
+      </section>
+      <section>
+        <h2>Preguntas frecuentes</h2>
+        <JsonLd data={faqGraph(FAQS)} />
+        {FAQS.map((faq) => (
+          <div key={faq.question}>
+            <h3>{faq.question}</h3>
+            <p>{faq.answer}</p>
+          </div>
+        ))}
       </section>
       <section>
         <h2>¿Necesitas ayuda?</h2>

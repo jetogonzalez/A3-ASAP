@@ -8,6 +8,9 @@ import { familyBySlug } from "@/lib/families";
 import { launchProductBySlug, type LaunchProduct } from "@/lib/launch-products";
 import { canvaReturnFromSearch, pickedFromSearch } from "@/lib/canva-return";
 import { canvaVisible } from "@/server/canva";
+import { JsonLd } from "@/components/json-ld";
+import { pageMetadata } from "@/lib/site";
+import { cardsProductGraph, launchProductGraph } from "@/lib/structured-data";
 
 
 type ProductPageProps = {
@@ -18,11 +21,20 @@ type ProductPageProps = {
 export async function generateMetadata({ params }: Pick<ProductPageProps, "params">): Promise<Metadata> {
   const { slug } = await params;
   const launch = launchProductBySlug(slug);
-  if (launch) return { title: launch.name, description: launch.summary };
-  return {
-    title: "Tarjetas de presentación",
-    description: "Configura tamaño, cantidad, lados y acabados. El precio se calcula en dólares.",
-  };
+  if (launch) {
+    const family = familyBySlug(launch.family);
+    return pageMetadata({
+      title: `${launch.name} con tu marca en Quito`,
+      description: `${launch.summary} Desde ${launch.quantities[0]} unidades, producción en ${launch.leadTime}${family ? ` · ${family.label}` : ""}. Cotiza por WhatsApp con entrega en Quito y los valles.`,
+      path: `/producto/${launch.slug}`,
+    });
+  }
+  return pageMetadata({
+    title: "Tarjetas de presentación en Quito",
+    description:
+      "Tarjetas de presentación en couché 300 g, mate o brillante, con laminado, UV selectivo y puntas redondeadas. Precio final en dólares con IVA al instante y entrega en Quito y los valles.",
+    path: `/producto/${PRODUCT.slug}`,
+  });
 }
 
 export default async function ProductPage({ params, searchParams }: ProductPageProps) {
@@ -37,6 +49,7 @@ export default async function ProductPage({ params, searchParams }: ProductPageP
 
   return (
     <div className="mx-auto w-full max-w-6xl px-5 py-10 md:px-8 md:py-14">
+      <JsonLd data={cardsProductGraph()} />
       <nav aria-label="Miga de pan" className="text-sm text-ink-soft">
         <Link href="/productos" className="underline-offset-4 hover:underline">
           Productos
@@ -70,6 +83,7 @@ function LaunchProductPage({ product }: { product: LaunchProduct }) {
   const family = familyBySlug(product.family);
   return (
     <div className="mx-auto w-full max-w-6xl px-5 py-10 md:px-8 md:py-14">
+      <JsonLd data={launchProductGraph(product, family?.label)} />
       <nav aria-label="Miga de pan" className="text-sm text-ink-soft">
         <Link href="/productos" className="underline-offset-4 hover:underline">
           Productos

@@ -1,13 +1,15 @@
 import { DeliveryIcon } from "@/components/delivery-icon";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/site";
 import { DELIVERY_OPTIONS } from "@/lib/delivery";
 import { SHIPPING_TABLE } from "@/lib/ecuador";
 import { formatUsd } from "@/lib/money";
 
-export const metadata: Metadata = {
-  title: "Envío",
-  description: "Envío a domicilio en Quito y los valles.",
-};
+export const metadata: Metadata = pageMetadata({
+  title: "Envío en Quito y los valles",
+  description: "Entrega a domicilio en Quito, Cumbayá, Tumbaco y Los Chillos. Tarifas por peso y tres ritmos de entrega: Standard, Priority y Express.",
+  path: "/envio",
+});
 
 export default function ShippingPage() {
   return (

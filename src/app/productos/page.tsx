@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/site";
 import { CardsTile } from "@/components/cards-tile";
 import { FamilyGrid } from "@/components/family-grid";
 import { LaunchProductTile } from "@/components/launch-product-tile";
 import { PRODUCT } from "@/lib/catalog";
 import { searchLaunchProducts } from "@/lib/launch-products";
 
-export const metadata: Metadata = {
-  title: "Productos",
-  description: "Tarjetas de presentación en línea. Promocionales, textil, empaque y papelería por cotización.",
-};
+export const metadata: Metadata = pageMetadata({
+  title: "Productos personalizados",
+  description: "Tarjetas de presentación en línea y, por cotización, esferos, tomatodos, tazas, camisetas, hoodies, gorras, tote bags, etiquetas, papel de regalo, calendarios y cuadernos con tu marca.",
+  path: "/productos",
+});
 
 type ProductsPageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;

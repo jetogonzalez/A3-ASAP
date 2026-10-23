@@ -7,7 +7,7 @@ export function LegalPage({ title, updated, intro, children }: { title: string; 
       <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">{title}</h1>
       <p className="mt-3 text-sm text-ink-soft">Actualizado el {updated}</p>
       <p className="mt-6 text-lg leading-8 text-ink-soft">{intro}</p>
-      <div className="mt-10 space-y-10 leading-7 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:tracking-tight [&_li]:mt-2 [&_p]:mt-3 [&_ul]:mt-3 [&_ul]:list-disc [&_ul]:pl-5 [&_a]:font-medium [&_a]:text-brand-deep [&_a]:underline [&_a]:underline-offset-4">
+      <div className="mt-10 space-y-10 leading-7 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:tracking-tight [&_h3]:mt-6 [&_h3]:font-semibold [&_li]:mt-2 [&_p]:mt-3 [&_ul]:mt-3 [&_ul]:list-disc [&_ul]:pl-5 [&_a]:font-medium [&_a]:text-brand-deep [&_a]:underline [&_a]:underline-offset-4">
         {children}
       </div>
     </article>

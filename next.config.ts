@@ -78,6 +78,12 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  /* Fotos y fuente de las imágenes para compartir (lib/og.tsx las lee del disco). */
+  outputFileTracingIncludes: {
+    "/opengraph-image": ["./src/assets/og/**/*"],
+    "/producto/[slug]/opengraph-image": ["./src/assets/og/**/*"],
+    "/proforma/og": ["./src/assets/og/**/*"],
+  },
   /* Los enlaces de cotización que ya se compartieron siguen abriendo: ahora se llama proforma. */
   async redirects() {
     return [{ source: "/cotizacion", destination: "/proforma", permanent: true }];

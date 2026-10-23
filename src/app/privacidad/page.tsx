@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/site";
 import { LegalPage } from "@/components/legal-page";
 import { whatsappHref } from "@/lib/whatsapp";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Privacidad",
   description: "Qué datos usa ASAP, para qué y cómo pedir que los borremos.",
-};
+  path: "/privacidad",
+});
 
 export default function PrivacyPage() {
   return (

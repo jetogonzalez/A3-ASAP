@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/site";
 import { LegalPage } from "@/components/legal-page";
 import { QUOTE_VALID_DAYS } from "@/lib/quote";
 import { whatsappHref } from "@/lib/whatsapp";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Términos",
   description: "Cómo funcionan los pedidos, pagos y entregas de ASAP.",
-};
+  path: "/terminos",
+});
 
 export default function TermsPage() {
   return (
