@@ -1,5 +1,6 @@
 "use client";
 
+import { BrandLogo } from "@/components/brand-logo";
 import { WhatsappLogo } from "@/components/whatsapp-logo";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -107,8 +108,8 @@ export function QuoteBuilder({ shared }: { shared: QuotePayload | null }) {
       >
         <header className="flex flex-wrap items-start justify-between gap-6 border-b-2 border-ink pb-6">
           <div>
-            <p className="text-3xl font-semibold tracking-tight">ASAP</p>
-            <p className="mt-1 text-sm text-ink-soft">Productos personalizados · Quito, Ecuador</p>
+            <BrandLogo className="h-12 w-auto text-ink [print-color-adjust:exact]" />
+            <p className="mt-2 text-sm text-ink-soft">Productos personalizados · Quito, Ecuador · estoesasap.com</p>
           </div>
           <div className="text-right">
             <p className="text-sm text-ink-soft">Proforma</p>

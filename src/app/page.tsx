@@ -1,7 +1,8 @@
 import Link from "next/link";
+import { BrandLogo } from "@/components/brand-logo";
+import { CardPreview } from "@/components/card-preview";
 import { FamilyGrid } from "@/components/family-grid";
 import { LaunchProductTile } from "@/components/launch-product-tile";
-import { ProductArt } from "@/components/product-art";
 import { ProductPhoto } from "@/components/product-photo";
 import { ProductRail, RailItem } from "@/components/product-rail";
 import { WhatsappLogo } from "@/components/whatsapp-logo";
@@ -199,7 +200,7 @@ export default function HomePage() {
               return (
                 <li key={item.title}>
                   <Link href={small.href} className="family-card group flex h-full flex-col overflow-hidden rounded-[22px] border border-line bg-sheet">
-                    <ProductArt kind="tarjetas" className="aspect-[16/10] w-full" />
+                    <CardStage config={{ ...defaultConfiguration(item.config.sizeId ?? "85x55"), ...item.config }} />
                     <span className="flex flex-1 flex-col p-5">
                       <span className="text-lg font-semibold tracking-tight">{item.title}</span>
                       <span className="text-sm text-ink-soft">{item.detail}</span>
@@ -262,7 +263,7 @@ export default function HomePage() {
           </div>
           <div className="rounded-[22px] border border-line bg-sheet p-6 shadow-[0_24px_50px_-34px_rgba(20,20,20,0.45)]" aria-hidden="true">
             <div className="flex items-center justify-between border-b-2 border-ink pb-4">
-              <span className="text-xl font-semibold">ASAP</span>
+              <BrandLogo className="h-8 w-auto text-ink" />
               <span className="text-sm text-ink-soft">Proforma de ejemplo</span>
             </div>
             <div className="mt-4 space-y-2 text-sm">
@@ -322,6 +323,29 @@ export default function HomePage() {
         </div>
       </section>
     </>
+  );
+}
+
+/*
+ * La tarjeta de verdad, la misma muestra del configurador: así cada opción se
+ * ve distinta (clásica, a doble cara, cuadrada) y coincide con lo que se pide.
+ */
+function CardStage({ config }: { config: Configuration }) {
+  const pair = config.sides === 2;
+  return (
+    <span
+      className="flex aspect-[16/10] w-full items-center justify-center gap-3 bg-[radial-gradient(110%_95%_at_35%_12%,#ffffff,#ecebff_60%,#d9daf6)] px-6"
+      aria-hidden="true"
+    >
+      <span className={`block ${pair ? "w-[42%]" : config.sizeId === "55x55" ? "w-[38%]" : "w-[60%]"}`}>
+        <CardPreview config={config} face="front" pair={pair} compact />
+      </span>
+      {pair ? (
+        <span className="block w-[42%]">
+          <CardPreview config={config} face="back" pair compact />
+        </span>
+      ) : null}
+    </span>
   );
 }
 
