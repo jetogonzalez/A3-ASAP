@@ -9,13 +9,16 @@ import { launchProductsFor } from "@/lib/launch-products";
 import { formatUsd } from "@/lib/money";
 import { quote } from "@/lib/pricing";
 
-/* La foto que representa a cada familia; las que aún no tienen productos van dibujadas. */
+/* La foto que representa a cada familia. */
 const FAMILY_PHOTO: Record<string, string> = {
   tarjetas: "tarjetas-de-presentacion",
   promocionales: "tazas-mugs",
   textil: "camisetas-hoodies",
   empaque: "papel-regalo",
   papeleria: "calendarios",
+  pegatinas: "pegatinas",
+  catalogos: "catalogos",
+  "gran-formato": "gran-formato",
 };
 
 /**
