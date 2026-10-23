@@ -44,12 +44,20 @@ export function ProductRail({ label, children }: { label: string; children: Reac
   };
 
   const thumbWidth = Math.max(progress.visible, 0.08);
+  /*
+   * Un corte seco en el borde se veía raro: la tarjeta que asoma se desvanece.
+   * Solo del lado donde hay más contenido.
+   */
+  const fade = `linear-gradient(to right, ${progress.start ? "black" : "transparent"}, black 3rem, black calc(100% - 4.5rem), ${
+    progress.end ? "black" : "transparent"
+  })`;
 
   return (
     <div className="relative">
       <ul
         ref={track}
         aria-label={label}
+        style={{ maskImage: fade, WebkitMaskImage: fade }}
         className="product-rail -mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-5 px-5 pb-2 sm:gap-4 md:-mx-8 md:scroll-px-8 md:px-8"
       >
         {children}
