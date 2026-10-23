@@ -1,3 +1,4 @@
+import { DeliveryIcon } from "@/components/delivery-icon";
 import type { Metadata } from "next";
 import { DELIVERY_OPTIONS } from "@/lib/delivery";
 import { SHIPPING_TABLE } from "@/lib/ecuador";
@@ -50,8 +51,8 @@ export default function ShippingPage() {
           {DELIVERY_OPTIONS.map((option) => (
             <tr key={option.id} className="border-b border-line/80">
               <th scope="row" className="py-3 pr-4 font-medium">
-                <span className="inline-flex items-center gap-2">
-                  <span className={`size-2.5 rounded-full ${option.tone}`} aria-hidden="true" />
+                <span className="inline-flex items-center gap-2.5">
+                  <DeliveryIcon speed={option.id} size="sm" />
                   {option.name}
                 </span>
               </th>

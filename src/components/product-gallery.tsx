@@ -81,7 +81,7 @@ export function ProductGallery({
         <ArrowButton side="right" onClick={() => go(index + 1)} />
       </div>
 
-      <div className="mt-3 flex items-center gap-2" role="tablist" aria-label="Elegir foto">
+      <div className="-mx-1.5 mt-1.5 flex min-w-0 items-center gap-2 overflow-x-auto p-1.5" role="tablist" aria-label="Elegir foto">
         {slides.map((slide, position) => {
           const active = position === index;
           return (
@@ -107,7 +107,7 @@ export function ProductGallery({
             </button>
           );
         })}
-        <p className="ml-auto text-sm text-ink-soft" aria-live="polite">
+        <p className="ml-auto shrink-0 pl-2 text-sm text-ink-soft" aria-live="polite">
           <span className="hidden font-medium text-ink sm:inline">{slides[index].label} · </span>
           {index + 1}/{slides.length}
         </p>

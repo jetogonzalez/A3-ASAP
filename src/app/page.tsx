@@ -193,7 +193,7 @@ export default function HomePage() {
             Lo más pedido
           </h2>
           <p className="mt-2 max-w-lg leading-7 text-ink-soft">Precios con IVA, en couche 300 g mate o brillante. Los acabados se suman al armarlas.</p>
-          <ul className="mt-8 grid gap-4 md:grid-cols-3">
+          <ul className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
             {BESTSELLERS.map((item) => {
               const small = priceFor(item.config, 100);
               const big = priceFor(item.config, 500);

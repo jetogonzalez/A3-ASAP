@@ -8,6 +8,7 @@ import { FinishSwatch, type SwatchFaces } from "@/components/finish-swatch";
 import { WhatsappLogo } from "@/components/whatsapp-logo";
 import { LightStage } from "@/components/light-stage";
 import { ProductGallery } from "@/components/product-gallery";
+import { DeliveryIcon } from "@/components/delivery-icon";
 import { StickyColumn } from "@/components/sticky-column";
 import type { CartItemInput } from "@/lib/schema";
 import {
@@ -312,7 +313,7 @@ export function Configurator({
       * En escritorio la ficha va debajo de la galería y la columna acompaña el
       * scroll. En el teléfono va al final: primero se arma la tarjeta.
       */}
-    <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
+    <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
       {/*
         * La muestra acompaña mientras eliges: en escritorio queda fija arriba y
         * cada opción que tocas a la derecha se ve en ella sin tener que subir.
@@ -759,11 +760,9 @@ function DeliveryChoices({
                   onChange={() => onChange(option.id)}
                   className="control control-radio"
                 />
+                <DeliveryIcon speed={option.id} />
                 <span className="min-w-0">
-                  <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-ink-soft">
-                    <span className={`size-2 rounded-full ${option.tone}`} aria-hidden="true" />
-                    {option.name}
-                  </span>
+                  <span className="block text-xs font-semibold uppercase tracking-wide text-ink-soft">{option.name}</span>
                   <span className={`mt-0.5 block ${checked ? "font-semibold" : "font-medium"}`}>
                     {formatLongDate(window.earliest)}
                   </span>

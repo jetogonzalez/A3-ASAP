@@ -65,14 +65,14 @@ export function FamilyGrid() {
               <span className="mt-auto pt-3">
                 {family.live ? (
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-soft px-2.5 py-1 text-xs font-semibold text-brand">
-                    Pídelo en línea · desde {cardsFrom}
+                    En línea · desde {cardsFrom}
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-paper-deep px-2.5 py-1 text-xs font-semibold text-ink-soft">
                     {launchProductsFor(family.slug).length > 0 ? null : <WhatsappLogo size={13} brand />}
                     {launchProductsFor(family.slug).length > 0
-                      ? `${launchProductsFor(family.slug).length} productos para armar`
-                      : "Cotiza por WhatsApp"}
+                      ? `${launchProductsFor(family.slug).length} productos`
+                      : "Cotiza"}
                   </span>
                 )}
               </span>

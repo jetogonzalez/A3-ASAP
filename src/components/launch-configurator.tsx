@@ -11,6 +11,7 @@ import {
   glideTo,
   type StepState,
 } from "@/components/configurator";
+import { DeliveryIcon } from "@/components/delivery-icon";
 import { ProductIllustration } from "@/components/product-illustration";
 import { ProductPhoto } from "@/components/product-photo";
 import { StickyColumn } from "@/components/sticky-column";
@@ -27,9 +28,9 @@ import { whatsappHref } from "@/lib/whatsapp";
  */
 
 const SPEEDS = [
-  { id: "Standard", tone: "bg-speed-standard", detail: "Precio base de producción", note: "Incluido" },
-  { id: "Priority", tone: "bg-speed-priority", detail: "Lo adelantamos, con recargo", note: "Con recargo" },
-  { id: "Express", tone: "bg-speed-express", detail: "Para urgencias, tarifa premium", note: "Premium" },
+  { id: "Standard", detail: "Precio base de producción", note: "Incluido" },
+  { id: "Priority", detail: "Lo adelantamos, con recargo", note: "Con recargo" },
+  { id: "Express", detail: "Para urgencias, tarifa premium", note: "Premium" },
 ] as const;
 
 const DESIGN_METHODS = [
@@ -115,7 +116,7 @@ export function LaunchConfigurator({ product }: { product: LaunchProduct }) {
 
   return (
     <>
-      <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
+      <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
         <StickyColumn className="space-y-8 lg:col-start-1 lg:row-start-1">
           <div>
             <LaunchGallery product={product} />
@@ -212,11 +213,9 @@ export function LaunchConfigurator({ product }: { product: LaunchProduct }) {
                         onChange={() => choose("entrega", () => setSpeed(option.id))}
                         className="control control-radio"
                       />
+                      <DeliveryIcon speed={option.id} />
                       <span className="min-w-0">
-                        <span className={`flex items-center gap-2 ${checked ? "font-semibold" : "font-medium"}`}>
-                          <span className={`size-2.5 rounded-full ${option.tone}`} aria-hidden="true" />
-                          {option.id}
-                        </span>
+                        <span className={`block ${checked ? "font-semibold" : "font-medium"}`}>{option.id}</span>
                         <span className="mt-0.5 block text-sm text-ink-soft">{option.detail}</span>
                       </span>
                     </span>
@@ -341,7 +340,7 @@ function LaunchGallery({ product }: { product: LaunchProduct }) {
         <GalleryArrow side="right" onClick={() => go(index + 1)} />
       </div>
 
-      <div className="mt-3 flex items-center gap-2" role="group" aria-label="Elegir foto">
+      <div className="-mx-1.5 mt-1.5 flex min-w-0 items-center gap-2 overflow-x-auto p-1.5" role="group" aria-label="Elegir foto">
         {slides.map((slide, position) => {
           const active = position === index;
           return (
@@ -359,7 +358,7 @@ function LaunchGallery({ product }: { product: LaunchProduct }) {
             </button>
           );
         })}
-        <p className="ml-auto text-sm text-ink-soft" aria-live="polite">
+        <p className="ml-auto shrink-0 pl-2 text-sm text-ink-soft" aria-live="polite">
           <span className="hidden font-medium text-ink sm:inline">{slides[index].label} · </span>
           {index + 1}/{slides.length}
         </p>

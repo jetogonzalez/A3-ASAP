@@ -49,12 +49,12 @@ export function formatLongDate(isoDate: string): string {
  * si dos tarjetas piden ritmos distintos, todo sale al más rápido.
  * Los recargos van con IVA: $8 y $15 más el 15 %.
  * Nombres y colores son los del material de marca (Standard, Priority, Express);
- * `tone` apunta al color en globals.css.
+ * el ícono de cada uno está en components/delivery-icon.tsx.
  */
 export const DELIVERY_OPTIONS = [
-  { id: "standard", name: "Standard", tone: "bg-speed-standard", cents: 0, earliestDays: 5, latestDays: 8 },
-  { id: "priority", name: "Priority", tone: "bg-speed-priority", cents: withIva(800), earliestDays: 3, latestDays: 5 },
-  { id: "express", name: "Express", tone: "bg-speed-express", cents: withIva(1500), earliestDays: 2, latestDays: 3 },
+  { id: "standard", name: "Standard", cents: 0, earliestDays: 5, latestDays: 8 },
+  { id: "priority", name: "Priority", cents: withIva(800), earliestDays: 3, latestDays: 5 },
+  { id: "express", name: "Express", cents: withIva(1500), earliestDays: 2, latestDays: 3 },
 ] as const;
 
 export type DeliverySpeed = (typeof DELIVERY_OPTIONS)[number]["id"];
