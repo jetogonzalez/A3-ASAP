@@ -7,6 +7,7 @@ import { productHref } from "@/lib/catalog";
 import { familyBySlug } from "@/lib/families";
 import { LaunchProductTile } from "@/components/launch-product-tile";
 import { ProductArt } from "@/components/product-art";
+import { ProductPhoto } from "@/components/product-photo";
 import { launchProductsFor } from "@/lib/launch-products";
 
 type FamilyPageProps = {
@@ -61,7 +62,13 @@ export default async function FamilyPage({ params }: FamilyPageProps) {
               : "Todavía no se arma en la web, pero ya lo cotizamos por WhatsApp: cuéntanos qué necesitas y te respondemos con precio y plazo."}
           </p>
         </div>
-        <ProductArt kind={family.slug} className="hidden aspect-[4/3] w-full rounded-[22px] md:block" />
+        {products.length > 0 ? (
+          <span className="relative hidden aspect-[4/3] w-full overflow-hidden rounded-[22px] md:block">
+            <ProductPhoto slug={products[0].slug} alt="" sizes="352px" preload />
+          </span>
+        ) : (
+          <ProductArt kind={family.slug} className="hidden aspect-[4/3] w-full rounded-[22px] md:block" />
+        )}
       </div>
 
       {products.length > 0 ? (

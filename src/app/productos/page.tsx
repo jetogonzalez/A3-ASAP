@@ -28,7 +28,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       <p className="mt-2 max-w-xl text-sm leading-6 text-ink-soft">
         {q && !matches
           ? `No hay resultados para “${q}”. En línea se piden ${PRODUCT.name.toLowerCase()}; lo demás se cotiza por WhatsApp.`
-          : "Las tarjetas se arman y piden aquí mismo. Promocionales, textil, empaque y papelería se cotizan por WhatsApp."}
+          : "Las tarjetas se arman y pagan aquí mismo. Promocionales, textil, empaque y papelería los armas aquí y nos los pides por WhatsApp."}
       </p>
       <div className="mt-8">
         {q && matches ? (

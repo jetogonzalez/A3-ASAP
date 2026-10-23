@@ -45,7 +45,7 @@ export type SwatchFaces = { front: React.ReactNode; back?: React.ReactNode };
 export function FinishSwatch({ kind, faces }: { kind: SwatchKind; faces?: SwatchFaces }) {
   return (
     <span
-      className="swatch relative block h-28 w-full overflow-hidden rounded-xl bg-[radial-gradient(110%_95%_at_35%_15%,#f6f4f0,#e2ddd5_62%,#cdc6bb)]"
+      className="swatch relative block h-28 w-full overflow-hidden rounded-xl bg-[radial-gradient(110%_95%_at_35%_15%,#ffffff,#ecebff_62%,#d9daf6)]"
       style={{ perspective: PERSPECTIVE }}
       aria-hidden="true"
     >

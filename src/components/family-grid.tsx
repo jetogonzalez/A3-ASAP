@@ -1,11 +1,22 @@
 import Link from "next/link";
 import { ProductArt } from "@/components/product-art";
+import { ProductPhoto } from "@/components/product-photo";
+import { inkFor } from "@/lib/palette";
 import { WhatsappLogo } from "@/components/whatsapp-logo";
 import { defaultConfiguration } from "@/lib/catalog";
 import { FAMILIES, familyHref } from "@/lib/families";
 import { launchProductsFor } from "@/lib/launch-products";
 import { formatUsd } from "@/lib/money";
 import { quote } from "@/lib/pricing";
+
+/* La foto que representa a cada familia; las que aún no tienen productos van dibujadas. */
+const FAMILY_PHOTO: Record<string, string> = {
+  tarjetas: "tarjetas-de-presentacion",
+  promocionales: "tazas-mugs",
+  textil: "camisetas-hoodies",
+  empaque: "papel-regalo",
+  papeleria: "calendarios",
+};
 
 /**
  * Todas las familias de productos en una grilla. Las que ya se piden en línea
@@ -23,7 +34,18 @@ export function FamilyGrid() {
             href={familyHref(family)}
             className="family-card group flex h-full flex-col overflow-hidden rounded-[22px] border border-line bg-sheet"
           >
-            <ProductArt kind={family.slug} className="aspect-[4/3] w-full" />
+            {FAMILY_PHOTO[family.slug] ? (
+              <span className="relative block aspect-[4/3] w-full overflow-hidden" style={{ background: inkFor(family.slug).tint }}>
+                <ProductPhoto
+                  slug={FAMILY_PHOTO[family.slug]}
+                  alt=""
+                  sizes="(min-width: 1024px) 280px, 50vw"
+                  className="family-photo"
+                />
+              </span>
+            ) : (
+              <ProductArt kind={family.slug} className="aspect-[4/3] w-full" />
+            )}
             <span className="flex flex-1 flex-col gap-1 p-4">
               <span className="flex items-center justify-between gap-2">
                 <span className="text-base font-semibold tracking-tight sm:text-lg">{family.label}</span>

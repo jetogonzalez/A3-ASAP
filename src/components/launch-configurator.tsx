@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ProductIllustration } from "@/components/product-illustration";
+import { ProductPhoto } from "@/components/product-photo";
 import { StickyColumn } from "@/components/sticky-column";
 import { WhatsappLogo } from "@/components/whatsapp-logo";
 import {
@@ -41,11 +42,7 @@ export function LaunchConfigurator({ product }: { product: LaunchProduct }) {
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:gap-12">
       <StickyColumn className="lg:sticky lg:self-start">
-        <ProductIllustration
-          productId={product.id}
-          family={product.family}
-          className="aspect-[4/3] w-full rounded-[28px]"
-        />
+        <ProductViewer product={product} />
         {fixed.length > 0 ? (
           <dl className="mt-4 flex flex-wrap gap-2 text-sm">
             {fixed.map((option) => (
@@ -152,6 +149,64 @@ export function LaunchConfigurator({ product }: { product: LaunchProduct }) {
           </span>
           <OrderButton message={message} compact />
         </div>
+      </div>
+    </div>
+  );
+}
+
+/*
+ * Dos vistas del producto: la foto de referencia y el dibujo que marca dónde
+ * va tu diseño. Cambian con un fundido (transición, así se puede interrumpir).
+ */
+function ProductViewer({ product }: { product: LaunchProduct }) {
+  const [view, setView] = useState<"foto" | "diseno">("foto");
+  const views = [
+    { id: "foto", label: "Foto de referencia" },
+    { id: "diseno", label: "Dónde va tu diseño" },
+  ] as const;
+
+  return (
+    <div>
+      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[28px] bg-paper-deep">
+        <div className={`absolute inset-0 transition-opacity duration-300 ease-out ${view === "foto" ? "opacity-100" : "opacity-0"}`}>
+          <ProductPhoto
+            slug={product.slug}
+            alt={`${product.name}, foto de referencia`}
+            sizes="(min-width: 1024px) 560px, 100vw"
+            preload
+          />
+        </div>
+        <div className={`absolute inset-0 transition-opacity duration-300 ease-out ${view === "diseno" ? "opacity-100" : "opacity-0"}`}>
+          <ProductIllustration productId={product.id} family={product.family} className="h-full w-full" />
+        </div>
+        <span className="pointer-events-none absolute bottom-3 left-3 rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-ink-soft backdrop-blur">
+          {view === "foto" ? "Referencia: tu pedido lleva tu diseño" : "El color marca la zona que se personaliza"}
+        </span>
+      </div>
+      <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Vistas del producto">
+        {views.map((option) => {
+          const active = view === option.id;
+          return (
+            <button
+              key={option.id}
+              type="button"
+              aria-pressed={active}
+              onClick={() => setView(option.id)}
+              className={`press group flex cursor-pointer items-center gap-2 rounded-2xl border-2 p-1 pr-3 text-sm font-medium transition-colors duration-150 ${
+                active ? "border-pick" : "border-line hover:border-pick-line"
+              }`}
+            >
+              <span className="relative block h-11 w-14 overflow-hidden rounded-xl">
+                {option.id === "foto" ? (
+                  <ProductPhoto slug={product.slug} alt="" sizes="56px" />
+                ) : (
+                  <ProductIllustration productId={product.id} family={product.family} className="h-full w-full" />
+                )}
+              </span>
+              {option.label}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

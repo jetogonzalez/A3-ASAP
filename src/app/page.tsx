@@ -2,7 +2,7 @@ import Link from "next/link";
 import { FamilyGrid } from "@/components/family-grid";
 import { LaunchProductTile } from "@/components/launch-product-tile";
 import { ProductArt } from "@/components/product-art";
-import { ProductIllustration } from "@/components/product-illustration";
+import { ProductPhoto } from "@/components/product-photo";
 import { ProductRail, RailItem } from "@/components/product-rail";
 import { WhatsappLogo } from "@/components/whatsapp-logo";
 import { PRODUCT, defaultConfiguration, productHref, type Configuration } from "@/lib/catalog";
@@ -114,20 +114,20 @@ export default function HomePage() {
 
           {/* Collage de productos, cada uno con su tinta: deja claro que no son solo tarjetas. */}
           <div className="grid h-[340px] grid-cols-6 grid-rows-5 gap-3 sm:h-[420px]" aria-hidden="true">
-            <CollageTile className="col-span-4 row-span-3" delay={120}>
-              <ProductArt kind="tarjetas" className="h-full w-full" />
+            <CollageTile className="col-span-4 row-span-3 bg-tint-lilac" delay={120}>
+              <ProductPhoto slug="tarjetas-de-presentacion" alt="" sizes="(min-width: 1024px) 380px, 66vw" preload />
             </CollageTile>
-            <CollageTile className="col-span-2 row-span-3" delay={200}>
-              <ProductIllustration productId="TAZ" family="promocionales" className="h-full w-full" />
+            <CollageTile className="col-span-2 row-span-3 bg-tint-peach" delay={200}>
+              <ProductPhoto slug="tazas-mugs" alt="" sizes="(min-width: 1024px) 190px, 33vw" />
             </CollageTile>
-            <CollageTile className="col-span-2 row-span-2" delay={280}>
-              <ProductIllustration productId="CAM" family="textil" className="h-full w-full" />
+            <CollageTile className="col-span-2 row-span-2 bg-tint-green" delay={280}>
+              <ProductPhoto slug="gorras" alt="" sizes="(min-width: 1024px) 190px, 33vw" />
             </CollageTile>
-            <CollageTile className="col-span-2 row-span-2" delay={360}>
-              <ProductIllustration productId="ETQ" family="empaque" className="h-full w-full" />
+            <CollageTile className="col-span-2 row-span-2 bg-tint-yellow" delay={360}>
+              <ProductPhoto slug="etiquetas" alt="" sizes="(min-width: 1024px) 190px, 33vw" />
             </CollageTile>
-            <CollageTile className="col-span-2 row-span-2" delay={440}>
-              <ProductIllustration productId="CUA" family="papeleria" className="h-full w-full" />
+            <CollageTile className="col-span-2 row-span-2 bg-tint-cyan" delay={440}>
+              <ProductPhoto slug="cuadernos" alt="" sizes="(min-width: 1024px) 190px, 33vw" />
             </CollageTile>
           </div>
         </div>
@@ -340,7 +340,14 @@ function CollageTile({ className, delay, children }: { className: string; delay:
 function CardsTile({ price }: { price: string }) {
   return (
     <Link href={productHref()} className="family-card group flex h-full flex-col overflow-hidden rounded-[22px] border border-line bg-sheet">
-      <ProductArt kind="tarjetas" className="aspect-[4/3] w-full" />
+      <span className="relative block aspect-[4/3] w-full overflow-hidden bg-tint-lilac">
+        <ProductPhoto
+          slug="tarjetas-de-presentacion"
+          alt="Tarjetas de presentación"
+          sizes="(min-width: 1024px) 280px, (min-width: 640px) 42vw, 74vw"
+          className="family-photo"
+        />
+      </span>
       <span className="flex flex-1 flex-col gap-1 p-4">
         <span className="text-xs font-semibold text-[#2d43d6]">Tarjetas</span>
         <span className="text-base font-semibold tracking-tight sm:text-lg">{PRODUCT.name}</span>

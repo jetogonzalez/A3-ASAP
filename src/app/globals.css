@@ -371,7 +371,8 @@ label:has(:checked) .swatch-sweep {
   transition: transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.family-card .product-illustration-body {
+.family-card .product-illustration-body,
+.family-card .family-photo {
   transition: transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -390,7 +391,8 @@ label:has(:checked) .swatch-sweep {
   }
 
   .family-card:hover .product-art-stage,
-  .family-card:hover .product-illustration-body {
+  .family-card:hover .product-illustration-body,
+  .family-card:hover .family-photo {
     transform: scale(1.06);
   }
 

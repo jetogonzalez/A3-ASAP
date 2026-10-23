@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ProductIllustration } from "@/components/product-illustration";
+import { ProductPhoto } from "@/components/product-photo";
 import { inkFor } from "@/lib/palette";
 import { launchProductHref, type LaunchProduct } from "@/lib/launch-products";
 
@@ -11,7 +11,14 @@ export function LaunchProductTile({ product, familyLabel }: { product: LaunchPro
       href={launchProductHref(product)}
       className="family-card group flex h-full flex-col overflow-hidden rounded-[22px] border border-line bg-sheet"
     >
-      <ProductIllustration productId={product.id} family={product.family} className="aspect-[4/3] w-full" />
+      <span className="relative block aspect-[4/3] w-full overflow-hidden" style={{ background: ink.tint }}>
+        <ProductPhoto
+          slug={product.slug}
+          alt={`${product.name} personalizados`}
+          sizes="(min-width: 1024px) 280px, (min-width: 640px) 42vw, 74vw"
+          className="family-photo"
+        />
+      </span>
       <span className="flex flex-1 flex-col gap-1 p-4">
         {familyLabel ? (
           <span className="text-xs font-semibold" style={{ color: ink.deep }}>
