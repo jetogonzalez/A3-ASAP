@@ -90,7 +90,7 @@ function LaunchProductPage({ product }: { product: LaunchProduct }) {
         <p className="mt-2 max-w-xl text-ink-soft">{product.summary}</p>
       </div>
       <div className="mt-8">
-        <LaunchConfigurator product={product} />
+        <LaunchConfigurator product={product} uploadsEnabled={Boolean(process.env.BLOB_READ_WRITE_TOKEN)} />
       </div>
     </div>
   );

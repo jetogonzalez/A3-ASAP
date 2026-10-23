@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { CatalogCard } from "@/components/catalog-card";
+import { CardsTile } from "@/components/cards-tile";
 import { FamilyGrid } from "@/components/family-grid";
 import { LaunchProductTile } from "@/components/launch-product-tile";
 import { PRODUCT } from "@/lib/catalog";
@@ -35,7 +35,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
           <ul className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
             {cardsMatch ? (
               <li>
-                <CatalogCard />
+                <CardsTile />
               </li>
             ) : null}
             {launchMatches.map((product) => (

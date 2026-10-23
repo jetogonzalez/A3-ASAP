@@ -236,7 +236,8 @@ export type LaunchRequest = {
   selection: LaunchSelection;
   quantity: number;
   speed: string;
-  hasDesign: boolean;
+  /** La línea del diseño tal como va en el mensaje: enlace al archivo, a Canva, o qué hacer. */
+  design: string;
   notes: string;
 };
 
@@ -250,7 +251,7 @@ export function launchRequestMessage(request: LaunchRequest): string {
     ...product.options.map((option) => `${option.label}: ${selection[option.id] ?? option.choices[0]}`),
     `Cantidad: ${formatUnits(request.quantity)}`,
     `Entrega: ${request.speed}`,
-    `Diseño: ${request.hasDesign ? "ya lo tengo" : "necesito ayuda"}`,
+    `Diseño: ${request.design}`,
   ];
   const notes = request.notes.trim();
   if (notes) lines.push(`Notas: ${notes}`);

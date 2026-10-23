@@ -1,22 +1,29 @@
 "use client";
 
+import { upload } from "@vercel/blob/client";
 import { useEffect, useRef, useState } from "react";
 import {
+  CanvaMark,
   CheckMark,
   Chevron,
   CornerTag,
   FeatureCheck,
+  FileDrop,
   Note,
   OptionGroup,
+  UploadGlyph,
   glideTo,
+  isPreviewImage,
   type StepState,
 } from "@/components/configurator";
 import { DeliveryIcon } from "@/components/delivery-icon";
-import { ProductIllustration } from "@/components/product-illustration";
+import { ProductMockup } from "@/components/product-mockup";
 import { ProductPhoto } from "@/components/product-photo";
 import { StickyColumn } from "@/components/sticky-column";
 import { WhatsappLogo } from "@/components/whatsapp-logo";
 import { formatUnits, launchRequestMessage, type LaunchProduct, type LaunchSelection } from "@/lib/launch-products";
+import { ARTWORK_TYPES, MAX_ARTWORK_BYTES, isCanvaUrl } from "@/lib/artwork";
+import { safeFilename } from "@/lib/text";
 import { whatsappHref } from "@/lib/whatsapp";
 
 /*
@@ -33,16 +40,21 @@ const SPEEDS = [
   { id: "Express", detail: "Para urgencias, tarifa premium", note: "Premium" },
 ] as const;
 
+/* Las mismas formas de mandar el arte que en tarjetas, más pedir ayuda. */
 const DESIGN_METHODS = [
-  { id: "propio", label: "Ya lo tengo", title: "Tu propio diseño", hint: "Lo adjuntas en el chat de WhatsApp al pedir." },
-  { id: "ayuda", label: "Necesito ayuda", title: "Te ayudamos", hint: "Nos cuentas la idea y te mandamos una propuesta." },
+  { id: "archivo", label: "Archivo", title: "Sube tu archivo", hint: "Se sube al elegirlo y el enlace va en el pedido." },
+  { id: "enlace", label: "Canva", title: "Enlace de Canva", hint: "Pega el enlace para compartir tu diseño." },
+  { id: "whatsapp", label: "WhatsApp", title: "Por WhatsApp", hint: "Lo adjuntas en el chat al pedir." },
+  { id: "ayuda", label: "Ayuda", title: "Te ayudamos", hint: "Nos cuentas la idea y te mandamos una propuesta." },
 ] as const;
 
 type DesignMethod = (typeof DESIGN_METHODS)[number]["id"];
 
+type UploadState = { status: "idle" | "uploading" | "done" | "error"; url: string | null };
+
 const NOTES_LIMIT = 300;
 
-export function LaunchConfigurator({ product }: { product: LaunchProduct }) {
+export function LaunchConfigurator({ product, uploadsEnabled }: { product: LaunchProduct; uploadsEnabled: boolean }) {
   const choosable = product.options.filter((option) => option.choices.length > 1);
   const fixed = product.options.filter((option) => option.choices.length === 1);
   const steps = [...choosable.map((option) => option.id), "cantidad", "entrega"];
@@ -57,14 +69,89 @@ export function LaunchConfigurator({ product }: { product: LaunchProduct }) {
   );
   const [quantity, setQuantity] = useState(product.quantities[0]);
   const [speed, setSpeed] = useState<string>(SPEEDS[0].id);
-  const [design, setDesign] = useState<DesignMethod>("propio");
+  const [design, setDesign] = useState<DesignMethod>(uploadsEnabled ? "archivo" : "whatsapp");
   const [notes, setNotes] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [uploadState, setUploadState] = useState<UploadState>({ status: "idle", url: null });
+  const [fileError, setFileError] = useState<string | null>(null);
+  const [dragOver, setDragOver] = useState(false);
+  const [canvaUrl, setCanvaUrl] = useState("");
+  const canvaReady = isCanvaUrl(canvaUrl);
+
+  /* Vista previa local de la imagen elegida: se suelta al cambiarla o al salir. */
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  useEffect(() => () => {
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+  }, [previewUrl]);
+
+  async function takeFile(next: File | null) {
+    setFileError(null);
+    setPreviewUrl(next && isPreviewImage(next) ? URL.createObjectURL(next) : null);
+    if (!next) {
+      setFile(null);
+      setUploadState({ status: "idle", url: null });
+      return;
+    }
+    if (next.type && !ARTWORK_TYPES.some((type) => type === next.type)) {
+      setFileError("Solo PDF, PNG o JPG.");
+      return;
+    }
+    if (next.size > MAX_ARTWORK_BYTES) {
+      setFileError("El archivo supera 8 MB.");
+      return;
+    }
+    setFile(next);
+    if (!uploadsEnabled) return;
+    /* Se sube ya: el pedido termina en un enlace a WhatsApp y el arte tiene que ir escrito en él. */
+    setUploadState({ status: "uploading", url: null });
+    try {
+      const blob = await upload(`artes/${safeFilename(next.name)}`, next, {
+        access: "public",
+        handleUploadUrl: "/api/arte",
+        contentType: next.type || undefined,
+      });
+      setUploadState({ status: "done", url: blob.url });
+    } catch {
+      setUploadState({ status: "error", url: null });
+      setFileError("No pudimos subir el archivo. Inténtalo de nuevo o elige enviarlo por WhatsApp.");
+    }
+  }
+
+  const uploading = design === "archivo" && uploadState.status === "uploading";
+  const designLine =
+    design === "archivo"
+      ? uploadState.url
+        ? `archivo ${uploadState.url}`
+        : uploading
+          ? "subiendo el archivo"
+          : "lo envío en este chat"
+      : design === "enlace"
+        ? canvaReady
+          ? `Canva ${canvaUrl.trim()}`
+          : "lo envío en este chat"
+        : design === "whatsapp"
+          ? "lo adjunto en este chat"
+          : "necesito ayuda para armarlo";
+  const designLabel =
+    design === "archivo"
+      ? uploadState.url
+        ? "Archivo subido"
+        : uploading
+          ? "Subiendo…"
+          : "Lo mandas por WhatsApp"
+      : design === "enlace"
+        ? canvaReady
+          ? "Enlace de Canva"
+          : "Lo mandas por WhatsApp"
+        : design === "whatsapp"
+          ? "Por WhatsApp"
+          : "Necesito ayuda";
   /* Como en tarjetas: nada se ve elegido hasta que la persona lo toca. */
   const [picked, setPicked] = useState<Set<string>>(() => new Set());
 
   const missing = steps.filter((step) => !picked.has(step));
   const firstMissing = steps.findIndex((step) => !picked.has(step));
-  const message = launchRequestMessage({ product, selection, quantity, speed, hasDesign: design === "propio", notes });
+  const message = launchRequestMessage({ product, selection, quantity, speed, design: designLine, notes });
 
   /* La barra de abajo se retira en escritorio cuando el resumen entra en pantalla. */
   const summaryRef = useRef<HTMLDivElement>(null);
@@ -119,7 +206,8 @@ export function LaunchConfigurator({ product }: { product: LaunchProduct }) {
       <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
         <StickyColumn className="space-y-8 lg:col-start-1 lg:row-start-1">
           <div>
-            <LaunchGallery product={product} />
+            {/* La clave reinicia la galería al subir o quitar el diseño: vuelve a la primera vista. */}
+            <LaunchGallery key={design === "archivo" && previewUrl ? previewUrl : "foto"} product={product} designPreview={design === "archivo" ? previewUrl : null} />
             <p className="mt-4 text-sm text-ink-soft">{caption}</p>
           </div>
           <div className="hidden lg:block">
@@ -128,7 +216,23 @@ export function LaunchConfigurator({ product }: { product: LaunchProduct }) {
         </StickyColumn>
 
         <div className="space-y-8 pb-28 lg:col-start-2 lg:row-start-1 lg:pb-0">
-          <DesignPanel method={design} onMethod={setDesign} notes={notes} onNotes={setNotes} />
+          <DesignPanel
+            method={design}
+            onMethod={setDesign}
+            notes={notes}
+            onNotes={setNotes}
+            file={file}
+            uploadsEnabled={uploadsEnabled}
+            uploadState={uploadState}
+            fileError={fileError}
+            dragOver={dragOver}
+            onDragOver={() => setDragOver(true)}
+            onDragLeave={() => setDragOver(false)}
+            onFile={takeFile}
+            canvaUrl={canvaUrl}
+            canvaReady={canvaReady}
+            onCanvaUrl={setCanvaUrl}
+          />
 
           {choosable.map((option) => (
             <OptionGroup
@@ -239,11 +343,12 @@ export function LaunchConfigurator({ product }: { product: LaunchProduct }) {
               rows={[
                 ...choosable.map((option) => ({ label: option.label, value: selection[option.id] })),
                 { label: "Entrega", value: speed },
-                { label: "Diseño", value: design === "propio" ? "Ya lo tengo" : "Necesito ayuda" },
+                { label: "Diseño", value: designLabel },
               ]}
               quantity={quantity}
               missing={missing.map((step) => stepNames[step])}
               message={message}
+              uploading={uploading}
             />
           </div>
         </div>
@@ -268,7 +373,11 @@ export function LaunchConfigurator({ product }: { product: LaunchProduct }) {
               {missing.length === steps.length ? product.name : `${formatUnits(quantity)} · ${speed}`}
             </p>
           </div>
-          {missing.length > 0 ? (
+          {uploading ? (
+            <span className="inline-flex min-h-12 shrink-0 items-center rounded-full bg-press px-5 text-sm font-medium text-white opacity-60">
+              Subiendo…
+            </span>
+          ) : missing.length > 0 ? (
             <button
               type="button"
               onClick={goToMissing}
@@ -287,25 +396,30 @@ export function LaunchConfigurator({ product }: { product: LaunchProduct }) {
 
 /* ---------- Galería: misma forma que la de tarjetas (escena grande, miniaturas y contador). ---------- */
 
-function LaunchGallery({ product }: { product: LaunchProduct }) {
+function LaunchGallery({ product, designPreview }: { product: LaunchProduct; designPreview: string | null }) {
   const [index, setIndex] = useState(0);
   const swipeStart = useRef<number | null>(null);
-  const slides = [
-    {
-      id: "foto",
-      label: "Foto de referencia",
-      scene: (
-        <ProductPhoto slug={product.slug} alt={`${product.name}, foto de referencia`} sizes="(min-width: 1024px) 520px, 100vw" preload />
-      ),
-      thumb: <ProductPhoto slug={product.slug} alt="" sizes="76px" />,
-    },
-    {
-      id: "diseno",
-      label: "Dónde va tu diseño",
-      scene: <ProductIllustration productId={product.id} family={product.family} className="h-full w-full" />,
-      thumb: <ProductIllustration productId={product.id} family={product.family} className="h-full w-full" />,
-    },
-  ];
+  /*
+   * Sin diseño solo va la foto de referencia: nada de muestras de relleno.
+   * Cuando el cliente sube una imagen, primero aparece su mockup.
+   */
+  const photo = {
+    id: "foto",
+    label: "Foto de referencia",
+    scene: <ProductPhoto slug={product.slug} alt={`${product.name}, foto de referencia`} sizes="(min-width: 1024px) 520px, 100vw" preload />,
+    thumb: <ProductPhoto slug={product.slug} alt="" sizes="76px" />,
+  };
+  const slides = designPreview
+    ? [
+        {
+          id: "mockup",
+          label: "Con tu diseño",
+          scene: <ProductMockup slug={product.slug} designUrl={designPreview} alt={`${product.name} con tu diseño`} sizes="(min-width: 1024px) 520px, 100vw" />,
+          thumb: <ProductMockup slug={product.slug} designUrl={designPreview} alt="" sizes="76px" />,
+        },
+        photo,
+      ]
+    : [photo];
 
   function go(next: number) {
     setIndex((next + slides.length) % slides.length);
@@ -336,10 +450,15 @@ function LaunchGallery({ product }: { product: LaunchProduct }) {
             {slide.scene}
           </div>
         ))}
-        <GalleryArrow side="left" onClick={() => go(index - 1)} />
-        <GalleryArrow side="right" onClick={() => go(index + 1)} />
+        {slides.length > 1 ? (
+          <>
+            <GalleryArrow side="left" onClick={() => go(index - 1)} />
+            <GalleryArrow side="right" onClick={() => go(index + 1)} />
+          </>
+        ) : null}
       </div>
 
+      {slides.length > 1 ? (
       <div className="-mx-1.5 mt-1.5 flex min-w-0 items-center gap-2 overflow-x-auto p-1.5" role="group" aria-label="Elegir foto">
         {slides.map((slide, position) => {
           const active = position === index;
@@ -363,6 +482,7 @@ function LaunchGallery({ product }: { product: LaunchProduct }) {
           {index + 1}/{slides.length}
         </p>
       </div>
+      ) : null}
     </div>
   );
 }
@@ -391,26 +511,54 @@ function DesignPanel({
   onMethod,
   notes,
   onNotes,
+  file,
+  uploadsEnabled,
+  uploadState,
+  fileError,
+  dragOver,
+  onDragOver,
+  onDragLeave,
+  onFile,
+  canvaUrl,
+  canvaReady,
+  onCanvaUrl,
 }: {
   method: DesignMethod;
   onMethod: (next: DesignMethod) => void;
   notes: string;
   onNotes: (next: string) => void;
+  file: File | null;
+  uploadsEnabled: boolean;
+  uploadState: UploadState;
+  fileError: string | null;
+  dragOver: boolean;
+  onDragOver: () => void;
+  onDragLeave: () => void;
+  onFile: (file: File | null) => void;
+  canvaUrl: string;
+  canvaReady: boolean;
+  onCanvaUrl: (value: string) => void;
 }) {
   const activeIndex = Math.max(0, DESIGN_METHODS.findIndex((option) => option.id === method));
   const active = DESIGN_METHODS[activeIndex];
   const [direction, setDirection] = useState<1 | -1>(1);
+  const icons: Record<DesignMethod, React.ReactNode> = {
+    archivo: <UploadGlyph />,
+    enlace: <CanvaMark />,
+    whatsapp: <WhatsappLogo brand />,
+    ayuda: <BrushGlyph />,
+  };
 
   return (
     <section id="tu-diseno" aria-labelledby="tu-diseno-titulo" className="scroll-mt-28 rounded-[28px] border border-line bg-sheet p-5">
       <h2 id="tu-diseno-titulo" className="text-lg font-semibold tracking-tight">
         Tu diseño
       </h2>
-      <p className="mt-0.5 text-sm leading-6 text-ink-soft">Cuéntanos si ya tienes el arte. Puedes cambiarlo cuando quieras.</p>
+      <p className="mt-0.5 text-sm leading-6 text-ink-soft">Elige cómo nos haces llegar el arte. Puedes cambiarlo cuando quieras.</p>
 
       <div
         role="radiogroup"
-        aria-label="Tu diseño"
+        aria-label="Cómo enviar el diseño"
         className="relative mt-4 grid rounded-2xl bg-paper-deep p-1"
         style={{ gridTemplateColumns: `repeat(${DESIGN_METHODS.length}, minmax(0, 1fr))` }}
       >
@@ -442,7 +590,7 @@ function DesignPanel({
                 className="sr-only"
               />
               <span className="grid size-6 place-items-center" aria-hidden="true">
-                {option.id === "propio" ? <WhatsappLogo brand /> : <BrushGlyph />}
+                {icons[option.id]}
               </span>
               <span className={`text-xs leading-4 sm:text-[13px] ${checked ? "font-semibold" : "font-medium"}`}>{option.label}</span>
             </label>
@@ -455,8 +603,84 @@ function DesignPanel({
           <span className="font-semibold">{active.title}</span>
           <span className="text-ink-soft"> · {active.hint}</span>
         </p>
-        <label htmlFor="notas" className="block text-sm font-medium">
-          {method === "propio" ? "Notas para la imprenta" : "¿Qué tienes en mente?"} <span className="font-normal text-ink-soft">(opcional)</span>
+
+        {method === "archivo" ? (
+          <>
+            <FileDrop
+              file={file}
+              uploadsEnabled={uploadsEnabled}
+              dragOver={dragOver}
+              onDragOver={onDragOver}
+              onDragLeave={onDragLeave}
+              onFile={onFile}
+              error={fileError}
+              imageFaces={{ front: true, back: false }}
+              onPlace={() => undefined}
+              placement={false}
+            />
+            {file && uploadsEnabled ? (
+              <p
+                role="status"
+                className={`mt-2 text-sm font-medium ${
+                  uploadState.status === "done" ? "text-moss" : uploadState.status === "error" ? "text-alert-deep" : "text-ink-soft"
+                }`}
+              >
+                {uploadState.status === "uploading"
+                  ? "Subiendo tu archivo…"
+                  : uploadState.status === "done"
+                    ? isPreviewImage(file)
+                      ? "Listo: tu diseño ya está en la foto y el enlace va en el pedido."
+                      : "Listo: el enlace a tu PDF va en el pedido."
+                    : null}
+              </p>
+            ) : null}
+          </>
+        ) : null}
+
+        {method === "enlace" ? (
+          <div>
+            <label htmlFor="canva-url" className="block text-sm font-medium">
+              Enlace de tu diseño en Canva
+            </label>
+            <input
+              id="canva-url"
+              type="url"
+              inputMode="url"
+              value={canvaUrl}
+              onChange={(event) => onCanvaUrl(event.target.value)}
+              placeholder="https://www.canva.com/design/…"
+              aria-invalid={Boolean(canvaUrl.trim()) && !canvaReady}
+              aria-describedby="canva-help"
+              className="field mt-1.5"
+            />
+            <p
+              id="canva-help"
+              className={`mt-2 text-sm leading-6 ${
+                canvaUrl.trim() && !canvaReady ? "font-medium text-alert-deep" : canvaReady ? "font-medium text-moss" : "text-ink-soft"
+              }`}
+            >
+              {canvaUrl.trim() && !canvaReady
+                ? "Ese enlace no es de Canva. Cópialo desde Compartir en tu diseño."
+                : canvaReady
+                  ? "Listo: el enlace llega con el pedido."
+                  : "En Canva toca Compartir, deja el acceso en «Cualquier persona con el enlace» y copia el enlace."}
+            </p>
+          </div>
+        ) : null}
+
+        {method === "whatsapp" ? (
+          <div className="flex gap-3 rounded-2xl bg-paper-deep px-4 py-3.5 text-sm leading-6">
+            <span className="mt-0.5" aria-hidden="true">
+              <WhatsappLogo brand size={20} />
+            </span>
+            <p className="text-ink-soft">
+              <span className="font-medium text-ink">Al pedir te dejamos el chat listo.</span> Adjunta ahí tu PDF, PNG o JPG.
+            </p>
+          </div>
+        ) : null}
+
+        <label htmlFor="notas" className="mt-4 block text-sm font-medium">
+          {method === "ayuda" ? "¿Qué tienes en mente?" : "Notas para la imprenta"} <span className="font-normal text-ink-soft">(opcional)</span>
         </label>
         <textarea
           id="notas"
@@ -464,7 +688,7 @@ function DesignPanel({
           maxLength={NOTES_LIMIT}
           value={notes}
           onChange={(event) => onNotes(event.target.value)}
-          placeholder={method === "propio" ? "Colores, ubicación del logo, fecha que lo necesitas…" : "Tu logo, colores, una frase, para qué evento es…"}
+          placeholder={method === "ayuda" ? "Tu logo, colores, una frase, para qué evento es…" : "Colores, ubicación del logo, fecha que lo necesitas…"}
           className="field mt-2"
         />
       </div>
@@ -505,12 +729,14 @@ function LaunchSummary({
   quantity,
   missing,
   message,
+  uploading,
 }: {
   product: LaunchProduct;
   rows: { label: string; value: string }[];
   quantity: number;
   missing: string[];
   message: string;
+  uploading: boolean;
 }) {
   const open = missing.length > 0;
   return (
@@ -554,9 +780,9 @@ function LaunchSummary({
         <p className="mt-2 text-xs leading-5 text-ink-soft">
           Se abre WhatsApp con este resumen ya escrito. Te respondemos con el precio y la fecha de entrega.
         </p>
-        {open ? (
+        {open || uploading ? (
           <p className="mt-5 hidden min-h-12 w-full items-center justify-center rounded-full bg-press px-5 text-base font-medium text-white opacity-60 lg:flex">
-            Falta elegir {missing[0]}
+            {open ? `Falta elegir ${missing[0]}` : "Subiendo tu archivo…"}
           </p>
         ) : (
           <OrderLink message={message} className="mt-5 hidden min-h-12 w-full px-5 text-base lg:inline-flex" />

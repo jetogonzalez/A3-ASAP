@@ -358,7 +358,7 @@ export function Configurator({
             {size.sizeLabel} · {config.paper}
             {config.rounded ? " · puntas redondeadas" : ""}
             {config.uv ? " · el rectángulo claro es el UV" : ""}
-            <span className="hidden sm:inline"> · pasa el cursor para ver el brillo</span>
+            {previewFront || previewBack ? <span className="hidden sm:inline"> · pasa el cursor para ver el brillo</span> : null}
           </p>
           <p>{config.sides === 2 ? "Dos lados" : "Un lado"}</p>
         </div>
@@ -996,7 +996,7 @@ function ArtworkPanel({
 }
 
 /* La zona para soltar o elegir el archivo, y la lista cuando ya está puesto. */
-function FileDrop({
+export function FileDrop({
   file,
   savedName,
   uploadsEnabled,
@@ -1007,7 +1007,10 @@ function FileDrop({
   error,
   imageFaces,
   onPlace,
+  placement = true,
 }: {
+  /** Frente/Reverso: solo tiene sentido en tarjetas. */
+  placement?: boolean;
   file: File | null;
   savedName?: string;
   uploadsEnabled: boolean;
@@ -1072,7 +1075,7 @@ function FileDrop({
               Quitar
             </button>
           </div>
-          {file && isPreviewImage(file) ? (
+          {placement && file && isPreviewImage(file) ? (
             <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
               <span className="text-sm text-ink-soft">Colocar la imagen en</span>
               <div className="flex gap-2" role="group" aria-label="Dónde va la imagen">
@@ -1130,12 +1133,12 @@ function FileDrop({
   );
 }
 
-function CanvaMark() {
+export function CanvaMark() {
   /* eslint-disable-next-line @next/next/no-img-element -- logo pequeño y fijo */
   return <img src="/canva.png" alt="" width={24} height={24} className="size-6 rounded-full" />;
 }
 
-function UploadGlyph() {
+export function UploadGlyph() {
   return (
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
       <path d="M9 12V3.5M5.5 7 9 3.5 12.5 7" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
@@ -1144,7 +1147,7 @@ function UploadGlyph() {
   );
 }
 
-function LinkGlyph() {
+export function LinkGlyph() {
   return (
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
       <path d="M7.6 10.4a3 3 0 0 0 4.2 0l2.3-2.3a3 3 0 0 0-4.2-4.2l-.9.9" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
@@ -1253,7 +1256,7 @@ function DropGlyph({ dragOver, invalid }: { dragOver: boolean; invalid: boolean 
   );
 }
 
-function isPreviewImage(file: File): boolean {
+export function isPreviewImage(file: File): boolean {
   return file.type === "image/png" || file.type === "image/jpeg" || /\.(png|jpe?g)$/i.test(file.name);
 }
 

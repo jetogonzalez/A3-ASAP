@@ -35,6 +35,27 @@ export function ProductGallery({
   const [index, setIndex] = useState(0);
   const swipeStart = useRef<number | null>(null);
 
+  /*
+   * Sin diseño no hay nada propio que mostrar: va la foto de referencia y
+   * nada más, en vez de una tarjeta de relleno. Al subir el arte aparecen la
+   * muestra y las escenas con su tarjeta.
+   */
+  if (!front && !back) {
+    return (
+      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[28px] bg-tint-lilac">
+        <ProductPhoto
+          slug="tarjetas-de-presentacion"
+          alt="Tarjetas de presentación, foto de referencia"
+          sizes="(min-width: 1024px) 520px, 100vw"
+          preload
+        />
+        <span className="pointer-events-none absolute bottom-3 left-3 rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-ink-soft backdrop-blur">
+          Sube tu diseño y lo verás en tu tarjeta
+        </span>
+      </div>
+    );
+  }
+
   const slides: Slide[] = [
     { id: "muestra", label: "Tu tarjeta", scene: <FlatScene config={config} front={front} /> },
     { id: "mesa", label: "Sobre la mesa", scene: <TableScene config={config} front={front} back={back} /> },
