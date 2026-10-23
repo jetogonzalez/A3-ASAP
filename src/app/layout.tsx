@@ -40,13 +40,24 @@ export const viewport: Viewport = {
   themeColor: "#ffffff",
 };
 
+/*
+ * Aplica las preferencias de accesibilidad antes de pintar (sin parpadeo).
+ * Lo guardado manda; si no hay nada guardado, se siguen los ajustes del
+ * sistema: tema oscuro, más contraste y menos movimiento.
+ */
+const A11Y_BOOT = `(function(){try{var d=document.documentElement,s=JSON.parse(localStorage.getItem("asap-a11y")||"{}"),m=function(q){return window.matchMedia&&window.matchMedia(q).matches};var t=s.theme||"light";if(t==="system")t=m("(prefers-color-scheme: dark)")?"dark":"light";if(t==="dark")d.dataset.theme="dark";if(s.contrast==="high"||(!s.contrast&&m("(prefers-contrast: more)")))d.dataset.contrast="high";if(s.text&&s.text!=="md")d.dataset.text=s.text;if(s.motion==="reduce")d.dataset.motion="reduce";if(s.links==="underline")d.dataset.links="underline"}catch(e){}})();`;
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="es"
       data-scroll-behavior="smooth"
       className={`${outfit.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: A11Y_BOOT }} />
+      </head>
       <body className="flex min-h-full flex-col font-sans text-base leading-normal text-ink">
         <a
           href="#contenido"

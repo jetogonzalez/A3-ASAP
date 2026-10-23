@@ -1651,7 +1651,7 @@ export function StepLegend({ state, legend, value }: { state: StepState; legend:
           state.status === "done"
             ? "bg-press text-white"
             : state.status === "current"
-              ? "bg-pick text-white ring-4 ring-pick-soft"
+              ? "bg-pick text-on-pick ring-4 ring-pick-soft"
               : "bg-paper-deep text-ink-soft"
         }`}
         aria-hidden="true"
@@ -1707,7 +1707,7 @@ function SavingTag({ percent, onPick }: { percent: number; onPick: boolean }) {
 export function CheckMark() {
   return (
     <span
-      className="absolute right-2 top-2 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-pick text-white"
+      className="absolute right-2 top-2 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-pick text-on-pick"
       aria-hidden="true"
     >
       <svg width="12" height="12" viewBox="0 0 12 12" fill="none">

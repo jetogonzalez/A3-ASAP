@@ -31,8 +31,8 @@ const STEPS = [
 
 /* Los cuatro pasos llevan las tintas de imprenta: cian, magenta, amarillo y negro. */
 const STEP_INKS = [
-  { background: "#0090c8", color: "#ffffff" },
-  { background: "#d6007a", color: "#ffffff" },
+  { background: "#00749f", color: "#ffffff" },
+  { background: "#c2006c", color: "#ffffff" },
   { background: "#ffd400", color: "#141414" },
   { background: "#141414", color: "#ffffff" },
 ] as const;
@@ -81,7 +81,7 @@ export default function HomePage() {
         </div>
         <div className="relative mx-auto grid w-full max-w-6xl items-center gap-12 px-5 pt-14 pb-14 md:px-8 md:pt-20 md:pb-20 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <div>
-            <p className="reveal-up inline-flex items-center gap-2 rounded-full border border-line bg-white px-3 py-1 text-sm font-medium text-ink-soft">
+            <p className="reveal-up inline-flex items-center gap-2 rounded-full border border-line bg-sheet px-3 py-1 text-sm font-medium text-ink-soft">
               <span className="size-2 rounded-full bg-speed-standard" aria-hidden="true" />
               Imprenta en línea en Quito y los valles
             </p>
@@ -106,7 +106,7 @@ export default function HomePage() {
                 href={help}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="press inline-flex min-h-12 items-center gap-2 rounded-full border border-line bg-white px-5 font-semibold text-ink hover:border-ink/30"
+                className="press inline-flex min-h-12 items-center gap-2 rounded-full border border-line bg-sheet px-5 font-semibold text-ink hover:border-ink/30"
               >
                 <WhatsappLogo size={20} brand />
                 Te ayudamos a elegir
@@ -138,7 +138,7 @@ export default function HomePage() {
       {/* ---------- Lo que siempre pasa ---------- */}
       <section className="border-b border-line bg-sheet" aria-label="Ventajas">
         <ul className="mx-auto grid w-full max-w-6xl grid-cols-2 gap-x-6 gap-y-5 px-5 py-6 md:grid-cols-4 md:px-8">
-          <Perk tint="bg-tint-lilac text-[#2d43d6]" icon={<TagIcon />} title="Precio final al instante" text="Con IVA y envío incluidos" />
+          <Perk tint="bg-tint-lilac text-brand-deep" icon={<TagIcon />} title="Precio final al instante" text="Con IVA y envío incluidos" />
           <Perk tint="bg-tint-peach text-[#c93d17]" icon={<TruckIcon />} title="Entrega a domicilio" text="Quito y los valles" />
           <Perk tint="bg-tint-green" icon={<WhatsappLogo size={22} brand />} title="Pagas por WhatsApp" text="Transferencia o Deuna" />
           <Perk tint="bg-tint-yellow text-[#9a6a00]" icon={<BrushIcon />} title="Tu diseño como quieras" text="Canva, archivo o chat" />
@@ -236,7 +236,7 @@ export default function HomePage() {
           {STEPS.map((step, index) => (
             <li key={step.title} className="rounded-[22px] border border-line bg-sheet p-5">
               <span
-                className="grid size-10 place-items-center rounded-full text-base font-semibold tabular-nums"
+                className="step-ink grid size-10 place-items-center rounded-full text-base font-semibold tabular-nums"
                 style={STEP_INKS[index]}
               >
                 {index + 1}
@@ -258,7 +258,7 @@ export default function HomePage() {
             <p className="mt-4 max-w-md leading-7 text-ink-soft">
               Sácala en un minuto, con número, fecha y {QUOTE_VALID_DAYS} días hábiles de validez. La guardas en PDF, la compartes o te la enviamos.
             </p>
-            <Link href="/proforma" className="press mt-8 inline-flex min-h-12 items-center rounded-full bg-ink px-6 font-semibold text-white hover:bg-ink/85">
+            <Link href="/proforma" className="press mt-8 inline-flex min-h-12 items-center rounded-full bg-ink px-6 font-semibold text-on-ink hover:bg-ink/85">
               Hacer una proforma
             </Link>
           </div>

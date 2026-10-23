@@ -21,7 +21,7 @@ export function LaunchProductTile({ product, familyLabel }: { product: LaunchPro
       </span>
       <span className="flex flex-1 flex-col gap-1 p-4">
         {familyLabel ? (
-          <span className="text-xs font-semibold" style={{ color: ink.deep }}>
+          <span className="family-label text-xs font-semibold" style={{ color: ink.deep }}>
             {familyLabel}
           </span>
         ) : null}
@@ -38,7 +38,7 @@ export function LaunchProductTile({ product, familyLabel }: { product: LaunchPro
         </span>
         <span className="text-sm leading-5 text-ink-soft">{product.summary}</span>
         <span className="mt-auto flex flex-wrap gap-1.5 pt-3 text-xs font-semibold">
-          <span className="rounded-full px-2.5 py-1" style={{ background: ink.tint, color: ink.deep }}>
+          <span className="family-chip rounded-full px-2.5 py-1" style={{ background: ink.tint, color: ink.deep }}>
             Desde {product.quantities[0].toLocaleString("es-EC")} u.
           </span>
           <span className="rounded-full bg-paper-deep px-2.5 py-1 text-ink-soft">{product.leadTime}</span>

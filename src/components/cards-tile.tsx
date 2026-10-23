@@ -18,11 +18,11 @@ export function CardsTile() {
         />
       </span>
       <span className="flex flex-1 flex-col gap-1 p-4">
-        <span className="text-xs font-semibold text-[#2d43d6]">Tarjetas</span>
+        <span className="text-xs font-semibold text-brand-deep">Tarjetas</span>
         <span className="text-base font-semibold tracking-tight sm:text-lg">{PRODUCT.name}</span>
         <span className="text-sm leading-5 text-ink-soft">Couché 300 g, mate o brillante, con acabados.</span>
         <span className="mt-auto flex flex-wrap gap-1.5 pt-3 text-xs font-semibold">
-          <span className="rounded-full bg-brand-soft px-2.5 py-1 text-[#2d43d6]">Pídelo en línea · desde {price}</span>
+          <span className="rounded-full bg-brand-soft px-2.5 py-1 text-brand-deep">Pídelo en línea · desde {price}</span>
         </span>
       </span>
     </Link>

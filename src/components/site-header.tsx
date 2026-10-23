@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { A11yButton } from "@/components/a11y-panel";
 import { BrandLogo } from "@/components/brand-logo";
 import { useCart } from "@/components/cart-provider";
 import { PRODUCT } from "@/lib/catalog";
@@ -53,7 +54,7 @@ export function SiteHeader() {
      * filas de pantalla en cada página.
      */
     <>
-      <header className="sticky top-0 z-40 border-b border-line bg-white print:hidden">
+      <header className="sticky top-0 z-40 border-b border-line bg-sheet print:hidden">
         <div className="mx-auto flex w-full max-w-6xl items-center gap-2.5 px-4 py-2.5 md:gap-5 md:px-8 md:py-3">
           <Link href="/" className="shrink-0 text-ink" aria-label="Esto es ASAP, inicio">
             <BrandLogo className="h-8 w-auto md:h-9" />
@@ -80,6 +81,7 @@ export function SiteHeader() {
               </button>
             </div>
           </form>
+          <A11yButton />
           <CartLink pathname={pathname} count={count} ready={ready} />
         </div>
         <DesktopNav pathname={pathname} />
@@ -204,7 +206,7 @@ function Dropdown({ label, children }: { label: string; children: React.ReactNod
       aria-label={label}
       className="invisible absolute left-0 top-full z-50 w-[21rem] translate-y-1 pt-1 opacity-0 transition-[opacity,transform,visibility] duration-150 ease-out group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100"
     >
-      <div className="rounded-2xl border border-line bg-white p-2 shadow-[0_24px_48px_-24px_rgba(20,20,20,0.35)]">{children}</div>
+      <div className="rounded-2xl border border-line bg-sheet p-2 shadow-[0_24px_48px_-24px_rgba(20,20,20,0.35)]">{children}</div>
     </div>
   );
 }
@@ -221,7 +223,7 @@ function Caret() {
 function MobileNav({ pathname }: { pathname: string }) {
   const items = [ALL, ...MAIN, ...SOON, ...INFO];
   return (
-    <nav aria-label="Categorías" className="relative border-b border-line bg-white md:hidden print:hidden">
+    <nav aria-label="Categorías" className="relative border-b border-line bg-sheet md:hidden print:hidden">
       <ul className="flex gap-1 overflow-x-auto px-4 pr-10 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {items.map((item) => {
           const active = item.match(pathname);
@@ -268,7 +270,7 @@ function CartLink({
       <CartIcon className="md:hidden" />
       <span className="hidden md:inline">Tu carrito</span>
       {badge ? (
-        <span className="absolute -right-0.5 -top-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-white px-1 text-xs font-semibold text-press ring-2 ring-white md:static md:ring-0">
+        <span className="absolute -right-0.5 -top-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-sheet px-1 text-xs font-semibold text-ink ring-2 ring-white md:static md:ring-0">
           {badge}
         </span>
       ) : null}

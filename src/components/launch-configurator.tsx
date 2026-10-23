@@ -23,6 +23,7 @@ import { StickyColumn } from "@/components/sticky-column";
 import { WhatsappLogo } from "@/components/whatsapp-logo";
 import { formatUnits, launchRequestMessage, type LaunchProduct, type LaunchSelection } from "@/lib/launch-products";
 import { ARTWORK_TYPES, MAX_ARTWORK_BYTES, isCanvaUrl } from "@/lib/artwork";
+import { explain } from "@/lib/glossary";
 import { safeFilename } from "@/lib/text";
 import { whatsappHref } from "@/lib/whatsapp";
 
@@ -242,7 +243,7 @@ export function LaunchConfigurator({ product, uploadsEnabled }: { product: Launc
               legend={option.label}
               value={picked.has(option.id) ? selection[option.id] : undefined}
             >
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              <div className={`grid gap-3 ${option.choices.some((choice) => explain(choice)) ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-2 sm:grid-cols-3"}`}>
                 {option.choices.map((choice) => (
                   <ChoiceTile
                     key={choice}
@@ -374,14 +375,14 @@ export function LaunchConfigurator({ product, uploadsEnabled }: { product: Launc
             </p>
           </div>
           {uploading ? (
-            <span className="inline-flex min-h-12 shrink-0 items-center rounded-full bg-press px-5 text-sm font-medium text-white opacity-60">
+            <span className="inline-flex min-h-12 shrink-0 items-center rounded-full border border-line bg-paper-deep px-5 text-sm font-medium text-ink-soft">
               Subiendo…
             </span>
           ) : missing.length > 0 ? (
             <button
               type="button"
               onClick={goToMissing}
-              className="min-h-12 shrink-0 cursor-pointer rounded-full bg-press px-5 text-sm font-medium text-white opacity-60 transition hover:opacity-80"
+              className="min-h-12 shrink-0 cursor-pointer rounded-full border border-line bg-paper-deep px-5 text-sm font-medium text-ink transition hover:border-ink/30"
             >
               Falta {stepNames[missing[0]]}
             </button>
@@ -708,15 +709,18 @@ function BrushGlyph() {
 /* ---------- Opción en recuadro: mismo borde, check y estados que los de tarjetas. ---------- */
 
 function ChoiceTile({ name, title, checked, onChange }: { name: string; title: string; checked: boolean; onChange: () => void }) {
+  /* Si el término es técnico, debajo va qué significa: nadie tiene que adivinar qué es «UV DTF». */
+  const meaning = explain(title);
   return (
     <label
-      className={`relative flex min-h-16 cursor-pointer items-center justify-center overflow-hidden rounded-2xl border-2 px-3 py-4 text-center transition-colors has-[:focus-visible]:border-pick has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-pick-line ${
+      className={`relative flex min-h-16 cursor-pointer flex-col items-center justify-center gap-1 overflow-hidden rounded-2xl border-2 px-3 py-4 text-center transition-colors has-[:focus-visible]:border-pick has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-pick-line ${
         checked ? "border-pick bg-pick-soft" : "border-line bg-sheet hover:border-pick-line hover:bg-pick-wash"
       }`}
     >
       <input type="radio" name={name} checked={checked} onChange={onChange} className="sr-only" />
       {checked ? <CheckMark /> : null}
       <span className={`text-sm leading-5 ${checked ? "font-semibold" : "font-medium"}`}>{title}</span>
+      {meaning ? <span className="text-xs leading-4 text-ink-soft">{meaning}</span> : null}
     </label>
   );
 }
@@ -781,7 +785,7 @@ function LaunchSummary({
           Se abre WhatsApp con este resumen ya escrito. Te respondemos con el precio y la fecha de entrega.
         </p>
         {open || uploading ? (
-          <p className="mt-5 hidden min-h-12 w-full items-center justify-center rounded-full bg-press px-5 text-base font-medium text-white opacity-60 lg:flex">
+          <p className="mt-5 hidden min-h-12 w-full items-center justify-center rounded-full border border-line bg-paper-deep px-5 text-base font-medium text-ink-soft lg:flex">
             {open ? `Falta elegir ${missing[0]}` : "Subiendo tu archivo…"}
           </p>
         ) : (
@@ -844,7 +848,10 @@ function LaunchNotes({ product }: { product: LaunchProduct }) {
       <Note title="Especificaciones del producto">
         <dl className="overflow-hidden rounded-lg border border-line text-ink">
           {[
-            ...product.options.map((option) => [option.label, option.choices.join(" / ")] as const),
+            ...product.options.map(
+              (option) =>
+                [option.label, option.choices.map((choice) => (explain(choice) ? `${choice}: ${explain(choice)}` : choice)).join(" · ")] as const,
+            ),
             ["Cantidades", product.quantities.map((amount) => amount.toLocaleString("es-EC")).join(" / ")] as const,
             ["Producción", product.leadTime] as const,
           ].map(([label, value], index) => (
