@@ -13,7 +13,7 @@ const PREVIEW_WIDTH = 1400;
 
 let worker: Worker | null = null;
 
-async function loadPdfjs() {
+export async function loadPdfjs() {
   const pdfjs = await import("pdfjs-dist");
   if (!worker) {
     worker = new Worker(new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url), { type: "module" });

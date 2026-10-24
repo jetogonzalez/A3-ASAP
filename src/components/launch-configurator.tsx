@@ -11,6 +11,7 @@ import {
   FileDrop,
   Note,
   OptionGroup,
+  PreflightList,
   UploadGlyph,
   glideTo,
   type StepState,
@@ -23,6 +24,8 @@ import { WhatsappLogo } from "@/components/whatsapp-logo";
 import { formatUnits, launchRequestMessage, type LaunchProduct, type LaunchSelection } from "@/lib/launch-products";
 import { ARTWORK_FORMATS_LABEL, MAX_ARTWORK_BYTES, MAX_ARTWORK_MB, artworkContentType, isCanvaUrl, mayPreviewArtwork } from "@/lib/artwork";
 import { renderArtworkPages } from "@/lib/pdf-preview";
+import { readArtworkFacts } from "@/lib/preflight";
+import { evaluateArtwork, type ArtworkFacts } from "@/lib/preflight-rules";
 import { explain } from "@/lib/glossary";
 import { safeFilename } from "@/lib/text";
 import { whatsappHref } from "@/lib/whatsapp";
@@ -89,9 +92,21 @@ export function LaunchConfigurator({ product, uploadsEnabled }: { product: Launc
     if (previewUrl) URL.revokeObjectURL(previewUrl);
   }, [previewUrl]);
 
+  const [artworkFacts, setArtworkFacts] = useState<ArtworkFacts | null>(null);
+  const [checkingArtwork, setCheckingArtwork] = useState(false);
+
   function showPreview(next: File | null) {
     previewFor.current = next;
     setPreviewUrl(null);
+    setArtworkFacts(null);
+    setCheckingArtwork(Boolean(next));
+    if (next) {
+      void readArtworkFacts(next).then((facts) => {
+        if (previewFor.current !== next) return;
+        setArtworkFacts(facts);
+        setCheckingArtwork(false);
+      });
+    }
     if (!next || !mayPreviewArtwork(next)) return;
     void renderArtworkPages(next, 1).then((urls) => {
       if (previewFor.current === next) setPreviewUrl(urls[0] ?? null);
@@ -246,6 +261,7 @@ export function LaunchConfigurator({ product, uploadsEnabled }: { product: Launc
             onDragLeave={() => setDragOver(false)}
             onFile={takeFile}
             hasPreview={Boolean(previewUrl)}
+            preflight={file ? <PreflightList checking={checkingArtwork} checks={artworkFacts ? evaluateArtwork(artworkFacts) : []} /> : null}
             canvaUrl={canvaUrl}
             canvaReady={canvaReady}
             onCanvaUrl={setCanvaUrl}
@@ -537,12 +553,14 @@ function DesignPanel({
   onDragLeave,
   onFile,
   hasPreview,
+  preflight,
   canvaUrl,
   canvaReady,
   onCanvaUrl,
 }: {
   /** El diseño ya se ve en la foto del producto. */
   hasPreview: boolean;
+  preflight: React.ReactNode;
   method: DesignMethod;
   onMethod: (next: DesignMethod) => void;
   notes: string;
@@ -637,6 +655,7 @@ function DesignPanel({
               imageFaces={{ front: true, back: false }}
               onPlace={() => undefined}
               placement={false}
+              preflight={preflight}
             />
             {file && uploadsEnabled ? (
               <p

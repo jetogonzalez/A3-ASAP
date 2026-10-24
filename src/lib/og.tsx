@@ -19,7 +19,8 @@ export const OG = {
   line: "#e3e6ea",
   paper: "#f6f7f9",
   brand: "#4660ff",
-  bar: ["#00a3e0", "#e6007e", "#ffd400", "#141414", "#4660ff", "#2db84b", "#ff5a2c"],
+  /* Los mismos tramos de la barra de la portada: negro y azules del logo. */
+  bar: ["#141414", "#1c2a99", "#2d43d6", "#4660ff"],
 };
 
 const dir = join(process.cwd(), "src/assets/og");
@@ -49,10 +50,10 @@ export async function ogLogo(): Promise<string> {
   return `data:image/svg+xml;base64,${svg.toString("base64")}`;
 }
 
-/* La barra de color de los pliegos, arriba de cada imagen. */
+/* La barra de arriba, igual que en la portada. */
 export function OgColorBar() {
   return (
-    <div style={{ display: "flex", width: "100%", height: 14 }}>
+    <div style={{ display: "flex", width: "100%", height: 8 }}>
       {OG.bar.map((color) => (
         <div key={color} style={{ flex: 1, background: color }} />
       ))}

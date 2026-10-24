@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "tsx --conditions=react-server --test src/lib/pricing.test.ts src/lib/delivery.test.ts src/lib/text.test.ts src/lib/order.test.ts src/server/canva.test.ts"
+    "test": "tsx --conditions=react-server --test src/lib/pricing.test.ts src/lib/delivery.test.ts src/lib/text.test.ts src/lib/order.test.ts src/lib/preflight.test.ts src/server/canva.test.ts"
   },
   "dependencies": {
     "@vercel/blob": "^2.8.2",

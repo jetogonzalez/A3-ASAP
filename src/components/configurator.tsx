@@ -37,6 +37,8 @@ import {
   mayPreviewArtwork,
 } from "@/lib/artwork";
 import { renderArtworkPages } from "@/lib/pdf-preview";
+import { readArtworkFacts } from "@/lib/preflight";
+import { evaluateArtwork, worstStatus, type ArtworkFacts, type CheckStatus, type PreflightCheck } from "@/lib/preflight-rules";
 import { addonCents, quote, type Quote } from "@/lib/pricing";
 import { IVA_LABEL, ivaBreakdown } from "@/lib/tax";
 import { safeFilename } from "@/lib/text";
@@ -142,6 +144,9 @@ export function Configurator({
   const [canvaUrl, setCanvaUrl] = useState(editing?.artwork?.source === "canva" ? editing.artwork.url : "");
   const canvaReady = isCanvaUrl(canvaUrl);
   const [artworkUrl, setArtworkUrl] = useState<string | null>(null);
+  /* Lo que la revisión automática leyó del archivo; las reglas se aplican al pintar, con el tamaño y los lados elegidos. */
+  const [artworkFacts, setArtworkFacts] = useState<ArtworkFacts | null>(null);
+  const [checkingArtwork, setCheckingArtwork] = useState(false);
   /* Segunda página del PDF: si viene, es el reverso. */
   const [artworkBackUrl, setArtworkBackUrl] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
@@ -205,6 +210,15 @@ export function Configurator({
     previewFor.current = next;
     setArtworkUrl(null);
     setArtworkBackUrl(null);
+    setArtworkFacts(null);
+    setCheckingArtwork(Boolean(next));
+    if (next) {
+      void readArtworkFacts(next).then((facts) => {
+        if (previewFor.current !== next) return;
+        setArtworkFacts(facts);
+        setCheckingArtwork(false);
+      });
+    }
     if (!next || !mayPreviewArtwork(next)) return;
     void renderArtworkPages(next).then((urls) => {
       if (previewFor.current !== next) {
@@ -441,6 +455,23 @@ export function Configurator({
           error={error}
           imageFaces={imageFaces}
           canPlace={Boolean(artworkUrl) && !artworkBackUrl}
+          preflight={
+            file ? (
+              <PreflightList
+                checking={checkingArtwork}
+                checks={
+                  artworkFacts
+                    ? evaluateArtwork(artworkFacts, {
+                        widthMm: size.widthMm,
+                        heightMm: size.heightMm,
+                        bleedMm: 3,
+                        sides: picked.has("lados") ? config.sides : undefined,
+                      })
+                    : []
+                }
+              />
+            ) : null
+          }
           onPlace={(side) => {
             const turningOn = !imageFaces[side];
             setImageFaces((current) => ({ ...current, [side]: !current[side] }));
@@ -861,6 +892,7 @@ function ArtworkPanel({
   error,
   imageFaces,
   canPlace,
+  preflight,
   onPlace,
 }: {
   method: ArtworkMethod;
@@ -886,6 +918,7 @@ function ArtworkPanel({
   error: string | null;
   imageFaces: { front: boolean; back: boolean };
   canPlace: boolean;
+  preflight: React.ReactNode;
   onPlace: (side: "front" | "back") => void;
 }) {
   const template = `/plantilla/${sizeId}?puntas=${rounded ? "1" : "0"}`;
@@ -987,6 +1020,7 @@ function ArtworkPanel({
             error={error}
             imageFaces={imageFaces}
             canPlace={canPlace}
+            preflight={preflight}
             onPlace={onPlace}
           />
         ) : null}
@@ -1026,7 +1060,7 @@ function ArtworkPanel({
         ) : null}
 
         {method === "whatsapp" ? (
-          <div className="flex gap-3 rounded-2xl bg-paper-deep px-4 py-3.5 text-sm leading-6">
+          <div className="mt-3 flex gap-3 rounded-2xl bg-paper-deep px-4 py-3.5 text-sm leading-6">
             <span className="mt-0.5" aria-hidden="true">
               <WhatsappLogo brand size={20} />
             </span>
@@ -1054,7 +1088,10 @@ export function FileDrop({
   onPlace,
   placement = true,
   canPlace = false,
+  preflight = null,
 }: {
+  /** La lista de la revisión automática, debajo del archivo. */
+  preflight?: React.ReactNode;
   /** Hay una muestra de una sola página que se puede poner en frente o reverso. */
   canPlace?: boolean;
   /** Frente/Reverso: solo tiene sentido en tarjetas. */
@@ -1123,6 +1160,7 @@ export function FileDrop({
               Quitar
             </button>
           </div>
+          {preflight}
           {placement && file && canPlace ? (
             <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
               <span className="text-sm text-ink-soft">Colocar el diseño en</span>
@@ -1834,5 +1872,77 @@ function SizeGlyph({ square }: { square: boolean }) {
         strokeWidth="1.5"
       />
     </svg>
+  );
+}
+
+const CHECK_LABEL: Record<CheckStatus, string> = { ok: "Bien", warn: "Revisar", error: "Corregir", info: "Nota" };
+
+/*
+ * La revisión automática del archivo, como lista de chequeo. Avisa, no
+ * bloquea: se puede pedir igual y la imprenta revisa antes de imprimir.
+ */
+export function PreflightList({ checking, checks }: { checking: boolean; checks: PreflightCheck[] }) {
+  if (checking) {
+    return (
+      <p role="status" className="flex items-center gap-2.5 px-4 py-3 text-sm text-ink-soft">
+        <span className="size-4 shrink-0 animate-spin rounded-full border-2 border-line border-t-ink" aria-hidden="true" />
+        Revisando tu archivo…
+      </p>
+    );
+  }
+  if (checks.length === 0) return null;
+  const worst = worstStatus(checks);
+  const summary =
+    worst === "ok" ? "Tu archivo está listo para imprimir" : worst === "warn" ? "Revisa esto antes de pedir" : "Tu archivo necesita cambios";
+  return (
+    <div className="px-4 py-3" role="status">
+      <p className="text-sm font-semibold">{summary}</p>
+      <ul className="mt-2 space-y-2">
+        {checks.map((check) => (
+          <li key={check.id} className="flex gap-2.5 text-sm leading-5">
+            <CheckIcon status={check.status} />
+            <span className="min-w-0">
+              <span className="sr-only">{CHECK_LABEL[check.status]}: </span>
+              <span className="block font-medium">{check.title}</span>
+              {check.detail ? <span className="mt-0.5 block text-ink-soft">{check.detail}</span> : null}
+            </span>
+          </li>
+        ))}
+      </ul>
+      {worst !== "ok" ? (
+        <p className="mt-3 text-xs leading-5 text-ink-soft">Puedes pedir igual: antes de imprimir lo revisamos y te escribimos si hace falta.</p>
+      ) : null}
+    </div>
+  );
+}
+
+function CheckIcon({ status }: { status: CheckStatus }) {
+  const base = "mt-px grid size-[18px] shrink-0 place-items-center rounded-full text-[11px] font-bold leading-none";
+  if (status === "ok")
+    return (
+      <span className={`${base} bg-moss text-sheet`} aria-hidden="true">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+          <path d="M2 5.2 4.1 7.3 8 3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </span>
+    );
+  if (status === "warn")
+    return (
+      <span className={`${base} bg-flag text-flag-ink`} aria-hidden="true">
+        !
+      </span>
+    );
+  if (status === "error")
+    return (
+      <span className={`${base} bg-alert-deep text-sheet`} aria-hidden="true">
+        <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
+          <path d="M1.5 1.5l5 5M6.5 1.5l-5 5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+        </svg>
+      </span>
+    );
+  return (
+    <span className={`${base} border border-line text-ink-soft`} aria-hidden="true">
+      i
+    </span>
   );
 }

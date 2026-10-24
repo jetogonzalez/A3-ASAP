@@ -45,8 +45,14 @@ const STEP_INKS = [
   { background: "#141414", color: "#ffffff" },
 ] as const;
 
-/* La barra de color de los pliegos: CMYK y los colores de la marca. */
-const COLOR_BAR = ["#00a3e0", "#e6007e", "#ffd400", "#141414", "#4660ff", "#2db84b", "#ff5a2c"] as const;
+/*
+ * La barra de arriba: delgada, con el negro y los azules del logo, del más
+ * oscuro al azul de marca. Se llena de izquierda a derecha como una barra de
+ * carga y, cuando va terminando, aparece el resto de la portada.
+ */
+const BAR_SEGMENTS = 4;
+/** Cuándo empieza a aparecer la portada, en ms: la barra va por el último tramo. */
+const AFTER_BAR = 420;
 
 const BESTSELLERS: Array<{ title: string; detail: string; config: Partial<Configuration> }> = [
   { title: "Tarjeta clásica", detail: "8,5 × 5,5 cm · a un lado", config: { sizeId: "85x55", sides: 1 } },
@@ -83,27 +89,30 @@ export default function HomePage() {
       {/* ---------- Portada ---------- */}
       <section className="cutting-mat relative overflow-hidden" aria-labelledby="hero-title">
         <div className="color-bar" aria-hidden="true">
-          {COLOR_BAR.map((color) => (
-            <span key={color} style={{ background: color }} />
+          {Array.from({ length: BAR_SEGMENTS }, (_, index) => (
+            <span key={index} style={{ animationDelay: `${index * 110}ms` }} />
           ))}
         </div>
         <div className="relative mx-auto grid w-full max-w-6xl items-center gap-12 px-5 pt-14 pb-14 md:px-8 md:pt-20 md:pb-20 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <div>
-            <p className="reveal-up inline-flex items-center gap-2 rounded-full border border-line bg-sheet px-3 py-1 text-sm font-medium text-ink-soft">
+            <p
+              className="reveal-up inline-flex items-center gap-2 rounded-full border border-line bg-sheet px-3 py-1 text-sm font-medium text-ink-soft"
+              style={{ animationDelay: `${AFTER_BAR}ms` }}
+            >
               <span className="size-2 rounded-full bg-speed-standard" aria-hidden="true" />
               Imprenta en línea en Quito y los valles
             </p>
             <h1
               id="hero-title"
               className="reveal-up mt-5 max-w-xl text-[2.6rem] leading-[1.02] font-semibold tracking-[-0.03em] text-balance sm:text-6xl"
-              style={{ animationDelay: "90ms" }}
+              style={{ animationDelay: `${AFTER_BAR + 90}ms` }}
             >
               Imprime lo de tu marca, sin complicarte.
             </h1>
-            <p className="reveal-up mt-5 max-w-md text-lg leading-7 text-ink-soft" style={{ animationDelay: "180ms" }}>
+            <p className="reveal-up mt-5 max-w-md text-lg leading-7 text-ink-soft" style={{ animationDelay: `${AFTER_BAR + 180}ms` }}>
               Tarjetas con precio al instante y en tu puerta desde el {arrival}. Tazas, camisetas, etiquetas y más: los armas aquí y nos los pides por WhatsApp.
             </p>
-            <div className="reveal-up mt-8 flex flex-wrap items-center gap-3" style={{ animationDelay: "270ms" }}>
+            <div className="reveal-up mt-8 flex flex-wrap items-center gap-3" style={{ animationDelay: `${AFTER_BAR + 270}ms` }}>
               <Link
                 href="#todo"
                 className="press inline-flex min-h-12 items-center rounded-full bg-press px-6 font-semibold text-white hover:bg-press-deep"
@@ -476,7 +485,7 @@ function CollageTile({ className, delay, children }: { className: string; delay:
   return (
     <div
       className={`reveal-up overflow-hidden rounded-[20px] shadow-[0_22px_40px_-28px_rgba(20,20,40,0.45)] ring-1 ring-black/5 ${className}`}
-      style={{ animationDelay: `${delay}ms` }}
+      style={{ animationDelay: `${AFTER_BAR + delay}ms` }}
     >
       {children}
     </div>

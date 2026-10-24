@@ -888,16 +888,55 @@ label:has(:checked) > .method-logo {
 }
 
 /*
- * La barra de color que traen los pliegos impresos para calibrar las tintas:
- * cian, magenta, amarillo y negro, más los colores de la marca.
+ * La barra de arriba de la portada: delgada, con el negro y los azules del
+ * logo. Cada tramo se llena de izquierda a derecha, uno tras otro, como una
+ * barra de carga; la portada aparece cuando va por el final (page.tsx).
  */
 .color-bar {
+  --bar-1: #141414;
+  --bar-2: #1c2a99;
+  --bar-3: #2d43d6;
+  --bar-4: #4660ff;
   display: flex;
-  height: 10px;
+  height: 4px;
+}
+
+:root[data-theme="dark"] .color-bar {
+  --bar-1: #2d43d6;
+  --bar-2: #4660ff;
+  --bar-3: #93a3ff;
+  --bar-4: #c2ccff;
 }
 
 .color-bar > span {
   flex: 1;
+  transform-origin: left center;
+  animation: bar-load 380ms cubic-bezier(0.65, 0, 0.35, 1) both;
+}
+
+.color-bar > span:nth-child(1) {
+  background: var(--bar-1);
+}
+
+.color-bar > span:nth-child(2) {
+  background: var(--bar-2);
+}
+
+.color-bar > span:nth-child(3) {
+  background: var(--bar-3);
+}
+
+.color-bar > span:nth-child(4) {
+  background: var(--bar-4);
+}
+
+@keyframes bar-load {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
 }
 
 /* El slider se mueve con el dedo o las flechas: la barra del navegador sobra. */
