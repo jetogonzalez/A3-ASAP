@@ -14,6 +14,16 @@ import tarjetasDeRegalo from "@/assets/productos/tarjetas-de-regalo.webp";
 import tazasMugs from "@/assets/productos/tazas-mugs.webp";
 import tomaTodos from "@/assets/productos/toma-todos.webp";
 import toteBags from "@/assets/productos/tote-bags.webp";
+import navTazasMugs from "@/assets/productos/navidad/tazas-mugs.webp";
+import navTarjetasDePresentacion from "@/assets/productos/navidad/tarjetas-de-presentacion.webp";
+import navGorras from "@/assets/productos/navidad/gorras.webp";
+import navEtiquetas from "@/assets/productos/navidad/etiquetas.webp";
+import navCuadernos from "@/assets/productos/navidad/cuadernos.webp";
+import quitoTazasMugs from "@/assets/productos/fiestas-quito/tazas-mugs.webp";
+import quitoTarjetasDePresentacion from "@/assets/productos/fiestas-quito/tarjetas-de-presentacion.webp";
+import quitoGorras from "@/assets/productos/fiestas-quito/gorras.webp";
+import quitoEtiquetas from "@/assets/productos/fiestas-quito/etiquetas.webp";
+import quitoCuadernos from "@/assets/productos/fiestas-quito/cuadernos.webp";
 
 /*
  * Fotos de referencia de cada producto (y de las familias que aún no tienen): mockups de estudio generados con
@@ -69,5 +79,49 @@ export function ProductPhoto({
       preload={preload}
       className={`h-full w-full object-cover ${className}`}
     />
+  );
+}
+
+/*
+ * Fotos de temporada (Figma AI, archivo «ASAP · Fotos de temporada»): la misma
+ * toma de estudio con detalles de Navidad o de Fiestas de Quito. Para sumar
+ * una, agrega el .webp en assets/productos/<temporada>/ y su línea aquí.
+ */
+const SEASON_PHOTOS: Record<string, Record<string, StaticImageData>> = {
+  "navidad": {
+    "tazas-mugs": navTazasMugs,
+    "tarjetas-de-presentacion": navTarjetasDePresentacion,
+    "gorras": navGorras,
+    "etiquetas": navEtiquetas,
+    "cuadernos": navCuadernos,
+  },
+  "fiestas-quito": {
+    "tazas-mugs": quitoTazasMugs,
+    "tarjetas-de-presentacion": quitoTarjetasDePresentacion,
+    "gorras": quitoGorras,
+    "etiquetas": quitoEtiquetas,
+    "cuadernos": quitoCuadernos,
+  },
+};
+
+/**
+ * La foto normal y, si existen, las de cada temporada. El CSS deja ver solo
+ * la de la temporada activa (data-season en <html>); las ocultas no se
+ * descargan porque cargan en diferido.
+ */
+export function SeasonalProductPhoto(props: Parameters<typeof ProductPhoto>[0]) {
+  const seasons = Object.entries(SEASON_PHOTOS).filter(([, photos]) => props.slug in photos);
+  if (seasons.length === 0) return <ProductPhoto {...props} />;
+  return (
+    <>
+      <div data-season-only="normal" className="h-full w-full">
+        <ProductPhoto {...props} />
+      </div>
+      {seasons.map(([season, photos]) => (
+        <div key={season} data-season-only={season} className="h-full w-full">
+          <Image src={photos[props.slug]} alt={props.alt} sizes={props.sizes} placeholder="blur" className={`h-full w-full object-cover ${props.className ?? ""}`} />
+        </div>
+      ))}
+    </>
   );
 }

@@ -4,12 +4,14 @@ import { BrandLogo } from "@/components/brand-logo";
 import { FamilyGrid } from "@/components/family-grid";
 import { CardsTile } from "@/components/cards-tile";
 import { LaunchProductTile } from "@/components/launch-product-tile";
-import { ProductPhoto } from "@/components/product-photo";
+import { ProductPhoto, SeasonalProductPhoto } from "@/components/product-photo";
 import { ProductRail, RailItem } from "@/components/product-rail";
 import { WhatsappLogo } from "@/components/whatsapp-logo";
 import { PRODUCT, QUANTITIES, defaultConfiguration, productHref, type Configuration } from "@/lib/catalog";
 import { FAQS } from "@/lib/faq";
 import { SEASONS } from "@/lib/seasons";
+import { SeasonDecor } from "@/components/season-decor";
+import { SeasonCampaign } from "@/components/season-campaign";
 import { FAMILIES } from "@/lib/families";
 import { LAUNCH_PRODUCTS, launchProductHref } from "@/lib/launch-products";
 import { formatShortDate } from "@/lib/delivery";
@@ -98,6 +100,7 @@ export default function HomePage() {
         <div className="color-bar" aria-hidden="true">
           <span />
         </div>
+        <SeasonDecor />
         <div className="relative mx-auto grid w-full max-w-6xl items-center gap-12 px-5 pt-14 pb-14 md:px-8 md:pt-20 md:pb-20 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <div>
             <p
@@ -149,19 +152,19 @@ export default function HomePage() {
           {/* Collage de productos, cada uno con su tinta: deja claro que no son solo tarjetas. */}
           <div className="grid h-[340px] grid-cols-6 grid-rows-5 gap-3 sm:h-[420px]" aria-hidden="true">
             <CollageTile className="col-span-4 row-span-3 bg-tint-peach" delay={120}>
-              <ProductPhoto slug="tazas-mugs" alt="" sizes="(min-width: 1024px) 380px, 66vw" preload />
+              <SeasonalProductPhoto slug="tazas-mugs" alt="" sizes="(min-width: 1024px) 380px, 66vw" preload />
             </CollageTile>
             <CollageTile className="col-span-2 row-span-3 bg-tint-lilac" delay={200}>
-              <ProductPhoto slug="tarjetas-de-presentacion" alt="" sizes="(min-width: 1024px) 190px, 33vw" />
+              <SeasonalProductPhoto slug="tarjetas-de-presentacion" alt="" sizes="(min-width: 1024px) 190px, 33vw" />
             </CollageTile>
             <CollageTile className="col-span-2 row-span-2 bg-tint-green" delay={280}>
-              <ProductPhoto slug="gorras" alt="" sizes="(min-width: 1024px) 190px, 33vw" />
+              <SeasonalProductPhoto slug="gorras" alt="" sizes="(min-width: 1024px) 190px, 33vw" />
             </CollageTile>
             <CollageTile className="col-span-2 row-span-2 bg-tint-yellow" delay={360}>
-              <ProductPhoto slug="etiquetas" alt="" sizes="(min-width: 1024px) 190px, 33vw" />
+              <SeasonalProductPhoto slug="etiquetas" alt="" sizes="(min-width: 1024px) 190px, 33vw" />
             </CollageTile>
             <CollageTile className="col-span-2 row-span-2 bg-tint-cyan" delay={440}>
-              <ProductPhoto slug="cuadernos" alt="" sizes="(min-width: 1024px) 190px, 33vw" />
+              <SeasonalProductPhoto slug="cuadernos" alt="" sizes="(min-width: 1024px) 190px, 33vw" />
             </CollageTile>
           </div>
         </div>
@@ -176,6 +179,9 @@ export default function HomePage() {
           <Perk tint="bg-tint-yellow text-[#9a6a00]" icon={<BrushIcon />} title="Tu diseño como quieras" text="Canva, archivo o chat" />
         </ul>
       </section>
+
+      {/* ---------- Campaña de temporada (solo en temporada) ---------- */}
+      <SeasonCampaign />
 
       {/* ---------- Todos los productos ---------- */}
       <section id="todo" className="mx-auto w-full max-w-6xl scroll-mt-28 px-5 pt-16 md:px-8 md:pt-20" aria-labelledby="todo-titulo">
@@ -267,7 +273,7 @@ export default function HomePage() {
           {STEPS.map((step, index) => (
             <li
               key={step.title}
-              className="step-card relative overflow-hidden rounded-[22px] border border-line bg-sheet p-5"
+              className="step-card rounded-[22px] border border-line bg-sheet p-5"
               style={{ "--step": STEP_COLORS[index] } as React.CSSProperties}
             >
               <span

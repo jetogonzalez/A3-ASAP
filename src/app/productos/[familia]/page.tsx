@@ -69,7 +69,8 @@ export default async function FamilyPage({ params }: FamilyPageProps) {
       >
         <div>
           {products.length > 0 ? (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-moss-soft px-2.5 py-1 text-xs font-semibold text-moss">
+            <span className="inline-flex items-center gap-2 rounded-full bg-sheet px-3 py-1 text-sm font-semibold text-ink shadow-[0_1px_2px_rgba(20,20,20,0.08)]">
+              <span className="size-2 rounded-full bg-moss" aria-hidden="true" />
               {products.length} productos para armar
             </span>
           ) : (

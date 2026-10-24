@@ -169,17 +169,28 @@
   background: var(--paper-deep) !important;
 }
 
-/* Cada paso lleva una línea arriba con su color de la gama. */
-.step-card::before {
-  content: "";
-  position: absolute;
-  inset: 0 0 auto;
-  height: 4px;
-  background: var(--step);
+/* Los pasos responden al pasar el mouse: la tarjeta sube apenas y el número crece. */
+.step-card {
+  transition:
+    transform 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 260ms ease,
+    border-color 260ms ease;
 }
 
-:root[data-contrast="high"] .step-card::before {
-  background: var(--ink);
+.step-card .step-ink {
+  transition: transform 320ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@media (hover: hover) {
+  .step-card:hover {
+    transform: translateY(-3px);
+    border-color: color-mix(in srgb, var(--step) 35%, var(--line));
+    box-shadow: 0 20px 36px -26px color-mix(in srgb, var(--step) 70%, transparent);
+  }
+
+  .step-card:hover .step-ink {
+    transform: scale(1.08) rotate(-4deg);
+  }
 }
 
 :root[data-contrast="high"] .step-ink {
@@ -1022,16 +1033,13 @@ aside.season-banner[data-season-only] {
   display: block;
 }
 
-.season-banner {
-  background: var(--season-band, var(--ink));
-  color: #ffffff;
-}
-
 /* Fiestas de Quito: rojo y azul. */
 :root[data-season="fiestas-quito"] {
-  --season-band: linear-gradient(90deg, #b3121b, #1f4fb3);
+  --season-band: linear-gradient(100deg, #9e0f18, #c81e28 35%, #1d4fa8 70%, #163d86);
   --season-a: #d7262f;
   --season-b: #1f5fbf;
+  --season-wash: radial-gradient(120% 90% at 85% 0%, rgba(31, 95, 191, 0.1), transparent 60%),
+    radial-gradient(90% 80% at 0% 100%, rgba(215, 38, 47, 0.08), transparent 60%);
 }
 
 :root[data-season="fiestas-quito"] .color-bar {
@@ -1040,43 +1048,215 @@ aside.season-banner[data-season-only] {
   --bar-to: #1f5fbf;
 }
 
-/* Navidad: verde, rojo y dorado. */
+/* Navidad: verde pino, rojo arándano y dorado. */
 :root[data-season="navidad"] {
-  --season-band: linear-gradient(90deg, #12632f, #a50e26);
-  --season-a: #1b7a3e;
-  --season-b: #c8102e;
+  --season-band: linear-gradient(100deg, #0b3b26, #14593a 45%, #7a0f22 100%);
+  --season-a: #b3122e;
+  --season-b: #1e7a4f;
   --season-c: #d4a017;
+  --season-wash: radial-gradient(110% 90% at 88% 0%, rgba(212, 160, 23, 0.14), transparent 60%),
+    radial-gradient(100% 80% at 0% 100%, rgba(30, 122, 79, 0.12), transparent 62%);
 }
 
 :root[data-season="navidad"] .color-bar {
-  --bar-from: #1b7a3e;
-  --bar-mid: #c8102e;
-  --bar-to: #d4a017;
+  --bar-from: #1e7a4f;
+  --bar-mid: #d4a017;
+  --bar-to: #b3122e;
 }
 
 :root[data-season] .season-dot {
   background: var(--season-a) !important;
+  box-shadow: 0 0 0 0 var(--season-a);
+  animation: dot-beat 2.4s ease-out infinite;
 }
 
-/* Confeti suave en el fondo de la portada, con los colores de la temporada. */
-:root[data-season] .cutting-mat::before {
+@keyframes dot-beat {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--season-a) 55%, transparent);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 8px transparent;
+  }
+}
+
+/* Un tinte suave de la temporada sobre la cuadrícula de la portada. */
+:root[data-season] .cutting-mat {
+  background-image:
+    var(--season-wash),
+    linear-gradient(rgba(20, 20, 20, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(20, 20, 20, 0.06) 1px, transparent 1px);
+  background-size:
+    100% 100%,
+    24px 24px,
+    24px 24px;
+}
+
+:root[data-season][data-theme="dark"] .cutting-mat,
+:root[data-season][data-contrast="high"] .cutting-mat {
+  background-image: none;
+}
+
+/* Franja con un brillo que la recorre cada tanto. */
+.season-banner {
+  position: relative;
+  overflow: hidden;
+  background: var(--season-band, var(--ink));
+  color: #ffffff;
+}
+
+.season-banner::after {
   content: "";
   position: absolute;
-  inset: 0;
+  inset: 0 auto 0 -40%;
+  width: 40%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.22), transparent);
+  animation: band-shine 6s ease-in-out 1.2s infinite;
   pointer-events: none;
-  opacity: 0.55;
-  background-image:
-    radial-gradient(circle at 12% 22%, var(--season-a) 0 3px, transparent 4px),
-    radial-gradient(circle at 28% 78%, var(--season-b) 0 2.5px, transparent 3.5px),
-    radial-gradient(circle at 46% 12%, var(--season-c, var(--season-a)) 0 2px, transparent 3px),
-    radial-gradient(circle at 63% 88%, var(--season-a) 0 2.5px, transparent 3.5px),
-    radial-gradient(circle at 82% 18%, var(--season-b) 0 3px, transparent 4px),
-    radial-gradient(circle at 94% 64%, var(--season-c, var(--season-b)) 0 2px, transparent 3px),
-    radial-gradient(circle at 6% 58%, var(--season-b) 0 2px, transparent 3px),
-    radial-gradient(circle at 38% 46%, var(--season-c, var(--season-a)) 0 1.5px, transparent 2.5px);
-  background-size: 520px 360px;
 }
 
-:root[data-contrast="high"] .cutting-mat::before {
+@keyframes band-shine {
+  0% {
+    transform: translateX(0);
+  }
+  35%,
+  100% {
+    transform: translateX(350%);
+  }
+}
+
+.season-banner a {
+  transition: opacity 160ms ease;
+}
+
+.season-banner a:hover {
+  opacity: 0.85;
+}
+
+/* Campaña de temporada en la portada: el degradado de la temporada, texto blanco. */
+.season-campaign {
+  background: var(--season-band, var(--ink));
+  color: #ffffff;
+}
+
+:root[data-contrast="high"] .season-campaign {
+  background: #000000;
+}
+
+/* ---- Decoración animada de la portada (components/season-decor.tsx) ---- */
+.season-decor {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.season-piece {
+  position: absolute;
+  top: -24px;
+  left: var(--x);
+  width: var(--s);
+  height: var(--s);
+  background: var(--c);
+  opacity: 0;
+  will-change: transform, opacity;
+  animation: piece-fall var(--d) linear var(--delay) infinite;
+}
+
+@keyframes piece-fall {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.75;
+  }
+  50% {
+    transform: translate3d(calc(var(--drift) * 0.6), 340px, 0) rotate(240deg);
+  }
+  88% {
+    opacity: 0.75;
+  }
+  100% {
+    transform: translate3d(var(--drift), 680px, 0) rotate(480deg);
+    opacity: 0;
+  }
+}
+
+/* Confeti: papelito rectangular que gira; serpentina: tira más larga y fina. */
+.piece-confeti {
+  height: calc(var(--s) * 0.55);
+  border-radius: 1px;
+}
+
+.piece-serpentina {
+  width: calc(var(--s) * 0.35);
+  height: calc(var(--s) * 2.2);
+  border-radius: 999px;
+}
+
+/* Navidad: destellos redondos que caen y estrellas que titilan en su lugar. */
+.piece-destello {
+  border-radius: 999px;
+  width: calc(var(--s) * 0.7);
+  height: calc(var(--s) * 0.7);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--c) 60%, transparent);
+}
+
+.piece-estrella,
+.piece-titila {
+  clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%);
+}
+
+.piece-estrella {
+  width: calc(var(--s) * 1.4);
+  height: calc(var(--s) * 1.4);
+}
+
+.piece-titila {
+  top: var(--y);
+  width: calc(var(--s) * 1.8);
+  height: calc(var(--s) * 1.8);
+  animation: piece-twinkle calc(var(--d) * 0.35) ease-in-out var(--delay) infinite;
+}
+
+@keyframes piece-twinkle {
+  0%,
+  100% {
+    transform: scale(0.6) rotate(0deg);
+    opacity: 0.25;
+  }
+  50% {
+    transform: scale(1.1) rotate(45deg);
+    opacity: 0.95;
+  }
+}
+
+/* Con menos movimiento la decoración queda quieta, repartida, y no cae. */
+@media (prefers-reduced-motion: reduce) {
+  .season-piece {
+    top: var(--y);
+    animation: none !important;
+    opacity: 0.5;
+  }
+  .season-banner::after,
+  :root[data-season] .season-dot {
+    animation: none !important;
+  }
+}
+
+:root[data-motion="reduce"] .season-piece {
+  top: var(--y);
+  animation: none !important;
+  opacity: 0.5;
+}
+
+:root[data-motion="reduce"] .season-banner::after,
+:root[data-motion="reduce"][data-season] .season-dot {
+  animation: none !important;
+}
+
+:root[data-contrast="high"] .season-decor,
+:root[data-contrast="high"] .season-banner::after {
   display: none;
 }

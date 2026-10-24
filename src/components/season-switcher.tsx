@@ -29,6 +29,13 @@ function applySeason(id: SeasonId) {
     /* Sin almacenamiento se ve igual en esta visita. */
   }
   listeners.forEach((listener) => listener());
+  /* La barra de la portada se vuelve a llenar con los colores nuevos. */
+  document.querySelectorAll<HTMLElement>(".color-bar > span").forEach((bar) => {
+    bar.getAnimations().forEach((animation) => {
+      animation.cancel();
+      animation.play();
+    });
+  });
 }
 
 export function SeasonSwitcher() {

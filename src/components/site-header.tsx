@@ -106,12 +106,16 @@ export function SiteHeader() {
   );
 }
 
-/* El anillo de foco va hacia adentro: el borde de abajo marca la página actual y pegaba con el anillo. */
+/*
+ * La página actual se marca con una barra recta y fina abajo (no con el borde
+ * del enlace, que con las esquinas redondeadas salía curvo). El anillo de foco
+ * va hacia adentro para no pisar la barra.
+ */
 const LINK =
-  "inline-flex min-h-11 items-center gap-1 rounded-md border-b-2 px-3 text-sm font-medium whitespace-nowrap transition-colors focus-visible:-outline-offset-2";
+  "relative inline-flex min-h-11 items-center gap-1 rounded-md px-3 text-sm font-medium whitespace-nowrap transition-colors focus-visible:-outline-offset-2 after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:rounded-full after:transition-colors";
 
 function linkClass(active: boolean): string {
-  return `${LINK} ${active ? "border-ink text-ink" : "border-transparent text-ink-soft hover:text-ink"}`;
+  return `${LINK} ${active ? "text-ink after:bg-ink" : "text-ink-soft after:bg-transparent hover:text-ink hover:after:bg-line"}`;
 }
 
 /*
