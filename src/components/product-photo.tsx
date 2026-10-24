@@ -14,6 +14,7 @@ import tarjetasDeRegalo from "@/assets/productos/tarjetas-de-regalo.webp";
 import tazasMugs from "@/assets/productos/tazas-mugs.webp";
 import tomaTodos from "@/assets/productos/toma-todos.webp";
 import toteBags from "@/assets/productos/tote-bags.webp";
+import { SEASON_IDS } from "@/lib/seasons";
 import navTazasMugs from "@/assets/productos/navidad/tazas-mugs.webp";
 import navTarjetasDePresentacion from "@/assets/productos/navidad/tarjetas-de-presentacion.webp";
 import navGorras from "@/assets/productos/navidad/gorras.webp";
@@ -112,9 +113,12 @@ const SEASON_PHOTOS: Record<string, Record<string, StaticImageData>> = {
 export function SeasonalProductPhoto(props: Parameters<typeof ProductPhoto>[0]) {
   const seasons = Object.entries(SEASON_PHOTOS).filter(([, photos]) => props.slug in photos);
   if (seasons.length === 0) return <ProductPhoto {...props} />;
+  /* La foto normal también se ve en las temporadas que aún no tienen foto propia. */
+  const withPhoto = new Set(seasons.map(([season]) => season));
+  const normalIn = SEASON_IDS.filter((id) => !withPhoto.has(id)).join(" ");
   return (
     <>
-      <div data-season-only="normal" className="h-full w-full">
+      <div data-season-only={normalIn} className="h-full w-full">
         <ProductPhoto {...props} />
       </div>
       {seasons.map(([season, photos]) => (

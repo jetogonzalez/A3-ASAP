@@ -1,17 +1,20 @@
 /*
  * Decoración animada de temporada en la portada: no se queda congelada, se
- * mueve despacio todo el tiempo. Navidad: estrellas doradas que titilan y
- * destellos que caen. Fiestas de Quito: confeti rojo y azul que cae girando.
+ * mueve despacio todo el tiempo. Cada temporada trae sus formas y colores
+ * (lib/seasons.ts): confeti en Quito y Carnaval, destellos y estrellas en
+ * Navidad, Reyes y Año nuevo, corazones en San Valentín, pétalos en mayo.
  *
  * Las posiciones son fijas (no al azar) para que el servidor y el navegador
  * pinten lo mismo. Solo se ve en su temporada (data-season en <html>); con
  * «reducir movimiento» queda quieta y en alto contraste no aparece.
  */
 
+import { SEASONS, type DecorShape } from "@/lib/seasons";
+
 type Piece = { x: number; y: number; size: number; duration: number; delay: number; drift: number; color: string; shape: string };
 
 /* Un generador con semilla: mismo resultado en cada render. */
-function pieces(seed: number, count: number, colors: string[], shapes: string[]): Piece[] {
+function pieces(seed: number, count: number, colors: string[], shapes: DecorShape[]): Piece[] {
   let state = seed;
   const next = () => {
     state = (state * 1664525 + 1013904223) % 4294967296;
@@ -29,9 +32,10 @@ function pieces(seed: number, count: number, colors: string[], shapes: string[])
   }));
 }
 
-const QUITO = pieces(7, 12, ["#ef6b6b", "#6b95ec", "#f59a9a", "#8fb0f0"], ["confeti", "confeti", "serpentina"]);
-const NAVIDAD = pieces(19, 10, ["#f0c75e", "#6fbf8e", "#e57b8e", "#f3d27a"], ["destello", "estrella", "destello"]);
-const NAVIDAD_STARS = pieces(41, 5, ["#f0c75e", "#f3d27a"], ["titila"]);
+/* Una capa por temporada, con los colores y formas de lib/seasons.ts. */
+const LAYERS = SEASONS.flatMap((season) =>
+  season.look ? [{ id: season.id, items: pieces(season.look.decor.seed, season.look.decor.count, season.look.decor.colors, season.look.decor.shapes) }] : [],
+);
 
 function Layer({ id, items }: { id: string; items: Piece[] }) {
   return (
@@ -60,8 +64,9 @@ function Layer({ id, items }: { id: string; items: Piece[] }) {
 export function SeasonDecor() {
   return (
     <>
-      <Layer id="fiestas-quito" items={QUITO} />
-      <Layer id="navidad" items={[...NAVIDAD, ...NAVIDAD_STARS]} />
+      {LAYERS.map((layer) => (
+        <Layer key={layer.id} id={layer.id} items={layer.items} />
+      ))}
     </>
   );
 }

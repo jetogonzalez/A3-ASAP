@@ -258,6 +258,24 @@ body:has(.bottom-bar) .a11y-fab {
   }
 }
 
+/* El botón de temporadas va abajo a la izquierda, donde está el aviso de cookies: espera a que se acepte. */
+:root:not([data-cookies="ok"]) .season-fab {
+  display: none;
+}
+
+body:has(.bottom-bar) .season-fab {
+  bottom: calc(6rem + env(safe-area-inset-bottom));
+}
+
+.season-panel {
+  transform-origin: 1.75rem 100%;
+  animation: hint-pop 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+:root[data-contrast="high"] .season-swatch {
+  outline: 1px solid var(--ink);
+}
+
 /* La primera visita: un latido suave en anillo, tres veces, para que se note. */
 @keyframes a11y-ping {
   0% {
@@ -1024,42 +1042,10 @@ label:has(:checked) > .method-logo {
 }
 
 /* ---------- Temporadas (lib/seasons.ts) ---------- */
-/* Lo marcado con data-season-only se ve solo en su temporada; «normal» cuando no hay ninguna. */
+/* Lo marcado con data-season-only se ve solo en su temporada; «normal» cuando no hay ninguna.
+   Qué temporada muestra qué, y sus colores, sale de lib/seasons.ts (components/season-styles.tsx). */
 [data-season-only] {
   display: none;
-}
-
-:root:not([data-season]) [data-season-only="normal"],
-:root[data-season="fiestas-quito"] [data-season-only="fiestas-quito"],
-:root[data-season="navidad"] [data-season-only="navidad"] {
-  display: revert;
-}
-
-/* Fiestas de Quito: rojo y azul. */
-:root[data-season="fiestas-quito"] {
-  --season-panel: var(--tint-blue);
-  --season-kit: #ffd9d9;
-  --season-a: #ef6b6b;
-  --season-b: #6b95ec;
-  --season-bg: #f4f7ff;
-}
-
-:root[data-season="fiestas-quito"] .color-bar > span {
-  background: linear-gradient(90deg, #f4a8a8, #e9b5d6 50%, #a9c1f5);
-}
-
-/* Navidad: verde pino, rojo arándano y dorado. */
-:root[data-season="navidad"] {
-  --season-panel: var(--tint-green);
-  --season-kit: #fde9b3;
-  --season-a: #e57b8e;
-  --season-b: #6fbf8e;
-  --season-c: #f0c75e;
-  --season-bg: #fbf8f1;
-}
-
-:root[data-season="navidad"] .color-bar > span {
-  background: linear-gradient(90deg, #a5dcb9, #f4dc8f 50%, #f3b0bb);
 }
 
 :root[data-season] .season-dot {
@@ -1178,6 +1164,25 @@ label:has(:checked) > .method-logo {
   width: calc(var(--s) * 0.7);
   height: calc(var(--s) * 0.7);
   box-shadow: 0 0 8px color-mix(in srgb, var(--c) 60%, transparent);
+}
+
+/* Carnaval: gotas de agua. San Valentín: corazones. Día de la Madre: pétalos. */
+.piece-gota {
+  width: calc(var(--s) * 0.8);
+  height: calc(var(--s) * 0.8);
+  border-radius: 50% 0 50% 50%;
+}
+
+.piece-corazon {
+  width: calc(var(--s) * 1.3);
+  height: calc(var(--s) * 1.3);
+  clip-path: polygon(50% 92%, 8% 50%, 2% 28%, 12% 10%, 30% 4%, 50% 18%, 70% 4%, 88% 10%, 98% 28%, 92% 50%);
+}
+
+.piece-petalo {
+  width: calc(var(--s) * 0.9);
+  height: calc(var(--s) * 1.3);
+  border-radius: 0 100% 0 100%;
 }
 
 .piece-estrella,

@@ -8,6 +8,9 @@ import { SiteHeader } from "@/components/site-header";
 import { JsonLd } from "@/components/json-ld";
 import { isProductionSite, siteUrl } from "@/lib/site";
 import { siteGraph } from "@/lib/structured-data";
+import { SEASON_IDS } from "@/lib/seasons";
+import { SeasonStyles } from "@/components/season-styles";
+import { SeasonFab } from "@/components/season-switcher";
 import "./globals.css";
 
 const outfit = Outfit({
@@ -78,7 +81,7 @@ export const viewport: Viewport = {
  * Lo guardado manda; si no hay nada guardado, se siguen los ajustes del
  * sistema: tema oscuro, más contraste y menos movimiento.
  */
-const A11Y_BOOT = `(function(){try{var d=document.documentElement,s=JSON.parse(localStorage.getItem("asap-a11y")||"{}"),m=function(q){return window.matchMedia&&window.matchMedia(q).matches};var t=s.theme||"light";if(t==="system")t=m("(prefers-color-scheme: dark)")?"dark":"light";if(t==="dark")d.dataset.theme="dark";if(s.contrast==="high"||(!s.contrast&&m("(prefers-contrast: more)")))d.dataset.contrast="high";if(s.text&&s.text!=="md")d.dataset.text=s.text;if(s.motion==="reduce")d.dataset.motion="reduce";if(s.links==="underline")d.dataset.links="underline";if(localStorage.getItem("asap-cookies")==="ok")d.dataset.cookies="ok";var t2=localStorage.getItem("asap-temporada");if(t2==="fiestas-quito"||t2==="navidad")d.dataset.season=t2}catch(e){}})();`;
+const A11Y_BOOT = `(function(){try{var d=document.documentElement,s=JSON.parse(localStorage.getItem("asap-a11y")||"{}"),m=function(q){return window.matchMedia&&window.matchMedia(q).matches};var t=s.theme||"light";if(t==="system")t=m("(prefers-color-scheme: dark)")?"dark":"light";if(t==="dark")d.dataset.theme="dark";if(s.contrast==="high"||(!s.contrast&&m("(prefers-contrast: more)")))d.dataset.contrast="high";if(s.text&&s.text!=="md")d.dataset.text=s.text;if(s.motion==="reduce")d.dataset.motion="reduce";if(s.links==="underline")d.dataset.links="underline";if(localStorage.getItem("asap-cookies")==="ok")d.dataset.cookies="ok";var t2=localStorage.getItem("asap-temporada");if(${JSON.stringify(SEASON_IDS.filter((id) => id !== "normal"))}.indexOf(t2)>-1)d.dataset.season=t2}catch(e){}})();`;
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
@@ -90,6 +93,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: A11Y_BOOT }} />
+        <SeasonStyles />
       </head>
       <body className="flex min-h-full flex-col font-sans text-base leading-normal text-ink">
         <a
@@ -105,6 +109,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             {children}
           </main>
           <SiteFooter />
+          <SeasonFab />
           <A11yButton />
           <CookieBanner />
         </CartProvider>
