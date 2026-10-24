@@ -14,12 +14,6 @@ export type Family = {
  */
 export const FAMILIES: Family[] = [
   {
-    slug: "tarjetas",
-    label: "Tarjetas",
-    live: true,
-    note: "Tarjetas de presentación en couche 300 g.",
-  },
-  {
     slug: "promocionales",
     label: "Promocionales",
     live: false,
@@ -30,6 +24,12 @@ export const FAMILIES: Family[] = [
     label: "Textil",
     live: false,
     note: "Camisetas, hoodies, gorras y tote bags en DTF.",
+  },
+  {
+    slug: "tarjetas",
+    label: "Tarjetas",
+    live: true,
+    note: "Tarjetas de presentación en couche 300 g.",
   },
   {
     slug: "empaque",

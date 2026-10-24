@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { BrandLogo } from "@/components/brand-logo";
-import { productHref } from "@/lib/catalog";
 
 export function SiteFooter() {
   return (
@@ -14,8 +13,8 @@ export function SiteFooter() {
           <Link href="/productos" className="hover:text-ink">
             Productos
           </Link>
-          <Link href={productHref()} className="hover:text-ink">
-            Tarjetas
+          <Link href="/proforma" className="hover:text-ink">
+            Proforma
           </Link>
           <Link href="/envio" className="hover:text-ink">
             Envío
@@ -24,7 +23,7 @@ export function SiteFooter() {
             Tu carrito
           </Link>
           <Link href="/ayuda" className="hover:text-ink">
-            Ayuda
+            Centro de ayuda
           </Link>
           <Link href="/terminos" className="hover:text-ink">
             Términos

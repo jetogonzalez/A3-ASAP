@@ -22,11 +22,11 @@ type Result = { href: string; slug: string; name: string; summary: string };
 
 const CARDS: Result = { href: productHref(), slug: PRODUCT.slug, name: PRODUCT.name, summary: "Precio al instante, pídelas en línea." };
 const POPULAR: Result[] = [
-  CARDS,
   ...["tazas-mugs", "camisetas-hoodies", "etiquetas", "gorras"].flatMap((slug) => {
     const product = LAUNCH_PRODUCTS.find((item) => item.slug === slug);
     return product ? [{ href: launchProductHref(product), slug: product.slug, name: product.name, summary: product.summary }] : [];
   }),
+  CARDS,
 ];
 
 function normalize(text: string): string {

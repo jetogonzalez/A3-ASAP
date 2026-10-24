@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useMemo, useSyncExternalStore } from "react";
 import { readLastOrder } from "@/components/last-order";
 import { WhatsappLogo } from "@/components/whatsapp-logo";
-import { formatLongDate, formatShortDate } from "@/lib/delivery";
+import { formatLongDate } from "@/lib/delivery";
 import { formatUsd } from "@/lib/money";
 import { IVA_LABEL } from "@/lib/tax";
 import { orderMessage, whatsappHref } from "@/lib/whatsapp";

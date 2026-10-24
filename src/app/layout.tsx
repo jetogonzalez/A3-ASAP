@@ -18,7 +18,7 @@ const outfit = Outfit({
 });
 
 const DESCRIPTION =
-  "Tarjetas de presentación, promocionales, camisetas, tazas, etiquetas y empaque con tu marca en Quito. Precio final en dólares con IVA, diseño en Canva y entrega a domicilio en Quito y los valles.";
+  "Tazas, camisetas, gorras, esferos, etiquetas, empaque, cuadernos y tarjetas de presentación con tu marca en Quito. Precio final en dólares con IVA, diseño en Canva y entrega a domicilio en Quito y los valles.";
 
 export const metadata: Metadata = {
   metadataBase: siteUrl(),

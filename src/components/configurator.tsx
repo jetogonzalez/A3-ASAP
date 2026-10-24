@@ -22,7 +22,7 @@ import {
   type SizeId,
   type DeliveryId,
 } from "@/lib/catalog";
-import { DELIVERY_OPTIONS, businessDaysLabel, deliveryWindow, formatLongDate, formatShortDate } from "@/lib/delivery";
+import { DELIVERY_OPTIONS, businessDaysLabel, deliveryWindow, formatLongDate } from "@/lib/delivery";
 import { EXTRA_KILO_CENTS, FIRST_KILO_CENTS, shippingQuote } from "@/lib/ecuador";
 import { formatUsd } from "@/lib/money";
 import { upload } from "@vercel/blob/client";

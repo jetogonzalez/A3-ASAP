@@ -1,4 +1,4 @@
-import { businessDaysLabel, formatLongDate, formatShortDate } from "@/lib/delivery";
+import { businessDaysLabel, formatLongDate } from "@/lib/delivery";
 import { formatUsd } from "@/lib/money";
 import type { Order } from "@/lib/order";
 import { IVA_LABEL } from "@/lib/tax";

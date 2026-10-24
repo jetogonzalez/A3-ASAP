@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { PRODUCT } from "@/lib/catalog";
 import { FAMILIES } from "@/lib/families";
+import { HELP_ARTICLES, HELP_CATEGORIES, articleHref } from "@/lib/help-center";
 import { LAUNCH_PRODUCTS } from "@/lib/launch-products";
 import { absoluteUrl } from "@/lib/site";
 
@@ -20,7 +21,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     page(`/producto/${PRODUCT.slug}`, 0.9),
     ...LAUNCH_PRODUCTS.map((product) => page(`/producto/${product.slug}`, 0.8)),
     ...FAMILIES.filter((family) => !family.live).map((family) => page(`/productos/${family.slug}`, 0.7)),
-    page("/ayuda", 0.6, "monthly"),
+    page("/ayuda", 0.7, "monthly"),
+    ...HELP_CATEGORIES.map((category) => page(`/ayuda/${category.slug}`, 0.5, "monthly")),
+    ...HELP_ARTICLES.map((article) => page(articleHref(article), 0.5, "monthly")),
     page("/envio", 0.6, "monthly"),
     page("/terminos", 0.2, "yearly"),
     page("/privacidad", 0.2, "yearly"),

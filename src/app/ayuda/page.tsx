@@ -1,76 +1,147 @@
 import type { Metadata } from "next";
-import { pageMetadata } from "@/lib/site";
 import Link from "next/link";
-import { LegalPage } from "@/components/legal-page";
-import { productHref } from "@/lib/catalog";
-import { whatsappHref } from "@/lib/whatsapp";
+import { HelpSearch } from "@/components/help/help-search";
+import { CATEGORY_TINT, HelpContact, HelpIcon } from "@/components/help/help-ui";
 import { JsonLd } from "@/components/json-ld";
 import { FAQS } from "@/lib/faq";
+import { HELP_ARTICLES, HELP_CATEGORIES, articleHref, articlesIn, helpCategory, searchHelp } from "@/lib/help-center";
+import { pageMetadata } from "@/lib/site";
 import { faqGraph } from "@/lib/structured-data";
 
 export const metadata: Metadata = pageMetadata({
-  title: "Ayuda y preguntas frecuentes",
-  description: "Cómo pedir en ASAP, cómo enviar tu diseño, plazos de entrega, IVA y pedido mínimo. Respuestas rápidas sobre impresión personalizada en Quito.",
+  title: "Centro de ayuda",
+  description:
+    "Respuestas sobre pedidos, pagos, formatos de archivo (PDF, EPS, AI), sangrado, plazos de entrega, envío en Quito, facturas y proformas.",
   path: "/ayuda",
 });
 
-export default function HelpPage() {
+type HelpHomeProps = { searchParams: Promise<Record<string, string | string[] | undefined>> };
+
+/*
+ * Centro de ayuda. Arriba el buscador (con resultados mientras escribes),
+ * después los temas más consultados, las categorías y las preguntas
+ * frecuentes. Cada artículo tiene su página y entra al sitemap.
+ */
+export default async function HelpHome({ searchParams }: HelpHomeProps) {
+  const { q } = await searchParams;
+  const query = (Array.isArray(q) ? q[0] : q ?? "").trim();
+  const results = query ? searchHelp(query, 20) : [];
+  const popular = HELP_ARTICLES.filter((article) => article.popular);
+
   return (
-    <LegalPage
-      title="Ayuda"
-      updated="16 de octubre de 2026"
-      intro="ASAP es una tienda de productos personalizados en Quito. Armas tu producto en la web, ves el precio con IVA y envío, y cierras el pedido por WhatsApp."
-    >
-      <section>
-        <h2>Cómo se pide</h2>
-        <ul>
-          <li>
-            Entra a <Link href={productHref()}>Tarjetas de presentación</Link> y elige tamaño, papel, acabados, cantidad y entrega.
-          </li>
-          <li>Envía tu diseño en la sección «Tu diseño» y agrega el producto al carrito.</li>
-          <li>Pon tus datos de entrega y factura. Al continuar se abre WhatsApp con el pedido ya escrito.</li>
-          <li>Te respondemos con los datos para pagar y empezamos a imprimir.</li>
-        </ul>
-      </section>
-      <section>
-        <h2>Cómo enviar tu diseño</h2>
-        <ul>
-          <li>Diseñar en Canva: abre un lienzo del tamaño exacto de tu producto, con 3 mm de sangrado.</li>
-          <li>Subir archivo: PDF, EPS o AI (Illustrator) de hasta 50 MB. No recibimos JPG, PNG ni Corel; si tu diseño está en otro formato, expórtalo a PDF.</li>
-          <li>Enlace de Canva: pega el enlace de un diseño que ya tengas.</li>
-          <li>Por WhatsApp: lo adjuntas en el chat al finalizar el pedido.</li>
-        </ul>
-      </section>
-      <section>
-        <h2>Diseñar en Canva, paso a paso</h2>
-        <ul>
-          <li>En «Tu diseño», elige «Diseñar en Canva» y toca «Abrir Canva».</li>
-          <li>La primera vez, Canva te pide permiso para que ASAP cree diseños en tu cuenta. Inicia sesión y acepta.</li>
-          <li>Se abre el editor de Canva con un lienzo del tamaño de tu producto. Si tu tarjeta es a dos lados, agrega una segunda página para el reverso.</li>
-          <li>Cuando termines, toca «Volver» arriba en el editor. ASAP descarga tu diseño en PDF y lo muestra en la vista previa del producto.</li>
-          <li>Tu diseño también queda guardado en tu cuenta de Canva, por si quieres cambiarlo después.</li>
-        </ul>
-      </section>
-      <section>
-        <h2>Preguntas frecuentes</h2>
-        <JsonLd data={faqGraph(FAQS)} />
-        {FAQS.map((faq) => (
-          <div key={faq.question}>
-            <h3>{faq.question}</h3>
-            <p>{faq.answer}</p>
+    <div>
+      <JsonLd data={faqGraph(FAQS)} />
+      <section className="cutting-mat border-b border-line" aria-labelledby="ayuda-titulo">
+        <div className="mx-auto w-full max-w-3xl px-5 pt-14 pb-12 text-center md:px-8 md:pt-20 md:pb-16">
+          <p className="text-sm font-semibold text-brand-deep">Centro de ayuda</p>
+          <h1 id="ayuda-titulo" className="mt-2 text-4xl font-semibold tracking-[-0.02em] text-balance md:text-5xl">
+            ¿En qué te ayudamos?
+          </h1>
+          <div className="mt-8">
+            <HelpSearch initial={query} />
           </div>
-        ))}
+          <div className="mt-5 flex flex-wrap justify-center gap-2" aria-label="Lo más buscado">
+            {popular.map((article) => (
+              <Link
+                key={article.slug}
+                href={articleHref(article)}
+                className="inline-flex min-h-9 items-center rounded-full border border-line bg-sheet px-3.5 text-sm font-medium hover:border-ink/30"
+              >
+                {article.title}
+              </Link>
+            ))}
+          </div>
+        </div>
       </section>
-      <section>
-        <h2>¿Necesitas ayuda?</h2>
-        <p>
-          Escríbenos al{" "}
-          <a href={whatsappHref("Hola ASAP, necesito ayuda con mi pedido.")} target="_blank" rel="noopener noreferrer">
-            WhatsApp 096 295 6566
-          </a>
-          . Atendemos pedidos de Quito y los valles.
-        </p>
-      </section>
-    </LegalPage>
+
+      <div className="mx-auto w-full max-w-6xl px-5 py-12 md:px-8 md:py-16">
+        {query ? (
+          <section id="resultados" aria-labelledby="resultados-titulo" className="mb-14 scroll-mt-28">
+            <h2 id="resultados-titulo" className="text-2xl font-semibold tracking-tight">
+              {results.length > 0
+                ? `${results.length} ${results.length === 1 ? "resultado" : "resultados"} para «${query}»`
+                : `No encontramos nada para «${query}»`}
+            </h2>
+            {results.length > 0 ? (
+              <ul className="mt-5 divide-y divide-line overflow-hidden rounded-[22px] border border-line bg-sheet">
+                {results.map((article) => (
+                  <li key={article.slug}>
+                    <Link href={articleHref(article)} className="block px-5 py-4 hover:bg-paper-deep">
+                      <span className="text-sm text-ink-soft">{helpCategory(article.category)?.title}</span>
+                      <span className="block text-lg font-semibold">{article.title}</span>
+                      <span className="block text-ink-soft">{article.summary}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-3 text-ink-soft">Prueba con otra palabra, mira las categorías o escríbenos por WhatsApp.</p>
+            )}
+          </section>
+        ) : null}
+
+        <section aria-labelledby="categorias-titulo">
+          <h2 id="categorias-titulo" className="text-2xl font-semibold tracking-tight md:text-3xl">
+            Temas
+          </h2>
+          <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {HELP_CATEGORIES.map((category) => {
+              const articles = articlesIn(category.slug);
+              return (
+                <li key={category.slug} className="flex flex-col rounded-[22px] border border-line bg-sheet p-5">
+                  <Link href={`/ayuda/${category.slug}`} className="group flex items-start gap-4">
+                    <span className={`grid size-12 shrink-0 place-items-center rounded-2xl ${CATEGORY_TINT[category.icon]}`}>
+                      <HelpIcon icon={category.icon} />
+                    </span>
+                    <span>
+                      <span className="block text-lg font-semibold tracking-tight group-hover:underline group-hover:underline-offset-4">{category.title}</span>
+                      <span className="block text-sm leading-6 text-ink-soft">{category.description}</span>
+                    </span>
+                  </Link>
+                  <ul className="mt-4 space-y-1.5 border-t border-line pt-4 text-[0.95rem]">
+                    {articles.slice(0, 3).map((article) => (
+                      <li key={article.slug}>
+                        <Link href={articleHref(article)} className="text-ink hover:text-brand-deep hover:underline hover:underline-offset-4">
+                          {article.title}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                  <Link href={`/ayuda/${category.slug}`} className="mt-auto pt-4 text-sm font-semibold text-brand-deep underline-offset-4 hover:underline">
+                    Ver los {articles.length} artículos
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+
+        <section className="mt-16 grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_22rem]" aria-labelledby="preguntas-titulo">
+          <div>
+            <h2 id="preguntas-titulo" className="text-2xl font-semibold tracking-tight md:text-3xl">
+              Preguntas frecuentes
+            </h2>
+            <div className="mt-6 divide-y divide-line overflow-hidden rounded-[22px] border border-line bg-sheet">
+              {FAQS.map((faq) => (
+                <details key={faq.question} className="group px-5">
+                  <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 py-4 font-semibold [&::-webkit-details-marker]:hidden">
+                    {faq.question}
+                    <span className="grid size-7 shrink-0 place-items-center rounded-full bg-paper-deep transition-transform duration-200 group-open:rotate-45" aria-hidden="true">
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <path d="M6 1.5v9M1.5 6h9" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                      </svg>
+                    </span>
+                  </summary>
+                  <p className="pb-5 leading-7 text-ink-soft">{faq.answer}</p>
+                </details>
+              ))}
+            </div>
+          </div>
+          <div className="lg:pt-14">
+            <HelpContact compact />
+          </div>
+        </section>
+      </div>
+    </div>
   );
 }

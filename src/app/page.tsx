@@ -7,11 +7,11 @@ import { LaunchProductTile } from "@/components/launch-product-tile";
 import { ProductPhoto } from "@/components/product-photo";
 import { ProductRail, RailItem } from "@/components/product-rail";
 import { WhatsappLogo } from "@/components/whatsapp-logo";
-import { defaultConfiguration, productHref, type Configuration } from "@/lib/catalog";
+import { PRODUCT, QUANTITIES, defaultConfiguration, productHref, type Configuration } from "@/lib/catalog";
+import { FAQS } from "@/lib/faq";
 import { FAMILIES } from "@/lib/families";
-import { LAUNCH_PRODUCTS } from "@/lib/launch-products";
-import { deliveryWindow, formatLongDate, formatShortDate } from "@/lib/delivery";
-import { FIRST_KILO_CENTS } from "@/lib/ecuador";
+import { LAUNCH_PRODUCTS, launchProductHref } from "@/lib/launch-products";
+import { formatShortDate } from "@/lib/delivery";
 import { formatUnitUsd, formatUsd } from "@/lib/money";
 import { quote } from "@/lib/pricing";
 import { QUOTE_VALID_DAYS, quoteValidUntil } from "@/lib/quote";
@@ -31,9 +31,9 @@ export const metadata: Metadata = {
 /* El inicio es para alguien que nunca imprimió nada: frases cortas, un paso a la vez. */
 
 const STEPS = [
-  { title: "Elige qué imprimir", text: "Tarjetas, tazas, camisetas, etiquetas y más." },
-  { title: "Arma tu pedido", text: "Tamaño, material y cantidad. Las tarjetas muestran el total con IVA al instante." },
-  { title: "Sube tu diseño", text: "Desde Canva, un archivo o por el chat. Hay plantilla lista." },
+  { title: "Elige qué imprimir", text: "Tazas, camisetas, etiquetas, cuadernos, tarjetas y más." },
+  { title: "Arma tu pedido", text: "Opciones, cantidad y fecha de entrega. Ves el resumen antes de pedir." },
+  { title: "Sube tu diseño", text: "En PDF, EPS o AI, o desde Canva. La web revisa tu archivo." },
   { title: "Paga y listo", text: "Por WhatsApp, con transferencia o Deuna. Lo llevamos a tu puerta." },
 ] as const;
 
@@ -54,33 +54,37 @@ const BAR_SEGMENTS = 4;
 /** Cuándo empieza a aparecer la portada, en ms: la barra va por el último tramo. */
 const AFTER_BAR = 420;
 
-const BESTSELLERS: Array<{ title: string; detail: string; config: Partial<Configuration> }> = [
-  { title: "Tarjeta clásica", detail: "8,5 × 5,5 cm · a un lado", config: { sizeId: "85x55", sides: 1 } },
-  { title: "Clásica a doble cara", detail: "8,5 × 5,5 cm · frente y reverso", config: { sizeId: "85x55", sides: 2 } },
-  { title: "Tarjeta cuadrada", detail: "5,5 × 5,5 cm · a un lado", config: { sizeId: "55x55", sides: 1 } },
-];
-
-const FAQ = [
-  {
-    q: "No tengo diseño, ¿qué hago?",
-    a: "Puedes diseñarla en Canva desde la misma página, descargar nuestra plantilla o escribirnos por WhatsApp y te ayudamos.",
-  },
-  {
-    q: "¿El precio que veo es el final?",
-    a: `Sí. Incluye IVA y el envío en Quito y los valles (desde ${formatUsd(FIRST_KILO_CENTS)}). No hay costos escondidos.`,
-  },
-  { q: "¿Cómo pago?", a: "Al finalizar se abre WhatsApp con tu pedido escrito. Ahí te pasamos la cuenta para transferir o el código de Deuna." },
-  { q: "¿Hacen factura?", a: "Sí. Pones tu RUC o cédula al hacer el pedido y la factura sale a tu nombre." },
-  { q: "¿Hacen otros productos?", a: "Sí: esferos, tazas, toma todos, camisetas, gorras, tote bags, etiquetas, papel de regalo, calendarios y cuadernos. Por ahora se cotizan por WhatsApp." },
-] as const;
-
-function priceFor(partial: Partial<Configuration>, quantity: Configuration["quantity"]) {
-  const config = { ...defaultConfiguration(partial.sizeId ?? "85x55"), ...partial, quantity };
-  return { cents: quote(config).printingCents, href: productHref(config) };
+/*
+ * Ideas por ocasión, con productos de todo el catálogo: ayudan a quien no
+ * sabe qué pedir (lo mismo que se le preguntaría a un asistente).
+ */
+function occasionItem(slug: string): { slug: string; name: string; detail: string; href: string } {
+  if (slug === PRODUCT.slug) return { slug, name: PRODUCT.name, detail: `Desde ${QUANTITIES[0]} u. · precio al instante`, href: productHref() };
+  const product = LAUNCH_PRODUCTS.find((candidate) => candidate.slug === slug);
+  if (!product) throw new Error(`Producto desconocido: ${slug}`);
+  return { slug, name: product.name, detail: `Desde ${product.quantities[0]} u. · ${product.leadTime}`, href: launchProductHref(product) };
 }
 
+const OCCASIONS = [
+  {
+    title: "Tu emprendimiento",
+    text: "Que cada pedido salga con tu marca.",
+    products: ["etiquetas", "papel-regalo", "tarjetas-de-regalo", PRODUCT.slug].map(occasionItem),
+  },
+  {
+    title: "Eventos y ferias",
+    text: "Para tu equipo, tu stand o para regalar.",
+    products: ["camisetas-hoodies", "gorras", "tote-bags", "toma-todos"].map(occasionItem),
+  },
+  {
+    title: "Empresa y regalos",
+    text: "Detalles corporativos que se usan todo el año.",
+    products: ["tazas-mugs", "esferos", "cuadernos", "calendarios"].map(occasionItem),
+  },
+];
+
+
 export default function HomePage() {
-  const arrival = formatLongDate(deliveryWindow(new Date().toISOString(), "express").earliest);
   const help = whatsappHref(customQuoteMessage("algo y no sé por dónde empezar"));
   const familyLabels = Object.fromEntries(FAMILIES.map((family) => [family.slug, family.label]));
 
@@ -110,7 +114,7 @@ export default function HomePage() {
               Imprime lo de tu marca, sin complicarte.
             </h1>
             <p className="reveal-up mt-5 max-w-md text-lg leading-7 text-ink-soft" style={{ animationDelay: `${AFTER_BAR + 180}ms` }}>
-              Tarjetas con precio al instante y en tu puerta desde el {arrival}. Tazas, camisetas, etiquetas y más: los armas aquí y nos los pides por WhatsApp.
+              Tazas, camisetas, gorras, etiquetas, cuadernos, tarjetas y más con tu logo. Los armas aquí en pocos pasos y te los llevamos a la puerta en Quito y los valles.
             </p>
             <div className="reveal-up mt-8 flex flex-wrap items-center gap-3" style={{ animationDelay: `${AFTER_BAR + 270}ms` }}>
               <Link
@@ -133,11 +137,11 @@ export default function HomePage() {
 
           {/* Collage de productos, cada uno con su tinta: deja claro que no son solo tarjetas. */}
           <div className="grid h-[340px] grid-cols-6 grid-rows-5 gap-3 sm:h-[420px]" aria-hidden="true">
-            <CollageTile className="col-span-4 row-span-3 bg-tint-lilac" delay={120}>
-              <ProductPhoto slug="tarjetas-de-presentacion" alt="" sizes="(min-width: 1024px) 380px, 66vw" preload />
+            <CollageTile className="col-span-4 row-span-3 bg-tint-peach" delay={120}>
+              <ProductPhoto slug="tazas-mugs" alt="" sizes="(min-width: 1024px) 380px, 66vw" preload />
             </CollageTile>
-            <CollageTile className="col-span-2 row-span-3 bg-tint-peach" delay={200}>
-              <ProductPhoto slug="tazas-mugs" alt="" sizes="(min-width: 1024px) 190px, 33vw" />
+            <CollageTile className="col-span-2 row-span-3 bg-tint-lilac" delay={200}>
+              <ProductPhoto slug="tarjetas-de-presentacion" alt="" sizes="(min-width: 1024px) 190px, 33vw" />
             </CollageTile>
             <CollageTile className="col-span-2 row-span-2 bg-tint-green" delay={280}>
               <ProductPhoto slug="gorras" alt="" sizes="(min-width: 1024px) 190px, 33vw" />
@@ -155,7 +159,7 @@ export default function HomePage() {
       {/* ---------- Lo que siempre pasa ---------- */}
       <section className="border-b border-line bg-sheet" aria-label="Ventajas">
         <ul className="mx-auto grid w-full max-w-6xl grid-cols-2 gap-x-6 gap-y-5 px-5 py-6 md:grid-cols-4 md:px-8">
-          <Perk tint="bg-tint-lilac text-brand-deep" icon={<TagIcon />} title="Precio final al instante" text="Con IVA y envío incluidos" />
+          <Perk tint="bg-tint-lilac text-brand-deep" icon={<TagIcon />} title="Desde 5 unidades" text="Pedidos pequeños o grandes" />
           <Perk tint="bg-tint-peach text-[#c93d17]" icon={<TruckIcon />} title="Entrega a domicilio" text="Quito y los valles" />
           <Perk tint="bg-tint-green" icon={<WhatsappLogo size={22} brand />} title="Pagas por WhatsApp" text="Transferencia o Deuna" />
           <Perk tint="bg-tint-yellow text-[#9a6a00]" icon={<BrushIcon />} title="Tu diseño como quieras" text="Canva, archivo o chat" />
@@ -174,14 +178,20 @@ export default function HomePage() {
         </div>
         <div className="mt-8">
           <ProductRail label="Productos">
-            <RailItem>
-              <CardsTile />
-            </RailItem>
-            {LAUNCH_PRODUCTS.map((product) => (
-              <RailItem key={product.id}>
-                <LaunchProductTile product={product} familyLabel={familyLabels[product.family]} />
-              </RailItem>
-            ))}
+            {/* En el orden de las categorías: las tarjetas van con las demás, no primero. */}
+            {FAMILIES.flatMap((family) =>
+              family.live
+                ? [
+                    <RailItem key="tarjetas">
+                      <CardsTile />
+                    </RailItem>,
+                  ]
+                : LAUNCH_PRODUCTS.filter((product) => product.family === family.slug).map((product) => (
+                    <RailItem key={product.id}>
+                      <LaunchProductTile product={product} familyLabel={familyLabels[product.family]} />
+                    </RailItem>
+                  )),
+            )}
           </ProductRail>
         </div>
       </section>
@@ -193,7 +203,7 @@ export default function HomePage() {
             <h2 id="que-imprimir-titulo" className="text-3xl font-semibold tracking-tight md:text-4xl">
               Por categoría
             </h2>
-            <p className="mt-2 max-w-lg leading-7 text-ink-soft">Las tarjetas se piden y pagan en línea. Lo demás lo armas aquí y nos lo envías por WhatsApp.</p>
+            <p className="mt-2 max-w-lg leading-7 text-ink-soft">Promocionales, textil, empaque, papelería y tarjetas, todo con tu marca.</p>
           </div>
           <Link href="/productos" className="inline-flex min-h-11 items-center text-sm font-semibold text-brand underline-offset-4 hover:underline">
             Ver todo
@@ -204,42 +214,35 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ---------- Más pedidos ---------- */}
-      <section className="bg-paper-deep" aria-labelledby="mas-pedidos">
+      {/* ---------- Para qué ---------- */}
+      <section className="bg-paper-deep" aria-labelledby="para-que">
         <div className="mx-auto w-full max-w-6xl px-5 py-16 md:px-8 md:py-20">
-          <h2 id="mas-pedidos" className="text-3xl font-semibold tracking-tight md:text-4xl">
-            Lo más pedido
+          <h2 id="para-que" className="text-3xl font-semibold tracking-tight md:text-4xl">
+            ¿Para qué lo necesitas?
           </h2>
-          <p className="mt-2 max-w-lg leading-7 text-ink-soft">Precios con IVA, en couche 300 g mate o brillante. Los acabados se suman al armarlas.</p>
+          <p className="mt-2 max-w-lg leading-7 text-ink-soft">Ideas según la ocasión. Si no ves lo tuyo, cuéntanos y te recomendamos.</p>
           <ul className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
-            {BESTSELLERS.map((item) => {
-              const small = priceFor(item.config, 100);
-              const big = priceFor(item.config, 500);
-              return (
-                <li key={item.title}>
-                  <Link href={small.href} className="family-card group flex h-full flex-col overflow-hidden rounded-[22px] border border-line bg-sheet">
-                    <CardStage config={{ ...defaultConfiguration(item.config.sizeId ?? "85x55"), ...item.config }} />
-                    <span className="flex flex-1 flex-col p-5">
-                      <span className="text-lg font-semibold tracking-tight">{item.title}</span>
-                      <span className="text-sm text-ink-soft">{item.detail}</span>
-                      <span className="mt-4 grid grid-cols-2 gap-2 text-sm">
-                        <span className="rounded-xl bg-paper-deep px-3 py-2">
-                          <span className="block text-ink-soft">100 u.</span>
-                          <span className="text-lg font-semibold tabular-nums">{formatUsd(small.cents)}</span>
+            {OCCASIONS.map((occasion) => (
+              <li key={occasion.title} className="flex flex-col rounded-[22px] border border-line bg-sheet p-5">
+                <h3 className="text-lg font-semibold tracking-tight">{occasion.title}</h3>
+                <p className="mt-1 text-sm leading-6 text-ink-soft">{occasion.text}</p>
+                <ul className="mt-4 space-y-2">
+                  {occasion.products.map((item) => (
+                    <li key={item.slug}>
+                      <Link href={item.href} className="group flex items-center gap-3 rounded-2xl p-1.5 hover:bg-paper-deep">
+                        <span className="relative size-14 shrink-0 overflow-hidden rounded-xl bg-paper-deep">
+                          <ProductPhoto slug={item.slug} alt="" sizes="56px" />
                         </span>
-                        <span className="rounded-xl bg-paper-deep px-3 py-2">
-                          <span className="block text-ink-soft">500 u.</span>
-                          <span className="text-lg font-semibold tabular-nums">{formatUsd(big.cents)}</span>
+                        <span className="min-w-0">
+                          <span className="block font-semibold group-hover:underline group-hover:underline-offset-4">{item.name}</span>
+                          <span className="block text-sm text-ink-soft">{item.detail}</span>
                         </span>
-                      </span>
-                      <span className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full bg-press px-5 text-sm font-semibold text-white transition-colors group-hover:bg-press-deep">
-                        Armar ahora
-                      </span>
-                    </span>
-                  </Link>
-                </li>
-              );
-            })}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </li>
+            ))}
           </ul>
         </div>
       </section>
@@ -290,20 +293,23 @@ export default function HomePage() {
             Preguntas frecuentes
           </h2>
           <div className="mt-8 divide-y divide-line overflow-hidden rounded-[22px] border border-line bg-sheet">
-            {FAQ.map((item) => (
-              <details key={item.q} className="group px-5">
+            {FAQS.slice(0, 6).map((faq) => (
+              <details key={faq.question} className="group px-5">
                 <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 py-4 font-semibold [&::-webkit-details-marker]:hidden">
-                  {item.q}
+                  {faq.question}
                   <span className="grid size-7 shrink-0 place-items-center rounded-full bg-paper-deep transition-transform duration-200 group-open:rotate-45" aria-hidden="true">
                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
                       <path d="M6 1.5v9M1.5 6h9" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
                     </svg>
                   </span>
                 </summary>
-                <p className="pb-5 leading-7 text-ink-soft">{item.a}</p>
+                <p className="pb-5 leading-7 text-ink-soft">{faq.answer}</p>
               </details>
             ))}
           </div>
+          <Link href="/ayuda" className="mt-6 inline-flex min-h-11 items-center font-semibold text-brand-deep underline underline-offset-4">
+            Ver todo en el centro de ayuda →
+          </Link>
         </div>
       </section>
 
@@ -326,52 +332,6 @@ export default function HomePage() {
         </div>
       </section>
     </>
-  );
-}
-
-/*
- * Solo la forma de la tarjeta, a escala (8,5 × 5,5 o 5,5 × 5,5 cm), con las
- * marcas de corte de imprenta y su medida. Sin textos de relleno: el diseño
- * lo pone cada cliente.
- */
-function CardStage({ config }: { config: Configuration }) {
-  const square = config.sizeId === "55x55";
-  const faces = config.sides === 2 ? ["Frente", "Reverso"] : [null];
-  return (
-    <span
-      className="flex aspect-[16/10] w-full items-center justify-center gap-6 bg-[radial-gradient(110%_95%_at_35%_12%,#ffffff,var(--tint-lilac)_62%)] px-6"
-      aria-hidden="true"
-    >
-      {faces.map((face, index) => (
-        <span key={index} className="flex flex-col items-center gap-2">
-          <CardShape square={square} back={face === "Reverso"} />
-          <span className="text-xs font-medium text-ink-soft">
-            {face ? `${face} · ` : ""}
-            {square ? "5,5 × 5,5 cm" : "8,5 × 5,5 cm"}
-          </span>
-        </span>
-      ))}
-    </span>
-  );
-}
-
-/* Rectángulo a escala con las cuatro marcas de corte en las esquinas. El reverso va en azul de marca. */
-function CardShape({ square, back }: { square: boolean; back: boolean }) {
-  const width = square ? 74 : 114;
-  return (
-    <span className="relative block p-2.5">
-      {(["left-0 top-0 border-l border-t", "right-0 top-0 border-r border-t", "left-0 bottom-0 border-l border-b", "right-0 bottom-0 border-r border-b"] as const).map(
-        (corner) => (
-          <span key={corner} className={`absolute size-2.5 border-ink/35 ${corner}`} />
-        ),
-      )}
-      <span
-        className={`block rounded-[3px] shadow-[0_14px_22px_-14px_rgba(20,20,40,0.45),0_1px_0_rgba(0,0,0,0.06)] ${
-          back ? "bg-[#4660ff]" : "bg-white ring-1 ring-black/5"
-        }`}
-        style={{ width, height: 74 }}
-      />
-    </span>
   );
 }
 

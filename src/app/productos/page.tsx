@@ -3,7 +3,6 @@ import { pageMetadata } from "@/lib/site";
 import { CardsTile } from "@/components/cards-tile";
 import { FamilyGrid } from "@/components/family-grid";
 import { LaunchProductTile } from "@/components/launch-product-tile";
-import { PRODUCT } from "@/lib/catalog";
 import { searchLaunchProducts } from "@/lib/launch-products";
 
 export const metadata: Metadata = pageMetadata({
@@ -29,8 +28,8 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       <h1 className="text-3xl font-semibold tracking-tight">Productos</h1>
       <p className="mt-2 max-w-xl text-sm leading-6 text-ink-soft">
         {q && !matches
-          ? `No hay resultados para “${q}”. En línea se piden ${PRODUCT.name.toLowerCase()}; lo demás se cotiza por WhatsApp.`
-          : "Las tarjetas se arman y pagan aquí mismo. Promocionales, textil, empaque y papelería los armas aquí y nos los pides por WhatsApp."}
+          ? `No hay resultados para “${q}”. Mira las categorías o escríbenos por WhatsApp y te ayudamos a encontrarlo.`
+          : "Promocionales, textil, tarjetas, empaque y papelería con tu marca. Arma el que quieras: las tarjetas se pagan aquí mismo y lo demás te lo cotizamos por WhatsApp."}
       </p>
       <div className="mt-8">
         {q && matches ? (
