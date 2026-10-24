@@ -29,9 +29,9 @@ function pieces(seed: number, count: number, colors: string[], shapes: string[])
   }));
 }
 
-const QUITO = pieces(7, 26, ["#d7262f", "#1f5fbf", "#e8434b", "#2f74d6"], ["confeti", "confeti", "serpentina"]);
-const NAVIDAD = pieces(19, 24, ["#d4a017", "#1e7a4f", "#b3122e", "#e9c46a"], ["destello", "estrella", "destello"]);
-const NAVIDAD_STARS = pieces(41, 9, ["#d4a017", "#e9c46a"], ["titila"]);
+const QUITO = pieces(7, 12, ["#d7262f", "#1f5fbf", "#e8434b", "#2f74d6"], ["confeti", "confeti", "serpentina"]);
+const NAVIDAD = pieces(19, 10, ["#d4a017", "#1e7a4f", "#b3122e", "#e9c46a"], ["destello", "estrella", "destello"]);
+const NAVIDAD_STARS = pieces(41, 5, ["#d4a017", "#e9c46a"], ["titila"]);
 
 function Layer({ id, items }: { id: string; items: Piece[] }) {
   return (

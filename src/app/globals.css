@@ -1035,33 +1035,29 @@ aside.season-banner[data-season-only] {
 
 /* Fiestas de Quito: rojo y azul. */
 :root[data-season="fiestas-quito"] {
-  --season-band: linear-gradient(100deg, #9e0f18, #c81e28 35%, #1d4fa8 70%, #163d86);
+  --season-band: #b3121b;
+  --season-panel: #1d4fa8;
   --season-a: #d7262f;
   --season-b: #1f5fbf;
-  --season-wash: radial-gradient(120% 90% at 85% 0%, rgba(31, 95, 191, 0.1), transparent 60%),
-    radial-gradient(90% 80% at 0% 100%, rgba(215, 38, 47, 0.08), transparent 60%);
+  --season-bg: #f3f6fd;
 }
 
-:root[data-season="fiestas-quito"] .color-bar {
-  --bar-from: #d7262f;
-  --bar-mid: #8a2bb0;
-  --bar-to: #1f5fbf;
+:root[data-season="fiestas-quito"] .color-bar > span {
+  background: linear-gradient(90deg, #d7262f 0 50%, #1f5fbf 50% 100%);
 }
 
 /* Navidad: verde pino, rojo arándano y dorado. */
 :root[data-season="navidad"] {
-  --season-band: linear-gradient(100deg, #0b3b26, #14593a 45%, #7a0f22 100%);
+  --season-band: #8e1027;
+  --season-panel: #0f4d32;
   --season-a: #b3122e;
   --season-b: #1e7a4f;
   --season-c: #d4a017;
-  --season-wash: radial-gradient(110% 90% at 88% 0%, rgba(212, 160, 23, 0.14), transparent 60%),
-    radial-gradient(100% 80% at 0% 100%, rgba(30, 122, 79, 0.12), transparent 62%);
+  --season-bg: #faf6ee;
 }
 
-:root[data-season="navidad"] .color-bar {
-  --bar-from: #1e7a4f;
-  --bar-mid: #d4a017;
-  --bar-to: #b3122e;
+:root[data-season="navidad"] .color-bar > span {
+  background: linear-gradient(90deg, #1e7a4f 0 42%, #d4a017 42% 58%, #b3122e 58% 100%);
 }
 
 :root[data-season] .season-dot {
@@ -1080,21 +1076,18 @@ aside.season-banner[data-season-only] {
   }
 }
 
-/* Un tinte suave de la temporada sobre la cuadrícula de la portada. */
+/* En temporada la portada va lisa, con un tono muy suave: sin cuadrícula ni tinte. */
 :root[data-season] .cutting-mat {
-  background-image:
-    var(--season-wash),
-    linear-gradient(rgba(20, 20, 20, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(20, 20, 20, 0.06) 1px, transparent 1px);
-  background-size:
-    100% 100%,
-    24px 24px,
-    24px 24px;
+  background-color: var(--season-bg);
+  background-image: none;
 }
 
-:root[data-season][data-theme="dark"] .cutting-mat,
+:root[data-season][data-theme="dark"] .cutting-mat {
+  background-color: var(--paper);
+}
+
 :root[data-season][data-contrast="high"] .cutting-mat {
-  background-image: none;
+  background-color: var(--sheet);
 }
 
 /* Franja con un brillo que la recorre cada tanto. */
@@ -1135,7 +1128,7 @@ aside.season-banner[data-season-only] {
 
 /* Campaña de temporada en la portada: el degradado de la temporada, texto blanco. */
 .season-campaign {
-  background: var(--season-band, var(--ink));
+  background: var(--season-panel, var(--ink));
   color: #ffffff;
 }
 
@@ -1160,7 +1153,7 @@ aside.season-banner[data-season-only] {
   background: var(--c);
   opacity: 0;
   will-change: transform, opacity;
-  animation: piece-fall var(--d) linear var(--delay) infinite;
+  animation: piece-fall calc(var(--d) * 1.4) linear var(--delay) infinite;
 }
 
 @keyframes piece-fall {
@@ -1169,13 +1162,13 @@ aside.season-banner[data-season-only] {
     opacity: 0;
   }
   8% {
-    opacity: 0.75;
+    opacity: 0.55;
   }
   50% {
     transform: translate3d(calc(var(--drift) * 0.6), 340px, 0) rotate(240deg);
   }
   88% {
-    opacity: 0.75;
+    opacity: 0.55;
   }
   100% {
     transform: translate3d(var(--drift), 680px, 0) rotate(480deg);
