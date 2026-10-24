@@ -90,7 +90,7 @@ export default async function HelpHome({ searchParams }: HelpHomeProps) {
               return (
                 <li key={category.slug} className="flex flex-col rounded-[22px] border border-line bg-sheet p-5">
                   <Link href={`/ayuda/${category.slug}`} className="group -m-1.5 flex items-start gap-4 rounded-2xl p-1.5">
-                    <span className={`grid size-12 shrink-0 place-items-center rounded-2xl ${CATEGORY_TINT[category.icon]}`}>
+                    <span className={`grid size-12 shrink-0 place-items-center rounded-xl ${CATEGORY_TINT[category.icon]}`}>
                       <HelpIcon icon={category.icon} />
                     </span>
                     <span>

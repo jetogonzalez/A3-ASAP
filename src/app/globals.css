@@ -173,6 +173,13 @@
   background: var(--paper-deep) !important;
 }
 
+/* El ícono de la marca: cuadrito azul pálido con el trazo en el azul del logo. */
+.brand-tile {
+  background: var(--brand-soft);
+  color: var(--brand-deep);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--brand) 14%, transparent);
+}
+
 /* Los pasos responden al pasar el mouse: la tarjeta sube apenas y el número crece. */
 .step-card {
   transition:
@@ -1028,32 +1035,23 @@ label:has(:checked) > .method-logo {
   display: revert;
 }
 
-aside.season-banner[data-season-only] {
-  display: none;
-}
-
-:root[data-season="fiestas-quito"] aside.season-banner[data-season-only="fiestas-quito"],
-:root[data-season="navidad"] aside.season-banner[data-season-only="navidad"] {
-  display: block;
-}
-
 /* Fiestas de Quito: rojo y azul. */
 :root[data-season="fiestas-quito"] {
-  --season-band: var(--tint-red);
   --season-panel: var(--tint-blue);
+  --season-kit: #ffd9d9;
   --season-a: #ef6b6b;
   --season-b: #6b95ec;
   --season-bg: #f4f7ff;
 }
 
 :root[data-season="fiestas-quito"] .color-bar > span {
-  background: linear-gradient(90deg, #f28b8b 0 50%, #8fb0f0 50% 100%);
+  background: linear-gradient(90deg, #f4a8a8, #e9b5d6 50%, #a9c1f5);
 }
 
 /* Navidad: verde pino, rojo arándano y dorado. */
 :root[data-season="navidad"] {
-  --season-band: var(--tint-red);
   --season-panel: var(--tint-green);
+  --season-kit: #fde9b3;
   --season-a: #e57b8e;
   --season-b: #6fbf8e;
   --season-c: #f0c75e;
@@ -1061,7 +1059,7 @@ aside.season-banner[data-season-only] {
 }
 
 :root[data-season="navidad"] .color-bar > span {
-  background: linear-gradient(90deg, #8fd1a8 0 42%, #f3d27a 42% 58%, #ef9aa8 58% 100%);
+  background: linear-gradient(90deg, #a5dcb9, #f4dc8f 50%, #f3b0bb);
 }
 
 :root[data-season] .season-dot {
@@ -1094,50 +1092,31 @@ aside.season-banner[data-season-only] {
   background-color: var(--sheet);
 }
 
-/* Franja con un brillo que la recorre cada tanto. */
-.season-banner {
-  position: relative;
-  overflow: hidden;
-  background: var(--season-band, var(--paper-deep));
-  color: var(--ink);
+/* Campaña de temporada: fondo pastel de la temporada, kits en tarjetas blancas. */
+.kit-number {
+  background: var(--season-kit, var(--paper-deep));
+  color: #141414;
 }
 
-.season-banner::after {
-  content: "";
-  position: absolute;
-  inset: 0 auto 0 -40%;
-  width: 40%;
-  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.45), transparent);
-  animation: band-shine 6s ease-in-out 1.2s infinite;
-  pointer-events: none;
+.kit-card {
+  transition:
+    transform 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 260ms ease;
 }
 
-@keyframes band-shine {
-  0% {
-    transform: translateX(0);
-  }
-  35%,
-  100% {
-    transform: translateX(350%);
+@media (hover: hover) {
+  .kit-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 22px 40px -28px rgba(20, 20, 40, 0.4);
   }
 }
 
-.season-banner a {
-  transition: opacity 160ms ease;
-}
-
-.season-banner a:hover {
-  opacity: 0.85;
-}
-
-/* Campaña de temporada en la portada: el degradado de la temporada, texto blanco. */
 .season-campaign {
   background: var(--season-panel, var(--paper-deep));
   color: var(--ink);
 }
 
-:root[data-contrast="high"] .season-campaign,
-:root[data-contrast="high"] .season-banner {
+:root[data-contrast="high"] .season-campaign {
   background: var(--paper-deep);
 }
 
@@ -1237,7 +1216,6 @@ aside.season-banner[data-season-only] {
     animation: none !important;
     opacity: 0.5;
   }
-  .season-banner::after,
   :root[data-season] .season-dot {
     animation: none !important;
   }
@@ -1249,12 +1227,10 @@ aside.season-banner[data-season-only] {
   opacity: 0.5;
 }
 
-:root[data-motion="reduce"] .season-banner::after,
 :root[data-motion="reduce"][data-season] .season-dot {
   animation: none !important;
 }
 
-:root[data-contrast="high"] .season-decor,
-:root[data-contrast="high"] .season-banner::after {
+:root[data-contrast="high"] .season-decor {
   display: none;
 }

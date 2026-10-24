@@ -5,7 +5,6 @@ import { A11yButton } from "@/components/a11y-panel";
 import { CookieBanner } from "@/components/cookie-banner";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { SeasonBanner } from "@/components/season-banner";
 import { JsonLd } from "@/components/json-ld";
 import { isProductionSite, siteUrl } from "@/lib/site";
 import { siteGraph } from "@/lib/structured-data";
@@ -102,7 +101,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <JsonLd data={siteGraph()} />
         <CartProvider>
           <SiteHeader />
-          <SeasonBanner />
           <main id="contenido" className="flex-1">
             {children}
           </main>

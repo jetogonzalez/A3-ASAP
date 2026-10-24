@@ -143,14 +143,14 @@ export function HelpIcon({ icon, className = "" }: { icon: HelpCategory["icon"];
   );
 }
 
-/* El color de cada categoría, con los tonos suaves de la marca. */
+/* Todos los temas con el mismo ícono: cuadrito azul pálido con el trazo del azul del logo. */
 export const CATEGORY_TINT: Record<HelpCategory["icon"], string> = {
-  pedido: "bg-tint-lilac text-brand-deep",
-  diseno: "bg-tint-peach text-[#a53412]",
-  entrega: "bg-tint-green text-[#1f6b33]",
-  producto: "bg-tint-yellow text-[#7a5300]",
-  factura: "bg-tint-cyan text-[#005a7a]",
-  sitio: "bg-tint-magenta text-[#8f0050]",
+  pedido: "brand-tile",
+  diseno: "brand-tile",
+  entrega: "brand-tile",
+  producto: "brand-tile",
+  factura: "brand-tile",
+  sitio: "brand-tile",
 };
 
 export function HelpContact({ compact = false }: { compact?: boolean }) {

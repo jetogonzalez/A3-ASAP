@@ -170,10 +170,10 @@ export default function HomePage() {
       {/* ---------- Lo que siempre pasa ---------- */}
       <section className="border-b border-line bg-sheet" aria-label="Ventajas">
         <ul className="mx-auto grid w-full max-w-6xl grid-cols-2 gap-x-6 gap-y-5 px-5 py-6 md:grid-cols-4 md:px-8">
-          <Perk tint="bg-tint-lilac text-brand-deep" icon={<TagIcon />} title="Desde 5 unidades" text="Pedidos pequeños o grandes" />
-          <Perk tint="bg-tint-peach text-[#c93d17]" icon={<TruckIcon />} title="Entrega a domicilio" text="Quito y los valles" />
-          <Perk tint="bg-tint-green" icon={<WhatsappLogo size={22} brand />} title="Pagas por WhatsApp" text="Transferencia o Deuna" />
-          <Perk tint="bg-tint-yellow text-[#9a6a00]" icon={<BrushIcon />} title="Tu diseño como quieras" text="Canva, archivo o chat" />
+          <Perk icon={<TagIcon />} title="Desde 5 unidades" text="Pedidos pequeños o grandes" />
+          <Perk icon={<TruckIcon />} title="Entrega a domicilio" text="Quito y los valles" />
+          <Perk icon={<WhatsappLogo size={22} />} title="Pagas por WhatsApp" text="Transferencia o Deuna" />
+          <Perk icon={<BrushIcon />} title="Tu diseño como quieras" text="Canva, archivo o chat" />
         </ul>
       </section>
 
@@ -471,10 +471,11 @@ function CollageTile({ className, delay, children }: { className: string; delay:
 }
 
 
-function Perk({ tint, icon, title, text }: { tint: string; icon: React.ReactNode; title: string; text: string }) {
+/* Todas las ventajas con el mismo ícono: cuadrito azul pálido con el trazo en el azul del logo, como el isotipo. */
+function Perk({ icon, title, text }: { icon: React.ReactNode; title: string; text: string }) {
   return (
     <li className="flex items-center gap-3">
-      <span className={`grid size-11 shrink-0 place-items-center rounded-2xl ${tint}`} aria-hidden="true">
+      <span className="brand-tile grid size-11 shrink-0 place-items-center rounded-xl" aria-hidden="true">
         {icon}
       </span>
       <span className="min-w-0">

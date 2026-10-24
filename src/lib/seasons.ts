@@ -3,24 +3,25 @@
  * se ven con el botón «Ver temporada» del pie (se guarda en este navegador);
  * no se activan solas por fecha hasta que el equipo decida cuándo.
  *
- * Una temporada cambia lo decorativo (barra de carga, franja con mensaje,
- * etiqueta de la portada, confeti del fondo). Los botones y textos siguen con
- * los colores de la marca para no perder contraste.
+ * Una temporada cambia la portada: título, etiqueta, fotos, confeti, barra
+ * de carga y una sección de kits para cotizar. Todo en pastel, como el resto
+ * del sitio; los botones siguen siendo los de la marca.
  */
+
+/** Un kit: una combinación lista para cotizar. No repite las tarjetas de producto de la página. */
+export type Kit = { name: string; for: string; items: string[] };
 
 export type SeasonId = "normal" | "fiestas-quito" | "navidad";
 
 export type Season = {
   id: SeasonId;
   name: string;
-  /** Lo que dice la franja bajo el encabezado. */
-  banner?: { text: string; link: { href: string; label: string } };
   /** La etiqueta de arriba del título de la portada. */
   badge: string;
   /** El título grande de la portada. */
   title: string;
-  /** La campaña de la portada: qué ofrecer, por qué ahora y qué productos mostrar. */
-  campaign?: { title: string; text: string; points: string[]; products: string[]; message: string; cta: string };
+  /** La campaña de la portada: kits armados para la temporada (no repite productos de la página). */
+  campaign?: { title: string; text: string; kits: Kit[] };
 };
 
 export const SEASONS: Season[] = [
@@ -31,16 +32,13 @@ export const SEASONS: Season[] = [
     badge: "¡Que viva Quito! Arma lo de tu marca para las fiestas",
     title: "Que viva Quito, y que viva tu marca.",
     campaign: {
-      title: "Las fiestas, con tu marca",
-      text: "Para el equipo, la chiva de la empresa o el evento con tus clientes.",
-      points: ["Camisetas y gorras desde 25 unidades", "Toma todos desde 5 unidades", "Te confirmamos plazo y precio por WhatsApp"],
-      products: ["camisetas-hoodies", "gorras", "toma-todos", "tote-bags"],
-      message: "Hola ASAP, quiero cotizar productos con mi marca para Fiestas de Quito.",
-      cta: "Cotizar para las fiestas",
-    },
-    banner: {
-      text: "Fiestas de Quito: camisetas, gorras y toma todos con tu marca para tu equipo.",
-      link: { href: "/productos/textil", label: "Ver textil" },
+      title: "Kits listos para las fiestas",
+      text: "Elige uno y te lo cotizamos con tu marca. Puedes cambiar lo que quieras.",
+      kits: [
+        { name: "Kit del equipo", for: "Para tu gente en el desfile o la chiva", items: ["Camiseta", "Gorra", "Toma todos"] },
+        { name: "Kit de la feria", for: "Para tu stand o tu evento", items: ["Tote bag", "Etiquetas", "Esferos"] },
+        { name: "Kit del brindis", for: "Para regalar a clientes y aliados", items: ["Taza", "Tarjeta de regalo", "Papel de regalo"] },
+      ],
     },
   },
   {
@@ -49,16 +47,13 @@ export const SEASONS: Season[] = [
     badge: "Regalos con tu marca para esta Navidad",
     title: "Esta Navidad, regala tu marca.",
     campaign: {
-      title: "Regalos de fin de año para tu equipo y tus clientes",
-      text: "Arma un detalle con tu marca: una taza, un cuaderno o un calendario, con etiqueta y tarjeta de regalo.",
-      points: ["Tazas desde 5 unidades", "Empaque con tu marca: etiquetas y tarjetas de regalo", "Pide con tiempo: en diciembre los plazos se llenan"],
-      products: ["tazas-mugs", "cuadernos", "calendarios", "etiquetas"],
-      message: "Hola ASAP, quiero cotizar regalos de Navidad con mi marca.",
-      cta: "Cotizar regalos de Navidad",
-    },
-    banner: {
-      text: "Navidad: tazas, cuadernos y calendarios con tu marca para regalar. Pide con tiempo.",
-      link: { href: "/productos/promocionales", label: "Ver regalos" },
+      title: "Kits de regalo para fin de año",
+      text: "Combinaciones listas para tu equipo y tus clientes. Pide con tiempo: en diciembre los plazos se llenan.",
+      kits: [
+        { name: "Kit para clientes", for: "Un detalle que se queda en el escritorio", items: ["Taza", "Tarjeta de regalo", "Etiqueta"] },
+        { name: "Kit para el equipo", for: "Para empezar el año con tu marca", items: ["Cuaderno", "Calendario", "Esfero"] },
+        { name: "Kit de empaque", for: "Para que cada pedido llegue de fiesta", items: ["Papel de regalo", "Etiquetas", "Tarjeta de regalo"] },
+      ],
     },
   },
 ];

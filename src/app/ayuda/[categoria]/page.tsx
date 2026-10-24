@@ -35,7 +35,7 @@ export default async function HelpCategoryPage({ params }: CategoryProps) {
         <span className="text-ink">{category.title}</span>
       </nav>
       <div className="mt-5 flex items-center gap-4">
-        <span className={`grid size-14 shrink-0 place-items-center rounded-2xl ${CATEGORY_TINT[category.icon]}`}>
+        <span className={`grid size-14 shrink-0 place-items-center rounded-xl ${CATEGORY_TINT[category.icon]}`}>
           <HelpIcon icon={category.icon} />
         </span>
         <div>

@@ -1,71 +1,50 @@
-import Link from "next/link";
-import { SeasonalProductPhoto } from "@/components/product-photo";
 import { WhatsappLogo } from "@/components/whatsapp-logo";
-import { LAUNCH_PRODUCTS, launchProductHref } from "@/lib/launch-products";
 import { SEASONS } from "@/lib/seasons";
 import { whatsappHref } from "@/lib/whatsapp";
 
 /*
- * La campaña de temporada en la portada: qué conviene pedir ahora, con fotos
- * de temporada y un botón de WhatsApp con el mensaje ya escrito. Solo se ve
- * cuando la temporada está activa (data-season-only).
+ * La campaña de temporada en la portada: kits armados (varias piezas juntas)
+ * para cotizar con un toque. No repite las tarjetas de producto que ya están
+ * arriba en las fotos ni abajo en el carrusel: aquí se venden combinaciones.
+ * Solo se ve cuando la temporada está activa (data-season-only).
  */
 export function SeasonCampaign() {
   return (
     <>
       {SEASONS.filter((season) => season.campaign).map((season) => {
         const campaign = season.campaign!;
-        const products = campaign.products.flatMap((slug) => {
-          const product = LAUNCH_PRODUCTS.find((candidate) => candidate.slug === slug);
-          return product ? [product] : [];
-        });
         return (
           <section key={season.id} data-season-only={season.id} className="season-campaign" aria-labelledby={`campana-${season.id}`}>
-            <div className="mx-auto grid w-full max-w-6xl gap-8 px-5 py-14 md:px-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-center">
-              <div>
-                <p className="text-sm font-semibold text-ink-soft">{season.name}</p>
-                <h2 id={`campana-${season.id}`} className="mt-2 text-3xl font-semibold tracking-tight text-balance md:text-4xl">
-                  {campaign.title}
-                </h2>
-                <p className="mt-3 max-w-md leading-7 text-ink-soft">{campaign.text}</p>
-                <ul className="mt-5 space-y-2">
-                  {campaign.points.map((point) => (
-                    <li key={point} className="flex items-center gap-2.5">
-                      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true" className="shrink-0">
-                        <circle cx="9" cy="9" r="8" fill="var(--sheet)" />
-                        <path d="M5.4 9.2 7.9 11.7 12.6 6.6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                      {point}
-                    </li>
-                  ))}
-                </ul>
-                <a
-                  href={whatsappHref(campaign.message)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="press mt-7 inline-flex min-h-12 items-center gap-2 rounded-full bg-press px-6 font-semibold text-white hover:bg-press-deep"
-                >
-                  <WhatsappLogo size={20} />
-                  {campaign.cta}
-                </a>
-              </div>
-              <ul className="grid grid-cols-2 gap-3">
-                {products.map((product) => (
-                  <li key={product.id}>
-                    <Link href={launchProductHref(product)} className="group block overflow-hidden rounded-[20px] bg-sheet text-ink shadow-[0_18px_36px_-26px_rgba(20,20,40,0.35)] ring-1 ring-line">
-                      <span className="block aspect-[4/3] overflow-hidden">
-                        <SeasonalProductPhoto slug={product.slug} alt="" sizes="(min-width: 1024px) 300px, 45vw" className="transition-transform duration-500 group-hover:scale-[1.04]" />
-                      </span>
-                      <span className="flex items-center justify-between gap-2 px-3.5 py-3">
-                        <span>
-                          <span className="block font-semibold">{product.name}</span>
-                          <span className="block text-sm text-ink-soft">Desde {product.quantities[0]} u.</span>
-                        </span>
-                        <span aria-hidden="true" className="transition-transform group-hover:translate-x-0.5">
-                          →
-                        </span>
-                      </span>
-                    </Link>
+            <div className="mx-auto w-full max-w-6xl px-5 py-14 md:px-8">
+              <p className="text-sm font-semibold text-ink-soft">{season.name}</p>
+              <h2 id={`campana-${season.id}`} className="mt-1 text-3xl font-semibold tracking-tight text-balance md:text-4xl">
+                {campaign.title}
+              </h2>
+              <p className="mt-2 max-w-xl leading-7 text-ink-soft">{campaign.text}</p>
+              <ul className="mt-8 grid gap-4 md:grid-cols-3">
+                {campaign.kits.map((kit, index) => (
+                  <li key={kit.name} className="kit-card flex flex-col rounded-[22px] bg-sheet p-5 ring-1 ring-line">
+                    <span className="kit-number grid size-10 place-items-center rounded-full text-sm font-semibold tabular-nums" aria-hidden="true">
+                      {index + 1}
+                    </span>
+                    <h3 className="mt-4 text-lg font-semibold tracking-tight">{kit.name}</h3>
+                    <p className="mt-0.5 text-sm leading-6 text-ink-soft">{kit.for}</p>
+                    <ul className="mt-4 mb-6 flex flex-wrap gap-1.5" aria-label={`Lleva: ${kit.items.join(", ")}`}>
+                      {kit.items.map((item) => (
+                        <li key={item} className="rounded-full bg-paper-deep px-3 py-1 text-sm font-medium">
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                    <a
+                      href={whatsappHref(`Hola ASAP, quiero cotizar el «${kit.name}» (${kit.items.join(", ").toLowerCase()}) con mi marca para ${season.name}.`)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="press mt-auto inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-press px-5 text-sm font-semibold text-white hover:bg-press-deep"
+                    >
+                      <WhatsappLogo size={18} />
+                      Cotizar este kit
+                    </a>
                   </li>
                 ))}
               </ul>
