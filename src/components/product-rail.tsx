@@ -45,6 +45,10 @@ export function ProductRail({ label, children }: { label: string; children: Reac
 
   const thumbWidth = Math.max(progress.visible, 0.08);
   /*
+   * El carrusel recorta lo que se sale (es un overflow con scroll): por eso
+   * lleva aire arriba y abajo, compensado con márgenes negativos, para que la
+   * tarjeta pueda subir al pasar el mouse y su sombra no quede cortada.
+   *
    * Un corte seco en el borde se veía raro: la tarjeta que asoma se desvanece.
    * Solo del lado donde hay más contenido.
    */
@@ -58,11 +62,11 @@ export function ProductRail({ label, children }: { label: string; children: Reac
         ref={track}
         aria-label={label}
         style={{ maskImage: fade, WebkitMaskImage: fade }}
-        className="product-rail -mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-5 px-5 pb-2 sm:gap-4 md:-mx-8 md:scroll-px-8 md:px-8"
+        className="product-rail -mx-5 -mt-3 -mb-6 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-5 px-5 pt-3 pb-8 sm:gap-4 md:-mx-8 md:scroll-px-8 md:px-8"
       >
         {children}
       </ul>
-      <div className="mt-5 flex items-center gap-4">
+      <div className="relative mt-5 flex items-center gap-4">
         <div className="relative h-1 flex-1 overflow-hidden rounded-full bg-line" aria-hidden="true">
           <span
             className="absolute inset-y-0 rounded-full bg-ink transition-[left] duration-150 ease-out"
