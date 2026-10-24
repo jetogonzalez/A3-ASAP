@@ -44,17 +44,17 @@ export function formatLongDate(isoDate: string): string {
 }
 
 /**
- * Tres ritmos de entrega. Los días cuentan desde el pedido hasta la puerta,
- * producción y mensajería incluidas. El recargo va una sola vez por pedido:
- * si dos tarjetas piden ritmos distintos, todo sale al más rápido.
- * Los recargos van con IVA: $8 y $15 más el 15 %.
- * Nombres y colores son los del material de marca (Standard, Priority, Express);
- * el ícono de cada uno está en components/delivery-icon.tsx.
+ * Tres niveles de entrega: Standard, Priority y Express. Desde la reunión del
+ * 23 de octubre el plazo ya no es igual para todo: depende del producto y de
+ * la cantidad (matriz v1.3, hoja Precios, columnas dias_hab_*). Aquí quedan el
+ * nombre y el recargo, que va una sola vez por pedido y con IVA: $8 y $15 más
+ * el 15 %. Nombres y colores son los del material de marca; el ícono de cada
+ * uno está en components/delivery-icon.tsx.
  */
 export const DELIVERY_OPTIONS = [
-  { id: "standard", name: "Standard", cents: 0, earliestDays: 5, latestDays: 8 },
-  { id: "priority", name: "Priority", cents: withIva(800), earliestDays: 3, latestDays: 5 },
-  { id: "express", name: "Express", cents: withIva(1500), earliestDays: 2, latestDays: 3 },
+  { id: "standard", name: "Standard", cents: 0 },
+  { id: "priority", name: "Priority", cents: withIva(800) },
+  { id: "express", name: "Express", cents: withIva(1500) },
 ] as const;
 
 export type DeliverySpeed = (typeof DELIVERY_OPTIONS)[number]["id"];
@@ -63,15 +63,34 @@ export function deliveryOption(id: string) {
   return DELIVERY_OPTIONS.find((option) => option.id === id) ?? DELIVERY_OPTIONS[0];
 }
 
-export function deliveryWindow(orderedAtIso: string, id: DeliverySpeed = "standard") {
-  const option = deliveryOption(id);
-  return {
-    earliest: addBusinessDays(orderedAtIso, option.earliestDays),
-    latest: addBusinessDays(orderedAtIso, option.latestDays),
-  };
+/*
+ * Días hábiles hasta la puerta de las tarjetas, por cantidad y nivel. Cada
+ * fila vale hasta esa cantidad. Express 24 h, Priority 48 h y Standard 72 h,
+ * como se acordó; si una cantidad grande tarda más, se agrega otra fila.
+ * Cuentan desde que se confirma el pago y está el archivo.
+ */
+export const CARD_LEAD_DAYS: ReadonlyArray<{ upTo: number } & Record<DeliverySpeed, number>> = [
+  { upTo: 1000, express: 1, priority: 2, standard: 3 },
+];
+
+export function cardLeadDays(quantity: number, speed: DeliverySpeed = "standard"): number {
+  const row = CARD_LEAD_DAYS.find((candidate) => quantity <= candidate.upTo) ?? CARD_LEAD_DAYS[CARD_LEAD_DAYS.length - 1];
+  return row[speed];
 }
 
-/** El ritmo más rápido entre los que se pidieron: con ese sale todo el pedido. */
+export type DeliveryWindow = { days: number; earliest: string; latest: string };
+
+/** Cuándo llega un pedido de esa cantidad de tarjetas con ese nivel. */
+export function deliveryWindow(orderedAtIso: string, id: DeliverySpeed = "standard", quantity = 100): DeliveryWindow {
+  return deliveryInDays(orderedAtIso, cardLeadDays(quantity, id));
+}
+
+export function deliveryInDays(orderedAtIso: string, days: number): DeliveryWindow {
+  const date = addBusinessDays(orderedAtIso, days);
+  return { days, earliest: date, latest: date };
+}
+
+/** El nivel más rápido entre los que se pidieron: con ese sale todo el pedido y se cobra una vez. */
 export function fastestDelivery(ids: readonly string[]) {
   let fastest: (typeof DELIVERY_OPTIONS)[number] = DELIVERY_OPTIONS[0];
   for (const id of ids) {
@@ -79,4 +98,26 @@ export function fastestDelivery(ids: readonly string[]) {
     if (DELIVERY_OPTIONS.indexOf(option) > DELIVERY_OPTIONS.indexOf(fastest)) fastest = option;
   }
   return fastest;
+}
+
+/**
+ * La fecha de un pedido con varios productos: todo sale al nivel más rápido
+ * que se eligió y llega cuando está listo el que más demora. Así se acordó:
+ * «se toma el tiempo mayor».
+ */
+export function orderLeadDays(quantities: readonly number[], speed: DeliverySpeed): number {
+  return quantities.reduce((longest, quantity) => Math.max(longest, cardLeadDays(quantity, speed)), 0) || cardLeadDays(100, speed);
+}
+
+/** «1 día hábil», «3 días hábiles». */
+export function businessDaysLabel(days: number): string {
+  return `${days} ${days === 1 ? "día hábil" : "días hábiles"}`;
+}
+
+/** Una línea por nivel con el plazo de 100 tarjetas y su recargo, para Ayuda y llms.txt. */
+export function cardDeliverySummary(format: (cents: number) => string): string[] {
+  return DELIVERY_OPTIONS.map(
+    (option) =>
+      `${option.name}: ${businessDaysLabel(cardLeadDays(100, option.id))}${option.cents === 0 ? " (incluido)" : ` (+ ${format(option.cents)})`}`,
+  );
 }

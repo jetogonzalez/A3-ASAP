@@ -22,6 +22,9 @@ describe("orderTotals", () => {
     assert.equal(totals.delivery.id, "express");
     assert.equal(totals.delivery.cents, 1725);
     assert.equal(totals.totalCents, 836 * 3 + 1725 + totals.shipping.cents);
+    /* Viernes 16: Express de tarjetas es 1 día hábil, llega el lunes. */
+    assert.equal(totals.delivery.days, 1);
+    assert.equal(totals.delivery.latest.slice(0, 10), "2026-10-19");
   });
 
   it("separa base e IVA y los dos suman el total", () => {

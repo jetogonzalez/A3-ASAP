@@ -1,6 +1,6 @@
 import { PRODUCT, QUANTITIES, SIZES, defaultConfiguration } from "@/lib/catalog";
 import { COMPANY } from "@/lib/company";
-import { DELIVERY_OPTIONS } from "@/lib/delivery";
+import { DELIVERY_OPTIONS, businessDaysLabel, cardLeadDays } from "@/lib/delivery";
 import { FAMILIES, familyBySlug } from "@/lib/families";
 import { FAQS } from "@/lib/faq";
 import { explain } from "@/lib/glossary";
@@ -95,14 +95,18 @@ Próximamente: ${upcoming}.
 
 ## Entrega
 
-${DELIVERY_OPTIONS.map((option) => `- ${option.name}: ${option.earliestDays} a ${option.latestDays} días hábiles${option.cents === 0 ? ", incluido" : `, recargo de ${formatUsd(option.cents)} por pedido`}.`).join("\n")}
-- Los días cuentan desde que se confirma el pago y está el archivo, con producción y mensajería incluidas.
+El plazo depende del producto y de la cantidad. Tarjetas de presentación:
+
+${DELIVERY_OPTIONS.map((option) => `- ${option.name}: ${businessDaysLabel(cardLeadDays(100, option.id))}${option.cents === 0 ? ", incluido" : `, recargo de ${formatUsd(option.cents)} por pedido`}.`).join("\n")}
+- Los demás productos tienen su propio plazo (aparece en cada uno, arriba). Priority y Express se confirman por WhatsApp.
+- Si un pedido lleva varios productos, llega cuando está listo el que más demora.
+- Los días cuentan desde que se confirma el pago y está el archivo.
 - El envío se cobra por peso y aparece en el total antes de pagar. Detalle: ${absoluteUrl("/envio")}
 
 ## Cómo se pide
 
 1. Elegir el producto y sus opciones en la web.
-2. Enviar el diseño: diseñarlo en Canva desde la web, subir un PDF, PNG o JPG (hasta 8 MB), pegar un enlace de Canva o adjuntarlo por WhatsApp.
+2. Enviar el diseño: diseñarlo en Canva desde la web, subir un PDF, EPS o AI de Illustrator (hasta 50 MB), pegar un enlace de Canva o adjuntarlo por WhatsApp. No se reciben JPG, PNG ni archivos de Corel.
 3. Poner los datos de entrega y factura. Se abre WhatsApp con el pedido escrito.
 4. ASAP responde con los datos de pago y empieza a imprimir.
 

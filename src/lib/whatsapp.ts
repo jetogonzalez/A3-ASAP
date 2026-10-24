@@ -1,4 +1,4 @@
-import { formatLongDate, formatShortDate } from "@/lib/delivery";
+import { businessDaysLabel, formatLongDate, formatShortDate } from "@/lib/delivery";
 import { formatUsd } from "@/lib/money";
 import type { Order } from "@/lib/order";
 import { IVA_LABEL } from "@/lib/tax";
@@ -49,7 +49,7 @@ export function orderMessage(order: Order): string {
     `Subtotal sin IVA: ${formatUsd(order.iva.baseCents)}`,
     `${IVA_LABEL}: ${formatUsd(order.iva.ivaCents)}`,
     `*Total con IVA: ${formatUsd(order.totalCents)}*`,
-    `Llega entre el ${formatLongDate(order.delivery.earliest)} y el ${formatShortDate(order.delivery.latest)}.`,
+    `Llega el ${formatLongDate(order.delivery.latest)} (${businessDaysLabel(order.delivery.days)}).`,
     "",
     "*Factura*",
     customer.name,

@@ -119,7 +119,7 @@ export function OrderReceipt() {
           {order.customer.reference ? <p>{order.customer.reference}</p> : null}
           <p>{order.customer.phone}</p>
           <p className="mt-2">
-            Llega entre el {formatLongDate(order.delivery.earliest)} y el {formatShortDate(order.delivery.latest)}, contando desde que confirmamos el pago y tenemos el archivo.
+            Llega el {formatLongDate(order.delivery.latest)}, contando desde que confirmamos el pago y tenemos el archivo.
           </p>
         </Info>
         <Info title="Pago y factura">

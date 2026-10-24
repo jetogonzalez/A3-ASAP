@@ -1,6 +1,6 @@
 import { del } from "@vercel/blob";
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
-import { ARTWORK_TYPES, MAX_ARTWORK_BYTES } from "@/lib/artwork";
+import { ARTWORK_TYPES, MAX_ARTWORK_BYTES, looksLikeArtwork } from "@/lib/artwork";
 import { rateLimit } from "@/server/rate-limit";
 
 /*
@@ -41,7 +41,7 @@ export async function POST(request: Request): Promise<Response> {
           validUntil: Date.now() + 10 * 60 * 1000,
         };
       },
-      /* Vercel avisa al terminar. Si los bytes no son PDF, PNG o JPG de verdad, se borra. */
+      /* Vercel avisa al terminar. Si los bytes no son PDF, EPS o AI de verdad, se borra. */
       onUploadCompleted: async ({ blob }) => {
         const head = await fetch(blob.url, { headers: { Range: "bytes=0-7" } });
         const bytes = new Uint8Array(await head.arrayBuffer());
@@ -52,11 +52,4 @@ export async function POST(request: Request): Promise<Response> {
   } catch {
     return Response.json({ error: "No pudimos preparar la subida. Inténtalo de nuevo." }, { status: 400 });
   }
-}
-
-function looksLikeArtwork(bytes: Uint8Array): boolean {
-  const pdf = bytes[0] === 0x25 && bytes[1] === 0x50 && bytes[2] === 0x44 && bytes[3] === 0x46;
-  const png = bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47;
-  const jpg = bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
-  return pdf || png || jpg;
 }

@@ -1,5 +1,5 @@
 import { PRODUCT, QUANTITIES } from "@/lib/catalog";
-import { DELIVERY_OPTIONS } from "@/lib/delivery";
+import { cardDeliverySummary } from "@/lib/delivery";
 import { EXTRA_KILO_CENTS, FIRST_KILO_CENTS } from "@/lib/ecuador";
 import { LAUNCH_PRODUCTS } from "@/lib/launch-products";
 import { formatUsd } from "@/lib/money";
@@ -14,10 +14,17 @@ import { IVA_PERCENT } from "@/lib/tax";
 
 export type Faq = { question: string; answer: string };
 
-const delivery = DELIVERY_OPTIONS.map(
-  (option) =>
-    `${option.name}: ${option.earliestDays} a ${option.latestDays} días hábiles${option.cents === 0 ? " (incluido)" : ` (+ ${formatUsd(option.cents)})`}`,
-).join("; ");
+const delivery = cardDeliverySummary(formatUsd).join("; ");
+
+/* Plazo normal de cada producto que se cotiza, agrupado: «Esferos, Toma todos…: 8 días». */
+const otherTimes = Object.entries(
+  LAUNCH_PRODUCTS.reduce<Record<string, string[]>>((groups, product) => {
+    (groups[product.leadTime] ??= []).push(product.name.toLowerCase());
+    return groups;
+  }, {}),
+)
+  .map(([time, names]) => `${names.join(", ")}: ${time}`)
+  .join("; ");
 
 const minimums = [
   `${PRODUCT.name.toLowerCase()} desde ${QUANTITIES[0]}`,
@@ -36,7 +43,7 @@ export const FAQS: Faq[] = [
   },
   {
     question: "¿Cuánto tarda mi pedido?",
-    answer: `Hay tres ritmos de entrega, contados desde que confirmamos el pago y tenemos tu archivo, con producción y mensajería incluidas. ${delivery}.`,
+    answer: `Depende del producto y de la cantidad, y cuenta desde que confirmamos el pago y tenemos tu archivo. Tarjetas de presentación: ${delivery}. Plazo normal de los demás productos: ${otherTimes}. Si tu pedido lleva varios productos, llega cuando esté listo el que más demora.`,
   },
   {
     question: "¿Los precios incluyen IVA?",
@@ -49,7 +56,7 @@ export const FAQS: Faq[] = [
   {
     question: "¿Cómo envío mi diseño?",
     answer:
-      "Puedes diseñarlo en Canva desde la web con el tamaño exacto y 3 mm de sangrado, subir un PDF, PNG o JPG de hasta 8 MB, pegar el enlace de un diseño de Canva o adjuntarlo por WhatsApp al finalizar el pedido.",
+      "Puedes diseñarlo en Canva desde la web con el tamaño exacto y 3 mm de sangrado, subir un PDF, EPS o AI (Illustrator) de hasta 50 MB, pegar el enlace de un diseño de Canva o adjuntarlo por WhatsApp al finalizar el pedido. No recibimos JPG, PNG ni Corel: si tu diseño está en otro formato, expórtalo a PDF.",
   },
   {
     question: "¿Puedo pedir una proforma?",

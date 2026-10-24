@@ -13,7 +13,6 @@ import {
   OptionGroup,
   UploadGlyph,
   glideTo,
-  isPreviewImage,
   type StepState,
 } from "@/components/configurator";
 import { DeliveryIcon } from "@/components/delivery-icon";
@@ -22,7 +21,8 @@ import { ProductPhoto } from "@/components/product-photo";
 import { StickyColumn } from "@/components/sticky-column";
 import { WhatsappLogo } from "@/components/whatsapp-logo";
 import { formatUnits, launchRequestMessage, type LaunchProduct, type LaunchSelection } from "@/lib/launch-products";
-import { ARTWORK_TYPES, MAX_ARTWORK_BYTES, isCanvaUrl } from "@/lib/artwork";
+import { ARTWORK_FORMATS_LABEL, MAX_ARTWORK_BYTES, MAX_ARTWORK_MB, artworkContentType, isCanvaUrl, mayPreviewArtwork } from "@/lib/artwork";
+import { renderArtworkPages } from "@/lib/pdf-preview";
 import { explain } from "@/lib/glossary";
 import { safeFilename } from "@/lib/text";
 import { whatsappHref } from "@/lib/whatsapp";
@@ -79,29 +79,44 @@ export function LaunchConfigurator({ product, uploadsEnabled }: { product: Launc
   const [canvaUrl, setCanvaUrl] = useState("");
   const canvaReady = isCanvaUrl(canvaUrl);
 
-  /* Vista previa local de la imagen elegida: se suelta al cambiarla o al salir. */
+  /*
+   * Vista previa local: la primera página del PDF dibujada en el navegador, para
+   * ponerla en el mockup. Se suelta al cambiar el archivo o al salir.
+   */
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const previewFor = useRef<File | null>(null);
   useEffect(() => () => {
     if (previewUrl) URL.revokeObjectURL(previewUrl);
   }, [previewUrl]);
 
+  function showPreview(next: File | null) {
+    previewFor.current = next;
+    setPreviewUrl(null);
+    if (!next || !mayPreviewArtwork(next)) return;
+    void renderArtworkPages(next, 1).then((urls) => {
+      if (previewFor.current === next) setPreviewUrl(urls[0] ?? null);
+      else urls.forEach((url) => URL.revokeObjectURL(url));
+    });
+  }
+
   async function takeFile(next: File | null) {
     setFileError(null);
-    setPreviewUrl(next && isPreviewImage(next) ? URL.createObjectURL(next) : null);
+    showPreview(null);
     if (!next) {
       setFile(null);
       setUploadState({ status: "idle", url: null });
       return;
     }
-    if (next.type && !ARTWORK_TYPES.some((type) => type === next.type)) {
-      setFileError("Solo PDF, PNG o JPG.");
+    if (!artworkContentType(next)) {
+      setFileError(`Solo ${ARTWORK_FORMATS_LABEL}. Si tu diseño es una imagen, expórtalo a PDF.`);
       return;
     }
     if (next.size > MAX_ARTWORK_BYTES) {
-      setFileError("El archivo supera 8 MB.");
+      setFileError(`El archivo supera ${MAX_ARTWORK_MB} MB.`);
       return;
     }
     setFile(next);
+    showPreview(next);
     if (!uploadsEnabled) return;
     /* Se sube ya: el pedido termina en un enlace a WhatsApp y el arte tiene que ir escrito en él. */
     setUploadState({ status: "uploading", url: null });
@@ -109,7 +124,7 @@ export function LaunchConfigurator({ product, uploadsEnabled }: { product: Launc
       const blob = await upload(`artes/${safeFilename(next.name)}`, next, {
         access: "public",
         handleUploadUrl: "/api/arte",
-        contentType: next.type || undefined,
+        contentType: artworkContentType(next) ?? undefined,
       });
       setUploadState({ status: "done", url: blob.url });
     } catch {
@@ -230,6 +245,7 @@ export function LaunchConfigurator({ product, uploadsEnabled }: { product: Launc
             onDragOver={() => setDragOver(true)}
             onDragLeave={() => setDragOver(false)}
             onFile={takeFile}
+            hasPreview={Boolean(previewUrl)}
             canvaUrl={canvaUrl}
             canvaReady={canvaReady}
             onCanvaUrl={setCanvaUrl}
@@ -520,10 +536,13 @@ function DesignPanel({
   onDragOver,
   onDragLeave,
   onFile,
+  hasPreview,
   canvaUrl,
   canvaReady,
   onCanvaUrl,
 }: {
+  /** El diseño ya se ve en la foto del producto. */
+  hasPreview: boolean;
   method: DesignMethod;
   onMethod: (next: DesignMethod) => void;
   notes: string;
@@ -629,9 +648,9 @@ function DesignPanel({
                 {uploadState.status === "uploading"
                   ? "Subiendo tu archivo…"
                   : uploadState.status === "done"
-                    ? isPreviewImage(file)
+                    ? hasPreview
                       ? "Listo: tu diseño ya está en la foto y el enlace va en el pedido."
-                      : "Listo: el enlace a tu PDF va en el pedido."
+                      : "Listo: el enlace a tu archivo va en el pedido."
                     : null}
               </p>
             ) : null}
@@ -675,7 +694,7 @@ function DesignPanel({
               <WhatsappLogo brand size={20} />
             </span>
             <p className="text-ink-soft">
-              <span className="font-medium text-ink">Al pedir te dejamos el chat listo.</span> Adjunta ahí tu PDF, PNG o JPG.
+              <span className="font-medium text-ink">Al pedir te dejamos el chat listo.</span> Adjunta ahí tu PDF, EPS o AI.
             </p>
           </div>
         ) : null}
@@ -825,7 +844,7 @@ function LaunchNotes({ product }: { product: LaunchProduct }) {
     },
     {
       q: "¿Cómo envío mi diseño?",
-      a: "Lo adjuntas en el mismo chat de WhatsApp, en PDF, PNG o JPG. Si no lo tienes, te ayudamos a armarlo.",
+      a: "Lo adjuntas en el mismo chat de WhatsApp, en PDF, EPS o AI. Si no lo tienes, te ayudamos a armarlo.",
     },
     {
       q: "¿Puedo pedir menos del mínimo?",

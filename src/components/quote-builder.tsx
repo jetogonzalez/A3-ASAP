@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useCart } from "@/components/cart-provider";
 import type { Configuration } from "@/lib/catalog";
-import { DELIVERY_OPTIONS } from "@/lib/delivery";
+import { businessDaysLabel } from "@/lib/delivery";
 import { formatUnitUsd, formatUsd } from "@/lib/money";
 import { IVA_LABEL } from "@/lib/tax";
 import { orderTotals } from "@/lib/order";
@@ -212,7 +212,7 @@ export function QuoteBuilder({ shared }: { shared: QuotePayload | null }) {
           <div>
             <dt className="text-ink-soft">Tiempo de entrega</dt>
             <dd className="mt-0.5">
-              {speedDays(totals.delivery.id)} días hábiles desde el pago y el arte aprobado, en Quito y los valles.
+              {businessDaysLabel(totals.delivery.days)} desde el pago y el arte aprobado, en Quito y los valles.
             </dd>
           </div>
           <div>
@@ -358,11 +358,6 @@ function EmptyQuote() {
       </div>
     </div>
   );
-}
-
-function speedDays(id: string): string {
-  const option = DELIVERY_OPTIONS.find((candidate) => candidate.id === id) ?? DELIVERY_OPTIONS[0];
-  return `${option.earliestDays} a ${option.latestDays}`;
 }
 
 function Row({ label, value }: { label: string; value: string }) {

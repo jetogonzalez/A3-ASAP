@@ -36,7 +36,7 @@ export default function HelpPage() {
         <h2>Cómo enviar tu diseño</h2>
         <ul>
           <li>Diseñar en Canva: abre un lienzo del tamaño exacto de tu producto, con 3 mm de sangrado.</li>
-          <li>Subir archivo: PDF, PNG o JPG de hasta 8 MB.</li>
+          <li>Subir archivo: PDF, EPS o AI (Illustrator) de hasta 50 MB. No recibimos JPG, PNG ni Corel; si tu diseño está en otro formato, expórtalo a PDF.</li>
           <li>Enlace de Canva: pega el enlace de un diseño que ya tengas.</li>
           <li>Por WhatsApp: lo adjuntas en el chat al finalizar el pedido.</li>
         </ul>

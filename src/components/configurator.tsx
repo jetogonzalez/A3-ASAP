@@ -22,11 +22,21 @@ import {
   type SizeId,
   type DeliveryId,
 } from "@/lib/catalog";
-import { DELIVERY_OPTIONS, deliveryWindow, formatLongDate, formatShortDate } from "@/lib/delivery";
+import { DELIVERY_OPTIONS, businessDaysLabel, deliveryWindow, formatLongDate, formatShortDate } from "@/lib/delivery";
 import { EXTRA_KILO_CENTS, FIRST_KILO_CENTS, shippingQuote } from "@/lib/ecuador";
 import { formatUsd } from "@/lib/money";
 import { upload } from "@vercel/blob/client";
-import { ARTWORK_TYPES, CANVA_FILENAME, isCanvaUrl, MAX_ARTWORK_BYTES } from "@/lib/artwork";
+import {
+  ARTWORK_ACCEPT,
+  ARTWORK_FORMATS_LABEL,
+  CANVA_FILENAME,
+  MAX_ARTWORK_BYTES,
+  MAX_ARTWORK_MB,
+  artworkContentType,
+  isCanvaUrl,
+  mayPreviewArtwork,
+} from "@/lib/artwork";
+import { renderArtworkPages } from "@/lib/pdf-preview";
 import { addonCents, quote, type Quote } from "@/lib/pricing";
 import { IVA_LABEL, ivaBreakdown } from "@/lib/tax";
 import { safeFilename } from "@/lib/text";
@@ -132,6 +142,8 @@ export function Configurator({
   const [canvaUrl, setCanvaUrl] = useState(editing?.artwork?.source === "canva" ? editing.artwork.url : "");
   const canvaReady = isCanvaUrl(canvaUrl);
   const [artworkUrl, setArtworkUrl] = useState<string | null>(null);
+  /* Segunda página del PDF: si viene, es el reverso. */
+  const [artworkBackUrl, setArtworkBackUrl] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -176,16 +188,40 @@ export function Configurator({
     return () => observer.disconnect();
   }, []);
 
-  /* La vista previa se arma al elegir el archivo y se suelta al cambiarlo o al salir. */
-  const previewRef = useRef<string | null>(null);
+  /*
+   * La vista previa se arma al elegir el archivo y se suelta al cambiarlo o al
+   * salir. Se dibuja la primera página del PDF (y la segunda, como reverso).
+   * Si llega otro archivo mientras se dibuja el anterior, el viejo se descarta.
+   */
+  const previewRef = useRef<string[]>([]);
+  const previewFor = useRef<File | null>(null);
   useEffect(() => () => {
-    if (previewRef.current) URL.revokeObjectURL(previewRef.current);
+    previewRef.current.forEach((url) => URL.revokeObjectURL(url));
   }, []);
 
   function showPreview(next: File | null) {
-    if (previewRef.current) URL.revokeObjectURL(previewRef.current);
-    previewRef.current = next && isPreviewImage(next) ? URL.createObjectURL(next) : null;
-    setArtworkUrl(previewRef.current);
+    previewRef.current.forEach((url) => URL.revokeObjectURL(url));
+    previewRef.current = [];
+    previewFor.current = next;
+    setArtworkUrl(null);
+    setArtworkBackUrl(null);
+    if (!next || !mayPreviewArtwork(next)) return;
+    void renderArtworkPages(next).then((urls) => {
+      if (previewFor.current !== next) {
+        urls.forEach((url) => URL.revokeObjectURL(url));
+        return;
+      }
+      previewRef.current = urls;
+      setArtworkUrl(urls[0] ?? null);
+      setArtworkBackUrl(urls[1] ?? null);
+      if (urls[1]) {
+        /* Un PDF de dos páginas es una tarjeta a dos lados: frente y reverso. */
+        setImageFaces({ front: true, back: true });
+        patch({ sides: 2 });
+        setPicked((current) => (current.has("lados") ? current : new Set(current).add("lados")));
+      }
+      if (urls[0]) document.getElementById("muestra")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
   }
 
   function patch(partial: Partial<Configuration>) {
@@ -238,26 +274,27 @@ export function Configurator({
       setImageFaces({ front: true, back: false });
       return;
     }
-    if (next.type && !ARTWORK_TYPES.some((type) => type === next.type)) {
-      setError("Solo PDF, PNG o JPG.");
+    if (!artworkContentType(next)) {
+      setError(`Solo ${ARTWORK_FORMATS_LABEL}. Si tu diseño es una imagen, expórtalo a PDF.`);
       return;
     }
     if (next.size > MAX_ARTWORK_BYTES) {
-      setError("El archivo supera 8 MB.");
+      setError(`El archivo supera ${MAX_ARTWORK_MB} MB.`);
       return;
     }
     setFile(next);
     showPreview(next);
-    if (isPreviewImage(next)) {
-      document.getElementById("muestra")?.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
   }
 
   /* La muestra enseña el arte de la forma elegida: el archivo propio o lo que volvió de Canva. */
   const previewFront =
     method === "archivo" ? (artworkUrl && imageFaces.front ? artworkUrl : null) : method === "canva" ? (canvaDesign?.front ?? null) : null;
   const previewBack =
-    method === "archivo" ? (artworkUrl && imageFaces.back ? artworkUrl : null) : method === "canva" ? (canvaDesign?.back ?? null) : null;
+    method === "archivo"
+      ? (artworkBackUrl ?? (artworkUrl && imageFaces.back ? artworkUrl : null))
+      : method === "canva"
+        ? (canvaDesign?.back ?? null)
+        : null;
   const artworkReady =
     method === "canva"
       ? Boolean(canvaDesign)
@@ -289,7 +326,7 @@ export function Configurator({
           const blob = await upload(`artes/${filename}`, file, {
             access: "public",
             handleUploadUrl: "/api/arte",
-            contentType: file.type || undefined,
+            contentType: artworkContentType(file) ?? undefined,
           });
           artwork = { source: "archivo", url: blob.url, filename };
         } else if (!file && kept?.source === "archivo") {
@@ -403,6 +440,7 @@ export function Configurator({
           rounded={config.rounded}
           error={error}
           imageFaces={imageFaces}
+          canPlace={Boolean(artworkUrl) && !artworkBackUrl}
           onPlace={(side) => {
             const turningOn = !imageFaces[side];
             setImageFaces((current) => ({ ...current, [side]: !current[side] }));
@@ -634,6 +672,7 @@ export function Configurator({
 
         <DeliveryChoices
           orderedAt={orderedAt}
+          quantity={config.quantity}
           selected={picked.has("entrega") ? config.delivery : null}
           state={stepState("entrega")}
           hasArtwork={artworkReady}
@@ -715,12 +754,15 @@ export function Configurator({
 
 function DeliveryChoices({
   orderedAt,
+  quantity,
   selected,
   hasArtwork,
   onChange,
   state,
 }: {
   orderedAt: string;
+  /** El plazo depende de cuántas tarjetas son. */
+  quantity: number;
   state: StepState;
   selected: DeliveryId | null;
   hasArtwork: boolean;
@@ -730,12 +772,12 @@ function DeliveryChoices({
     <fieldset data-step="entrega" disabled={state.status === "locked"} className={`step scroll-mt-4 ${state.status === "locked" ? "is-locked" : ""}`}>
       <StepLegend state={state} legend="Fecha de entrega estimada" />
       <p className="mt-1 mb-3 text-sm leading-6 text-ink-soft">
-        Adelantar la entrega cuesta más. El recargo va una vez por pedido y se suma al total.
+        El plazo depende de cuántas tarjetas pides. Adelantarlo cuesta más: el recargo va una vez por pedido y se suma al total.
         {hasArtwork ? "" : " Sin archivo, la cuenta empieza cuando lo envíes."}
       </p>
       <div className="grid gap-2" role="radiogroup" aria-label="Fecha de entrega estimada">
         {DELIVERY_OPTIONS.map((option) => {
-          const window = deliveryWindow(orderedAt, option.id);
+          const window = deliveryWindow(orderedAt, option.id, quantity);
           const checked = selected === option.id;
           /* La entrega más rápida es la que cuesta: ahí sí vale señalarla. */
           const fastest = option.id === DELIVERY_OPTIONS[DELIVERY_OPTIONS.length - 1].id;
@@ -767,7 +809,7 @@ function DeliveryChoices({
                     {formatLongDate(window.earliest)}
                   </span>
                   <span className="mt-0.5 block text-sm text-ink-soft">
-                    A más tardar, {formatShortDate(window.latest)}
+                    {businessDaysLabel(window.days)}
                   </span>
                 </span>
               </span>
@@ -818,6 +860,7 @@ function ArtworkPanel({
   rounded,
   error,
   imageFaces,
+  canPlace,
   onPlace,
 }: {
   method: ArtworkMethod;
@@ -842,6 +885,7 @@ function ArtworkPanel({
   rounded: boolean;
   error: string | null;
   imageFaces: { front: boolean; back: boolean };
+  canPlace: boolean;
   onPlace: (side: "front" | "back") => void;
 }) {
   const template = `/plantilla/${sizeId}?puntas=${rounded ? "1" : "0"}`;
@@ -849,7 +893,7 @@ function ArtworkPanel({
     ...(startHref || canvaDesign
       ? [{ id: "canva" as const, label: "Canva", title: "Diseñar en Canva", hint: "Abrimos un lienzo al tamaño exacto, con sangrado.", icon: <CanvaMark />, done: Boolean(canvaDesign) }]
       : []),
-    { id: "archivo", label: "Archivo", title: "Subir archivo", hint: "PDF, PNG o JPG, hasta 8 MB.", icon: <UploadGlyph />, done: Boolean(file || savedName) },
+    { id: "archivo", label: "Archivo", title: "Subir archivo", hint: `${ARTWORK_FORMATS_LABEL}, hasta ${MAX_ARTWORK_MB} MB.`, icon: <UploadGlyph />, done: Boolean(file || savedName) },
     { id: "enlace", label: "Enlace", title: "Enlace de Canva", hint: "Ya lo tienes hecho: pega el enlace.", icon: <LinkGlyph />, done: canvaReady },
     { id: "whatsapp", label: "WhatsApp", title: "Por WhatsApp", hint: "Lo adjuntas en el chat al finalizar.", icon: <WhatsappLogo brand />, done: false },
   ];
@@ -942,6 +986,7 @@ function ArtworkPanel({
             onFile={onFile}
             error={error}
             imageFaces={imageFaces}
+            canPlace={canPlace}
             onPlace={onPlace}
           />
         ) : null}
@@ -986,7 +1031,7 @@ function ArtworkPanel({
               <WhatsappLogo brand size={20} />
             </span>
             <p className="text-ink-soft">
-              <span className="font-medium text-ink">Al finalizar te dejamos el chat listo.</span> Adjunta ahí tu PDF, PNG o JPG. La fecha de entrega cuenta desde que lo recibimos.
+              <span className="font-medium text-ink">Al finalizar te dejamos el chat listo.</span> Adjunta ahí tu PDF, EPS o AI. La fecha de entrega cuenta desde que lo recibimos.
             </p>
           </div>
         ) : null}
@@ -1008,7 +1053,10 @@ export function FileDrop({
   imageFaces,
   onPlace,
   placement = true,
+  canPlace = false,
 }: {
+  /** Hay una muestra de una sola página que se puede poner en frente o reverso. */
+  canPlace?: boolean;
   /** Frente/Reverso: solo tiene sentido en tarjetas. */
   placement?: boolean;
   file: File | null;
@@ -1027,7 +1075,7 @@ export function FileDrop({
   const inputRef = useRef<HTMLInputElement>(null);
   const title = dragOver ? "Suéltalo aquí" : invalid ? "Revisa el archivo" : file?.name ?? savedName ?? "Arrastra tu archivo o elígelo";
   const hint = dragOver
-    ? "PDF, PNG o JPG"
+    ? ARTWORK_FORMATS_LABEL
     : invalid
       ? error
       : file
@@ -1036,7 +1084,7 @@ export function FileDrop({
           : `${formatFileSize(file.size)} · solo para la muestra, lo mandas por WhatsApp`
         : savedName
           ? "Ya está en este pedido. Puedes cambiarlo."
-          : "PDF, PNG o JPG de hasta 8 MB, con 3 mm de sangrado";
+          : `${ARTWORK_FORMATS_LABEL} de hasta ${MAX_ARTWORK_MB} MB, con 3 mm de sangrado`;
 
   return (
     <>
@@ -1045,7 +1093,7 @@ export function FileDrop({
         id="archivo"
         ref={inputRef}
         type="file"
-        accept="application/pdf,image/png,image/jpeg,.pdf,.png,.jpeg,.jpg"
+        accept={ARTWORK_ACCEPT}
         className="sr-only"
         onChange={(event) => {
           onFile(event.target.files?.[0] ?? null);
@@ -1075,9 +1123,9 @@ export function FileDrop({
               Quitar
             </button>
           </div>
-          {placement && file && isPreviewImage(file) ? (
+          {placement && file && canPlace ? (
             <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
-              <span className="text-sm text-ink-soft">Colocar la imagen en</span>
+              <span className="text-sm text-ink-soft">Colocar el diseño en</span>
               <div className="flex gap-2" role="group" aria-label="Dónde va la imagen">
                 {(
                   [
@@ -1256,10 +1304,6 @@ function DropGlyph({ dragOver, invalid }: { dragOver: boolean; invalid: boolean 
   );
 }
 
-export function isPreviewImage(file: File): boolean {
-  return file.type === "image/png" || file.type === "image/jpeg" || /\.(png|jpe?g)$/i.test(file.name);
-}
-
 function formatFileSize(bytes: number): string {
   if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   return `${Math.max(1, Math.ceil(bytes / 1024))} KB`;
@@ -1286,7 +1330,7 @@ const DESIGN_RULES = [
   "La cobertura de tinta no debe pasar del 300 %.",
   "Evita un marco pegado al borde: el corte puede comerlo.",
   "Si pides puntas redondeadas, aparta el contenido de las esquinas.",
-  "PDF, PNG o JPG, hasta 8 MB. Puedes pedir ahora y mandar el arte por WhatsApp.",
+  "PDF, EPS o AI, hasta 50 MB. Si diseñaste en otro programa, exporta a PDF. Puedes pedir ahora y mandar el arte por WhatsApp.",
 ] as const;
 
 const TEMPLATES = [

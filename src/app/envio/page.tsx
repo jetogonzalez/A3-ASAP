@@ -1,7 +1,8 @@
 import { DeliveryIcon } from "@/components/delivery-icon";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/site";
-import { DELIVERY_OPTIONS } from "@/lib/delivery";
+import { DELIVERY_OPTIONS, businessDaysLabel, cardLeadDays } from "@/lib/delivery";
+import { LAUNCH_PRODUCTS } from "@/lib/launch-products";
 import { SHIPPING_TABLE } from "@/lib/ecuador";
 import { formatUsd } from "@/lib/money";
 
@@ -38,10 +39,10 @@ export default function ShippingPage() {
       </table>
       <h2 className="mt-10 font-display text-3xl">Cuándo llega</h2>
       <p className="mt-3 leading-7 text-ink-soft">
-        Eliges el ritmo al armar tu tarjeta. Los días hábiles cuentan desde que confirmamos el pago y tenemos tu archivo, y ya incluyen la producción y la mensajería. El recargo se cobra una sola vez por pedido.
+        Cada producto tiene su plazo, según cuántas unidades pides. Los días hábiles cuentan desde que confirmamos el pago y tenemos tu archivo. Si tu pedido lleva varios productos, llega cuando esté listo el que más demora. El recargo se cobra una sola vez por pedido.
       </p>
       <table className="mt-6 w-full border-collapse text-left text-sm">
-        <caption className="sr-only">Ritmos de entrega</caption>
+        <caption className="mb-2 text-left text-base font-semibold text-ink">Tarjetas de presentación</caption>
         <thead>
           <tr className="border-b border-line text-ink-soft">
             <th scope="col" className="py-2 pr-4 font-medium">Entrega</th>
@@ -59,13 +60,23 @@ export default function ShippingPage() {
                 </span>
               </th>
               <td className="py-3 pr-4">
-                {option.earliestDays} a {option.latestDays} días hábiles
+                {businessDaysLabel(cardLeadDays(100, option.id))}
               </td>
               <td className="py-3">{option.cents === 0 ? "Incluido" : `+ ${formatUsd(option.cents)}`}</td>
             </tr>
           ))}
         </tbody>
       </table>
+      <h3 className="mt-8 text-base font-semibold">Los demás productos</h3>
+      <p className="mt-1 text-sm leading-6 text-ink-soft">Plazo normal (Standard). Si lo necesitas antes, te confirmamos Priority o Express por WhatsApp.</p>
+      <ul className="mt-3 divide-y divide-line/80 border-y border-line/80 text-sm">
+        {LAUNCH_PRODUCTS.map((product) => (
+          <li key={product.id} className="flex justify-between gap-4 py-2.5">
+            <span className="font-medium">{product.name}</span>
+            <span className="text-ink-soft">{product.leadTime}</span>
+          </li>
+        ))}
+      </ul>
       <p className="mt-6 text-sm leading-6 text-ink-soft">
         Para que te hagas una idea del peso: mil tarjetas clásicas laminadas pesan 1,58 kg y cien pesan 231 g.
       </p>

@@ -1,23 +1,48 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { deliveryWindow, formatLongDate } from "./delivery";
+import { artworkContentType, looksLikeArtwork } from "./artwork";
+import { deliveryWindow, formatLongDate, orderLeadDays } from "./delivery";
 import { cardTemplatePdf } from "./template-pdf";
 import { shippingQuote } from "./ecuador";
 import { cartGrams, packageGrams } from "./weight";
 
 describe("entrega", () => {
   it("cuenta días hábiles desde un viernes en Ecuador", () => {
+    /* Standard de tarjetas: 72 h = 3 días hábiles, sin contar el fin de semana. */
     const window = deliveryWindow("2026-10-02T14:00:00.000Z");
-    assert.equal(formatLongDate(window.earliest), "viernes 9 de octubre");
-    assert.equal(formatLongDate(window.latest), "miércoles 14 de octubre");
+    assert.equal(window.days, 3);
+    assert.equal(formatLongDate(window.latest), "miércoles 7 de octubre");
   });
 
-  it("adelanta la fecha en las dos opciones de pago", () => {
+  it("adelanta la fecha con Priority (48 h) y Express (24 h)", () => {
     const priority = deliveryWindow("2026-10-02T14:00:00.000Z", "priority");
     const express = deliveryWindow("2026-10-02T14:00:00.000Z", "express");
-    assert.equal(formatLongDate(priority.earliest), "miércoles 7 de octubre");
-    assert.equal(formatLongDate(express.earliest), "martes 6 de octubre");
-    assert.equal(formatLongDate(express.latest), "miércoles 7 de octubre");
+    assert.equal(formatLongDate(priority.latest), "martes 6 de octubre");
+    assert.equal(formatLongDate(express.latest), "lunes 5 de octubre");
+  });
+
+  it("en un pedido con varios productos toma el tiempo mayor", () => {
+    assert.equal(orderLeadDays([100, 1000], "standard"), 3);
+    assert.equal(orderLeadDays([], "express"), 1);
+  });
+});
+
+describe("formatos de archivo", () => {
+  it("acepta PDF, EPS y AI y rechaza imágenes", () => {
+    assert.equal(artworkContentType({ name: "logo.PDF" }), "application/pdf");
+    assert.equal(artworkContentType({ name: "logo.ai" }), "application/postscript");
+    assert.equal(artworkContentType({ name: "logo.eps" }), "application/postscript");
+    assert.equal(artworkContentType({ name: "logo.jpg" }), null);
+    assert.equal(artworkContentType({ name: "logo.png" }), null);
+    assert.equal(artworkContentType({ name: "logo.cdr" }), null);
+  });
+
+  it("revisa los primeros bytes del archivo subido", () => {
+    const bytes = (text: string) => new TextEncoder().encode(text);
+    assert.equal(looksLikeArtwork(bytes("%PDF-1.7")), true);
+    assert.equal(looksLikeArtwork(bytes("%!PS-Adobe-3.0 EPSF")), true);
+    assert.equal(looksLikeArtwork(new Uint8Array([0xc5, 0xd0, 0xd3, 0xc6])), true);
+    assert.equal(looksLikeArtwork(new Uint8Array([0xff, 0xd8, 0xff, 0xe0])), false);
   });
 });
 

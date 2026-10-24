@@ -1,5 +1,5 @@
 import type { Configuration } from "@/lib/catalog";
-import { deliveryWindow, fastestDelivery } from "@/lib/delivery";
+import { deliveryInDays, fastestDelivery, orderLeadDays } from "@/lib/delivery";
 import { shippingQuote, type ShippingQuote } from "@/lib/ecuador";
 import { quote, type QuoteLine } from "@/lib/pricing";
 import { ivaBreakdown } from "@/lib/tax";
@@ -12,6 +12,8 @@ export type OrderDelivery = {
   id: string;
   name: string;
   cents: number;
+  /** Días hábiles hasta la puerta: los del producto que más demora. */
+  days: number;
   earliest: string;
   latest: string;
 };
@@ -32,11 +34,12 @@ export type OrderTotals = {
 export function orderTotals(configs: Configuration[], orderedAtIso: string): OrderTotals {
   const printingCents = configs.reduce((sum, config) => sum + quote(config).printingCents, 0);
   const speed = fastestDelivery(configs.map((config) => config.delivery));
-  const window = deliveryWindow(orderedAtIso, speed.id);
+  const window = deliveryInDays(orderedAtIso, orderLeadDays(configs.map((config) => config.quantity), speed.id));
   const delivery: OrderDelivery = {
     id: speed.id,
     name: speed.name,
     cents: configs.length > 0 ? speed.cents : 0,
+    days: window.days,
     earliest: window.earliest,
     latest: window.latest,
   };
