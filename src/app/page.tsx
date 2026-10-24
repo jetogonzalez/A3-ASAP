@@ -41,15 +41,12 @@ const STEPS = [
 ] as const;
 
 /*
- * Los cuatro pasos van en una gama que sale del azul del logo y avanza por
- * índigo y violeta hasta el azul noche: cada círculo se funde con el color del
- * paso siguiente, como un recorrido. El número blanco pasa AA en todos.
+ * Los cuatro pasos en pastel, en la gama del azul del logo: de periwinkle a
+ * lavanda y lila, con el número en el tono profundo de cada uno (pasa AA).
  */
-const STEP_COLORS = ["#4660ff", "#5b3ee0", "#7b3fe4", "#1c2a99"] as const;
-const STEP_INKS = STEP_COLORS.map((color, index) => ({
-  background: `linear-gradient(135deg, ${color}, ${STEP_COLORS[Math.min(index + 1, STEP_COLORS.length - 1)]})`,
-  color: "#ffffff",
-}));
+const STEP_COLORS = ["#2d43d6", "#4f30cf", "#6a2fb8", "#1c2a99"] as const;
+const STEP_TINTS = ["#e6e9ff", "#ebe6ff", "#f1e6ff", "#e3e7f8"] as const;
+const STEP_INKS = STEP_COLORS.map((color, index) => ({ background: STEP_TINTS[index], color }));
 
 /*
  * La barra de arriba: una sola línea azul que se va oscureciendo y se llena
@@ -277,7 +274,7 @@ export default function HomePage() {
               style={{ "--step": STEP_COLORS[index] } as React.CSSProperties}
             >
               <span
-                className="step-ink grid size-11 place-items-center rounded-full text-base font-semibold tabular-nums shadow-[0_10px_20px_-10px_var(--step)]"
+                className="step-ink grid size-11 place-items-center rounded-full text-base font-semibold tabular-nums"
                 style={STEP_INKS[index]}
               >
                 {index + 1}

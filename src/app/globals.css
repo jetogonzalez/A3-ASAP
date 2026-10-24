@@ -43,6 +43,8 @@
   --tint-peach: #ffe9df;
   --tint-lilac: #ecebff;
   --tint-teal: #def3ef;
+  --tint-red: #ffe4e4;
+  --tint-blue: #e2ebff;
   /* Colores de los tres ritmos de entrega, los mismos del material de marca. */
   --speed-standard: #2db84b;
   --speed-priority: #ffc727;
@@ -93,6 +95,8 @@
   --tint-peach: #3b1d12;
   --tint-lilac: #1e2046;
   --tint-teal: #0f2f2b;
+  --tint-red: #3a1316;
+  --tint-blue: #13213f;
   --flag: #3a2c0b;
   --flag-ink: #f6c86e;
   --alert: #ff7a6e;
@@ -931,9 +935,9 @@ label:has(:checked) > .method-logo {
  * barra de carga. La portada aparece cuando va por el final (page.tsx).
  */
 .color-bar {
-  --bar-from: #93a3ff;
-  --bar-mid: #4660ff;
-  --bar-to: #1c2a99;
+  --bar-from: #c7cfff;
+  --bar-mid: #8f9fff;
+  --bar-to: #4660ff;
   height: 4px;
   background: var(--paper-deep);
 }
@@ -1035,29 +1039,29 @@ aside.season-banner[data-season-only] {
 
 /* Fiestas de Quito: rojo y azul. */
 :root[data-season="fiestas-quito"] {
-  --season-band: #b3121b;
-  --season-panel: #1d4fa8;
-  --season-a: #d7262f;
-  --season-b: #1f5fbf;
-  --season-bg: #f3f6fd;
+  --season-band: var(--tint-red);
+  --season-panel: var(--tint-blue);
+  --season-a: #ef6b6b;
+  --season-b: #6b95ec;
+  --season-bg: #f4f7ff;
 }
 
 :root[data-season="fiestas-quito"] .color-bar > span {
-  background: linear-gradient(90deg, #d7262f 0 50%, #1f5fbf 50% 100%);
+  background: linear-gradient(90deg, #f28b8b 0 50%, #8fb0f0 50% 100%);
 }
 
 /* Navidad: verde pino, rojo arándano y dorado. */
 :root[data-season="navidad"] {
-  --season-band: #8e1027;
-  --season-panel: #0f4d32;
-  --season-a: #b3122e;
-  --season-b: #1e7a4f;
-  --season-c: #d4a017;
-  --season-bg: #faf6ee;
+  --season-band: var(--tint-red);
+  --season-panel: var(--tint-green);
+  --season-a: #e57b8e;
+  --season-b: #6fbf8e;
+  --season-c: #f0c75e;
+  --season-bg: #fbf8f1;
 }
 
 :root[data-season="navidad"] .color-bar > span {
-  background: linear-gradient(90deg, #1e7a4f 0 42%, #d4a017 42% 58%, #b3122e 58% 100%);
+  background: linear-gradient(90deg, #8fd1a8 0 42%, #f3d27a 42% 58%, #ef9aa8 58% 100%);
 }
 
 :root[data-season] .season-dot {
@@ -1094,8 +1098,8 @@ aside.season-banner[data-season-only] {
 .season-banner {
   position: relative;
   overflow: hidden;
-  background: var(--season-band, var(--ink));
-  color: #ffffff;
+  background: var(--season-band, var(--paper-deep));
+  color: var(--ink);
 }
 
 .season-banner::after {
@@ -1103,7 +1107,7 @@ aside.season-banner[data-season-only] {
   position: absolute;
   inset: 0 auto 0 -40%;
   width: 40%;
-  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.22), transparent);
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.45), transparent);
   animation: band-shine 6s ease-in-out 1.2s infinite;
   pointer-events: none;
 }
@@ -1128,12 +1132,13 @@ aside.season-banner[data-season-only] {
 
 /* Campaña de temporada en la portada: el degradado de la temporada, texto blanco. */
 .season-campaign {
-  background: var(--season-panel, var(--ink));
-  color: #ffffff;
+  background: var(--season-panel, var(--paper-deep));
+  color: var(--ink);
 }
 
-:root[data-contrast="high"] .season-campaign {
-  background: #000000;
+:root[data-contrast="high"] .season-campaign,
+:root[data-contrast="high"] .season-banner {
+  background: var(--paper-deep);
 }
 
 /* ---- Decoración animada de la portada (components/season-decor.tsx) ---- */
