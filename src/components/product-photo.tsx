@@ -25,6 +25,21 @@ import quitoTarjetasDePresentacion from "@/assets/productos/fiestas-quito/tarjet
 import quitoGorras from "@/assets/productos/fiestas-quito/gorras.webp";
 import quitoEtiquetas from "@/assets/productos/fiestas-quito/etiquetas.webp";
 import quitoCuadernos from "@/assets/productos/fiestas-quito/cuadernos.webp";
+import reyesTazasMugs from "@/assets/productos/reyes/tazas-mugs.webp";
+import reyesTarjetasDePresentacion from "@/assets/productos/reyes/tarjetas-de-presentacion.webp";
+import reyesGorras from "@/assets/productos/reyes/gorras.webp";
+import reyesEtiquetas from "@/assets/productos/reyes/etiquetas.webp";
+import reyesCuadernos from "@/assets/productos/reyes/cuadernos.webp";
+import carnavalTazasMugs from "@/assets/productos/carnaval/tazas-mugs.webp";
+import carnavalTarjetasDePresentacion from "@/assets/productos/carnaval/tarjetas-de-presentacion.webp";
+import carnavalGorras from "@/assets/productos/carnaval/gorras.webp";
+import carnavalEtiquetas from "@/assets/productos/carnaval/etiquetas.webp";
+import carnavalCuadernos from "@/assets/productos/carnaval/cuadernos.webp";
+import valentinTazasMugs from "@/assets/productos/san-valentin/tazas-mugs.webp";
+import valentinTarjetasDePresentacion from "@/assets/productos/san-valentin/tarjetas-de-presentacion.webp";
+import valentinGorras from "@/assets/productos/san-valentin/gorras.webp";
+import valentinEtiquetas from "@/assets/productos/san-valentin/etiquetas.webp";
+import valentinCuadernos from "@/assets/productos/san-valentin/cuadernos.webp";
 
 /*
  * Fotos de referencia de cada producto (y de las familias que aún no tienen): mockups de estudio generados con
@@ -85,10 +100,31 @@ export function ProductPhoto({
 
 /*
  * Fotos de temporada (Figma AI, archivo «ASAP · Fotos de temporada»): la misma
- * toma de estudio con detalles de Navidad o de Fiestas de Quito. Para sumar
+ * toma de estudio con los detalles de cada temporada. Para sumar
  * una, agrega el .webp en assets/productos/<temporada>/ y su línea aquí.
  */
 const SEASON_PHOTOS: Record<string, Record<string, StaticImageData>> = {
+  "reyes": {
+    "tazas-mugs": reyesTazasMugs,
+    "tarjetas-de-presentacion": reyesTarjetasDePresentacion,
+    "gorras": reyesGorras,
+    "etiquetas": reyesEtiquetas,
+    "cuadernos": reyesCuadernos,
+  },
+  "carnaval": {
+    "tazas-mugs": carnavalTazasMugs,
+    "tarjetas-de-presentacion": carnavalTarjetasDePresentacion,
+    "gorras": carnavalGorras,
+    "etiquetas": carnavalEtiquetas,
+    "cuadernos": carnavalCuadernos,
+  },
+  "san-valentin": {
+    "tazas-mugs": valentinTazasMugs,
+    "tarjetas-de-presentacion": valentinTarjetasDePresentacion,
+    "gorras": valentinGorras,
+    "etiquetas": valentinEtiquetas,
+    "cuadernos": valentinCuadernos,
+  },
   "navidad": {
     "tazas-mugs": navTazasMugs,
     "tarjetas-de-presentacion": navTarjetasDePresentacion,

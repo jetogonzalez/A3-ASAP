@@ -245,6 +245,32 @@
   animation: cookie-bob 900ms cubic-bezier(0.22, 1, 0.36, 1) 750ms both;
 }
 
+/* El cuadrito de la galleta toma el pastel de la temporada. */
+.cookie-tile {
+  background: var(--season-panel, var(--tint-yellow));
+  transition: background-color 300ms ease;
+}
+
+/* Al pasar el mouse, la galleta se mece un poco. */
+@media (hover: hover) {
+  .cookie-banner:hover .cookie-bob {
+    animation: cookie-wiggle 700ms ease-in-out;
+  }
+}
+
+@keyframes cookie-wiggle {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  30% {
+    transform: rotate(-8deg);
+  }
+  65% {
+    transform: rotate(5deg);
+  }
+}
+
 /* ---------- Botón de accesibilidad ---------- */
 /* Encima de la barra fija de precio de las fichas de producto. */
 body:has(.bottom-bar) .a11y-fab {
