@@ -48,7 +48,7 @@ export default async function HelpCategoryPage({ params }: CategoryProps) {
         <ul className="divide-y divide-line self-start overflow-hidden rounded-[22px] border border-line bg-sheet">
           {articles.map((article) => (
             <li key={article.slug}>
-              <Link href={articleHref(article)} className="group flex items-center gap-4 px-5 py-4 hover:bg-paper-deep">
+              <Link href={articleHref(article)} className="group flex items-center gap-4 px-5 py-4 hover:bg-paper-deep focus-visible:-outline-offset-4">
                 <span className="min-w-0 flex-1">
                   <span className="block text-lg font-semibold">{article.title}</span>
                   <span className="block text-ink-soft">{article.summary}</span>

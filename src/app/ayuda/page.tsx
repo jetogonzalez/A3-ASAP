@@ -66,7 +66,7 @@ export default async function HelpHome({ searchParams }: HelpHomeProps) {
               <ul className="mt-5 divide-y divide-line overflow-hidden rounded-[22px] border border-line bg-sheet">
                 {results.map((article) => (
                   <li key={article.slug}>
-                    <Link href={articleHref(article)} className="block px-5 py-4 hover:bg-paper-deep">
+                    <Link href={articleHref(article)} className="block px-5 py-4 hover:bg-paper-deep focus-visible:-outline-offset-4">
                       <span className="text-sm text-ink-soft">{helpCategory(article.category)?.title}</span>
                       <span className="block text-lg font-semibold">{article.title}</span>
                       <span className="block text-ink-soft">{article.summary}</span>
@@ -89,7 +89,7 @@ export default async function HelpHome({ searchParams }: HelpHomeProps) {
               const articles = articlesIn(category.slug);
               return (
                 <li key={category.slug} className="flex flex-col rounded-[22px] border border-line bg-sheet p-5">
-                  <Link href={`/ayuda/${category.slug}`} className="group flex items-start gap-4">
+                  <Link href={`/ayuda/${category.slug}`} className="group -m-1.5 flex items-start gap-4 rounded-2xl p-1.5">
                     <span className={`grid size-12 shrink-0 place-items-center rounded-2xl ${CATEGORY_TINT[category.icon]}`}>
                       <HelpIcon icon={category.icon} />
                     </span>
@@ -101,7 +101,7 @@ export default async function HelpHome({ searchParams }: HelpHomeProps) {
                   <ul className="mt-4 space-y-1.5 border-t border-line pt-4 text-[0.95rem]">
                     {articles.slice(0, 3).map((article) => (
                       <li key={article.slug}>
-                        <Link href={articleHref(article)} className="text-ink hover:text-brand-deep hover:underline hover:underline-offset-4">
+                        <Link href={articleHref(article)} className="rounded-sm text-ink hover:text-brand-deep hover:underline hover:underline-offset-4">
                           {article.title}
                         </Link>
                       </li>
@@ -124,7 +124,7 @@ export default async function HelpHome({ searchParams }: HelpHomeProps) {
             <div className="mt-6 divide-y divide-line overflow-hidden rounded-[22px] border border-line bg-sheet">
               {FAQS.map((faq) => (
                 <details key={faq.question} className="group px-5">
-                  <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 py-4 font-semibold [&::-webkit-details-marker]:hidden">
+                  <summary className="-mx-2 flex min-h-14 cursor-pointer list-none rounded-xl px-2 focus-visible:-outline-offset-2 items-center justify-between gap-4 py-4 font-semibold [&::-webkit-details-marker]:hidden">
                     {faq.question}
                     <span className="grid size-7 shrink-0 place-items-center rounded-full bg-paper-deep transition-transform duration-200 group-open:rotate-45" aria-hidden="true">
                       <svg width="12" height="12" viewBox="0 0 12 12" fill="none">

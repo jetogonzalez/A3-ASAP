@@ -61,8 +61,20 @@ export function ProductRail({ label, children }: { label: string; children: Reac
       <ul
         ref={track}
         aria-label={label}
+        /*
+         * Con el teclado, la tarjeta enfocada se trae entera a la vista: el
+         * ajuste magnético dejaba a veces la siguiente a medio ver, con el
+         * anillo de foco cortado.
+         */
+        onFocus={(event) => {
+          const item = (event.target as HTMLElement).closest("li");
+          if (!item || !track.current) return;
+          const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+          const left = item.offsetLeft - track.current.offsetLeft - parseFloat(getComputedStyle(track.current).scrollPaddingLeft || "0");
+          track.current.scrollTo({ left, behavior: reduce ? "auto" : "smooth" });
+        }}
         style={{ maskImage: fade, WebkitMaskImage: fade }}
-        className="product-rail -mx-5 -mt-3 -mb-6 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-5 px-5 pt-3 pb-8 sm:gap-4 md:-mx-8 md:scroll-px-8 md:px-8"
+        className="product-rail -mx-5 -mt-3 -mb-6 flex [&_a:focus-visible]:-outline-offset-4 snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-5 px-5 pt-3 pb-8 sm:gap-4 md:-mx-8 md:scroll-px-8 md:px-8"
       >
         {children}
       </ul>

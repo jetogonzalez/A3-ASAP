@@ -5,6 +5,7 @@ import { A11yButton } from "@/components/a11y-panel";
 import { CookieBanner } from "@/components/cookie-banner";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { SeasonBanner } from "@/components/season-banner";
 import { JsonLd } from "@/components/json-ld";
 import { isProductionSite, siteUrl } from "@/lib/site";
 import { siteGraph } from "@/lib/structured-data";
@@ -78,7 +79,7 @@ export const viewport: Viewport = {
  * Lo guardado manda; si no hay nada guardado, se siguen los ajustes del
  * sistema: tema oscuro, más contraste y menos movimiento.
  */
-const A11Y_BOOT = `(function(){try{var d=document.documentElement,s=JSON.parse(localStorage.getItem("asap-a11y")||"{}"),m=function(q){return window.matchMedia&&window.matchMedia(q).matches};var t=s.theme||"light";if(t==="system")t=m("(prefers-color-scheme: dark)")?"dark":"light";if(t==="dark")d.dataset.theme="dark";if(s.contrast==="high"||(!s.contrast&&m("(prefers-contrast: more)")))d.dataset.contrast="high";if(s.text&&s.text!=="md")d.dataset.text=s.text;if(s.motion==="reduce")d.dataset.motion="reduce";if(s.links==="underline")d.dataset.links="underline";if(localStorage.getItem("asap-cookies")==="ok")d.dataset.cookies="ok"}catch(e){}})();`;
+const A11Y_BOOT = `(function(){try{var d=document.documentElement,s=JSON.parse(localStorage.getItem("asap-a11y")||"{}"),m=function(q){return window.matchMedia&&window.matchMedia(q).matches};var t=s.theme||"light";if(t==="system")t=m("(prefers-color-scheme: dark)")?"dark":"light";if(t==="dark")d.dataset.theme="dark";if(s.contrast==="high"||(!s.contrast&&m("(prefers-contrast: more)")))d.dataset.contrast="high";if(s.text&&s.text!=="md")d.dataset.text=s.text;if(s.motion==="reduce")d.dataset.motion="reduce";if(s.links==="underline")d.dataset.links="underline";if(localStorage.getItem("asap-cookies")==="ok")d.dataset.cookies="ok";var t2=localStorage.getItem("asap-temporada");if(t2==="fiestas-quito"||t2==="navidad")d.dataset.season=t2}catch(e){}})();`;
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
@@ -101,6 +102,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <JsonLd data={siteGraph()} />
         <CartProvider>
           <SiteHeader />
+          <SeasonBanner />
           <main id="contenido" className="flex-1">
             {children}
           </main>

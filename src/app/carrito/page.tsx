@@ -3,7 +3,7 @@ import { CartView } from "@/components/cart-view";
 
 export const metadata: Metadata = {
   title: "Pedido",
-  description: "Revisa las tarjetas antes de la entrega.",
+  description: "Revisa tu pedido antes de confirmarlo.",
 };
 
 export default function CartPage() {

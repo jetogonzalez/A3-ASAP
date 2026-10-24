@@ -7,6 +7,8 @@ import { notFound, redirect } from "next/navigation";
 import { productHref } from "@/lib/catalog";
 import { familyBySlug } from "@/lib/families";
 import { LaunchProductTile } from "@/components/launch-product-tile";
+import { CategoryChips } from "@/components/category-chips";
+import { inkFor } from "@/lib/palette";
 import { ProductArt } from "@/components/product-art";
 import { ProductPhoto, hasProductPhoto } from "@/components/product-photo";
 import { LAUNCH_PRODUCTS, launchProductsFor } from "@/lib/launch-products";
@@ -58,7 +60,13 @@ export default async function FamilyPage({ params }: FamilyPageProps) {
         <span aria-hidden="true"> / </span>
         <span className="text-ink">{family.label}</span>
       </nav>
-      <div className="mt-4 grid items-start gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,18rem)]">
+      <div className="mt-4">
+        <CategoryChips current={family.slug} />
+      </div>
+      <div
+        className="family-hero mt-6 grid items-center gap-6 rounded-[28px] p-5 md:grid-cols-[minmax(0,1fr)_minmax(0,18rem)] md:p-8"
+        style={{ background: inkFor(family.slug).tint }}
+      >
         <div>
           {products.length > 0 ? (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-moss-soft px-2.5 py-1 text-xs font-semibold text-moss">
@@ -115,7 +123,7 @@ export default async function FamilyPage({ params }: FamilyPageProps) {
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true" className="rotate-180">
             <path d="m6 3 5 5-5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          Ver todos los productos
+          Volver a todos los productos
         </Link>
       </div>
 

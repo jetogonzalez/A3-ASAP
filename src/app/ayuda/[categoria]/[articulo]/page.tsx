@@ -75,7 +75,7 @@ export default async function HelpArticlePage({ params }: ArticleProps) {
                   <Link
                     href={articleHref(other)}
                     aria-current={current ? "page" : undefined}
-                    className={`-ml-px block border-l-2 py-1.5 pl-3 text-[0.95rem] leading-6 ${
+                    className={`-ml-px block rounded-r-md border-l-2 py-1.5 pl-3 text-[0.95rem] leading-6 ${
                       current ? "border-ink font-semibold text-ink" : "border-transparent text-ink-soft hover:text-ink"
                     }`}
                   >

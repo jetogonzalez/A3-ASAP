@@ -1,7 +1,9 @@
 import { DeliveryIcon } from "@/components/delivery-icon";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/site";
-import { DELIVERY_OPTIONS, businessDaysLabel, cardLeadDays } from "@/lib/delivery";
+import { DELIVERY_OPTIONS } from "@/lib/delivery";
+import { PRODUCT } from "@/lib/catalog";
+import { leadTableRows } from "@/lib/lead-times";
 import { LAUNCH_PRODUCTS } from "@/lib/launch-products";
 import { SHIPPING_TABLE } from "@/lib/ecuador";
 import { formatUsd } from "@/lib/money";
@@ -41,42 +43,43 @@ export default function ShippingPage() {
       <p className="mt-3 leading-7 text-ink-soft">
         Cada producto tiene su plazo, según cuántas unidades pides. Los días hábiles cuentan desde que confirmamos el pago y tenemos tu archivo. Si tu pedido lleva varios productos, llega cuando esté listo el que más demora. El recargo se cobra una sola vez por pedido.
       </p>
-      <table className="mt-6 w-full border-collapse text-left text-sm">
-        <caption className="mb-2 text-left text-base font-semibold text-ink">Tarjetas de presentación</caption>
-        <thead>
-          <tr className="border-b border-line text-ink-soft">
-            <th scope="col" className="py-2 pr-4 font-medium">Entrega</th>
-            <th scope="col" className="py-2 pr-4 font-medium">Plazo</th>
-            <th scope="col" className="py-2 font-medium">Recargo</th>
-          </tr>
-        </thead>
-        <tbody>
-          {DELIVERY_OPTIONS.map((option) => (
-            <tr key={option.id} className="border-b border-line/80">
-              <th scope="row" className="py-3 pr-4 font-medium">
-                <span className="inline-flex items-center gap-2.5">
-                  <DeliveryIcon speed={option.id} size="sm" />
-                  {option.name}
-                </span>
+      <div className="mt-6 overflow-x-auto rounded-2xl border border-line">
+        <table className="w-full min-w-[34rem] border-collapse text-left text-sm">
+          <caption className="sr-only">Plazo por producto, cantidad y nivel de entrega</caption>
+          <thead className="bg-paper-deep">
+            <tr>
+              <th scope="col" className="px-4 py-2.5 font-semibold">
+                Producto y cantidad
               </th>
-              <td className="py-3 pr-4">
-                {businessDaysLabel(cardLeadDays(100, option.id))}
-              </td>
-              <td className="py-3">{option.cents === 0 ? "Incluido" : `+ ${formatUsd(option.cents)}`}</td>
+              {DELIVERY_OPTIONS.map((option) => (
+                <th key={option.id} scope="col" className="px-4 py-2.5 font-semibold">
+                  <span className="inline-flex items-center gap-2">
+                    <DeliveryIcon speed={option.id} size="sm" />
+                    {option.name}
+                  </span>
+                </th>
+              ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
-      <h3 className="mt-8 text-base font-semibold">Los demás productos</h3>
-      <p className="mt-1 text-sm leading-6 text-ink-soft">Plazo normal (Standard). Si lo necesitas antes, te confirmamos Priority o Express por WhatsApp.</p>
-      <ul className="mt-3 divide-y divide-line/80 border-y border-line/80 text-sm">
-        {LAUNCH_PRODUCTS.map((product) => (
-          <li key={product.id} className="flex justify-between gap-4 py-2.5">
-            <span className="font-medium">{product.name}</span>
-            <span className="text-ink-soft">{product.leadTime}</span>
-          </li>
-        ))}
-      </ul>
+          </thead>
+          <tbody className="divide-y divide-line">
+            {leadTableRows([{ id: "TPR", name: PRODUCT.name }, ...LAUNCH_PRODUCTS]).map(([label, ...times]) => (
+              <tr key={label}>
+                <th scope="row" className="px-4 py-2.5 font-medium">
+                  {label}
+                </th>
+                {times.map((time, index) => (
+                  <td key={index} className={`px-4 py-2.5 ${time === "a confirmar" ? "text-ink-soft" : ""}`}>
+                    {time}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="mt-4 text-sm leading-6 text-ink-soft">
+        Recargo por pedido: Priority {formatUsd(DELIVERY_OPTIONS[1].cents)} y Express {formatUsd(DELIVERY_OPTIONS[2].cents)}, con IVA. «A confirmar» se coordina por WhatsApp según la carga de trabajo.
+      </p>
       <p className="mt-6 text-sm leading-6 text-ink-soft">
         Para que te hagas una idea del peso: mil tarjetas clásicas laminadas pesan 1,58 kg y cien pesan 231 g.
       </p>

@@ -23,6 +23,7 @@ import { StickyColumn } from "@/components/sticky-column";
 import { WhatsappLogo } from "@/components/whatsapp-logo";
 import { formatUnits, launchRequestMessage, type LaunchProduct, type LaunchSelection } from "@/lib/launch-products";
 import { ARTWORK_FORMATS_LABEL, MAX_ARTWORK_BYTES, MAX_ARTWORK_MB, artworkContentType, isCanvaUrl, mayPreviewArtwork } from "@/lib/artwork";
+import { leadHours, leadLabel, leadRanges, rangeLabel, type LeadLevel } from "@/lib/lead-times";
 import { renderArtworkPages } from "@/lib/pdf-preview";
 import { readArtworkFacts } from "@/lib/preflight";
 import { evaluateArtwork, type ArtworkFacts } from "@/lib/preflight-rules";
@@ -230,7 +231,9 @@ export function LaunchConfigurator({ product, uploadsEnabled }: { product: Launc
     glideTo(node.getBoundingClientRect().top + window.scrollY - (header?.offsetHeight ?? 0) - 16);
   }
 
-  const caption = [...fixed.map((option) => option.choices[0]), `producción ${product.leadTime}`].join(" · ");
+  /* El plazo depende de la cantidad elegida y del nivel (matriz, hoja Precios). */
+  const leadFor = (id: string) => leadLabel(leadHours(product.id, quantity, id.toLowerCase() as LeadLevel));
+  const caption = [...fixed.map((option) => option.choices[0]), `plazo ${leadFor(speed)}`].join(" · ");
 
   return (
     <>
@@ -330,7 +333,7 @@ export function LaunchConfigurator({ product, uploadsEnabled }: { product: Launc
             state={stepState("entrega")}
             legend="Entrega"
             value={picked.has("entrega") ? speed : undefined}
-            hint={`Producción normal: ${product.leadTime}. Si lo necesitas antes, lo adelantamos.`}
+            hint={`Plazo para ${quantity.toLocaleString("es-EC")} u.: ${leadFor("standard")} en Standard. Si lo necesitas antes, lo adelantamos.`}
           >
             <div className="grid gap-2" role="radiogroup" aria-label="Entrega">
               {SPEEDS.map((option, index) => {
@@ -353,7 +356,9 @@ export function LaunchConfigurator({ product, uploadsEnabled }: { product: Launc
                       <DeliveryIcon speed={option.id} />
                       <span className="min-w-0">
                         <span className={`block ${checked ? "font-semibold" : "font-medium"}`}>{option.id}</span>
-                        <span className="mt-0.5 block text-sm text-ink-soft">{option.detail}</span>
+                        <span className="mt-0.5 block text-sm text-ink-soft">
+                          <span className="font-medium text-ink">{leadFor(option.id)}</span> · {option.detail}
+                        </span>
                       </span>
                     </span>
                     <span className="flex shrink-0 flex-col items-end gap-1">
@@ -853,7 +858,7 @@ function OrderLink({ message, className }: { message: string; className: string 
 function LaunchNotes({ product }: { product: LaunchProduct }) {
   const highlights = [
     ...product.options.filter((option) => option.choices.length === 1).map((option) => `${option.label}: ${option.choices[0]}`),
-    `Producción: ${product.leadTime}`,
+    `Plazo: ${product.leadTime}, según la cantidad`,
     "Envío en Quito y los valles",
   ];
   const faq = [
@@ -891,7 +896,7 @@ function LaunchNotes({ product }: { product: LaunchProduct }) {
                 [option.label, option.choices.map((choice) => (explain(choice) ? `${choice}: ${explain(choice)}` : choice)).join(" · ")] as const,
             ),
             ["Cantidades", product.quantities.map((amount) => amount.toLocaleString("es-EC")).join(" / ")] as const,
-            ["Producción", product.leadTime] as const,
+            ["Plazo (Standard)", leadRanges(product.id).map((range) => `${rangeLabel(range)}: ${leadLabel(range.standard)}`).join(" · ") || product.leadTime] as const,
           ].map(([label, value], index) => (
             <div key={label} className={`grid grid-cols-[9.5rem_minmax(0,1fr)] gap-4 px-4 py-3 sm:grid-cols-[11rem_minmax(0,1fr)] ${index % 2 === 0 ? "bg-paper-deep" : "bg-sheet"}`}>
               <dt>{label}</dt>

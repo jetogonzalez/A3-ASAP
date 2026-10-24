@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, type FocusEvent } from "react";
 import { BrandLogo } from "@/components/brand-logo";
+import { MobileMenu } from "@/components/mobile-menu";
 import { MobileSearch } from "@/components/mobile-search";
 import { useCart } from "@/components/cart-provider";
 import { PRODUCT } from "@/lib/catalog";
@@ -44,15 +45,21 @@ const INFO: NavItem[] = [
   { href: "/ayuda", label: "Ayuda", match: (path) => path.startsWith("/ayuda") },
 ];
 
+/* En el menú del teléfono hay espacio para nombrar bien cada cosa. */
+const MOBILE_INFO: NavItem[] = [
+  { href: "/ayuda", label: "Centro de ayuda", match: (path) => path.startsWith("/ayuda") },
+  { href: "/envio", label: "Envío y plazos", match: (path) => path.startsWith("/envio") },
+  { href: "/proforma", label: "Hacer una proforma", match: (path) => path.startsWith("/proforma") },
+];
+
 export function SiteHeader() {
   const pathname = usePathname();
   const { count, ready } = useCart();
 
   return (
     /*
-     * En el teléfono solo se queda pegada la fila de arriba. Las categorías viven
-     * fuera del sticky y se van con el scroll: antes el encabezado se comía tres
-     * filas de pantalla en cada página.
+     * En el teléfono el encabezado es una sola fila: logo, lupa, carrito y el
+     * botón de menú, que abre todas las categorías (components/mobile-menu.tsx).
      */
     <>
       <header className="sticky top-0 z-40 border-b border-line bg-sheet print:hidden">
@@ -86,16 +93,22 @@ export function SiteHeader() {
             </div>
           </form>
           <CartLink pathname={pathname} count={count} ready={ready} />
+          <MobileMenu
+            all={{ href: ALL.href, label: ALL.label, active: ALL.match(pathname) }}
+            categories={MAIN.map((item) => ({ href: item.href, label: item.label, active: item.match(pathname), products: item.products }))}
+            soon={SOON.map((item) => ({ href: item.href, label: item.label, active: item.match(pathname) }))}
+            info={MOBILE_INFO.map((item) => ({ href: item.href, label: item.label, active: item.match(pathname) }))}
+          />
         </div>
         <DesktopNav pathname={pathname} />
       </header>
-      <MobileNav pathname={pathname} />
     </>
   );
 }
 
+/* El anillo de foco va hacia adentro: el borde de abajo marca la página actual y pegaba con el anillo. */
 const LINK =
-  "inline-flex min-h-11 items-center gap-1 border-b-2 px-3 text-sm font-medium whitespace-nowrap transition-colors";
+  "inline-flex min-h-11 items-center gap-1 rounded-md border-b-2 px-3 text-sm font-medium whitespace-nowrap transition-colors focus-visible:-outline-offset-2";
 
 function linkClass(active: boolean): string {
   return `${LINK} ${active ? "border-ink text-ink" : "border-transparent text-ink-soft hover:text-ink"}`;
@@ -255,28 +268,6 @@ function Caret({ open }: { open: boolean }) {
     >
       <path d="M2.5 4.5 6 8l3.5-3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
-  );
-}
-
-/* Teléfono: todo en una fila que se desliza; el degradado avisa que hay más a la derecha. */
-function MobileNav({ pathname }: { pathname: string }) {
-  const items = [ALL, ...MAIN, ...SOON, ...INFO];
-  return (
-    <nav aria-label="Categorías" className="relative border-b border-line bg-sheet md:hidden print:hidden">
-      <ul className="flex gap-1 overflow-x-auto px-4 pr-10 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {items.map((item) => {
-          const active = item.match(pathname);
-          return (
-            <li key={item.label}>
-              <Link href={item.href} aria-current={active ? "page" : undefined} className={linkClass(active)}>
-                {item.label}
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
-      <span className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-sheet to-transparent" aria-hidden="true" />
-    </nav>
   );
 }
 

@@ -17,15 +17,15 @@ export function CartView() {
   if (items.length === 0) {
     return (
       <div className="rounded-[28px] border border-line bg-sheet px-6 py-12">
-        <h2 className="font-display text-3xl">Todavía no hay piezas.</h2>
+        <h2 className="font-display text-3xl">Tu carrito está vacío</h2>
         <p className="mt-3 max-w-md text-ink-soft">
-          Elige un formato, arma la cantidad y los acabados. El precio se ve antes de agregarlo.
+          Elige un producto y ármalo a tu medida. Las tarjetas se agregan aquí con su precio; los demás productos se piden por WhatsApp.
         </p>
         <Link
           href="/productos"
           className="mt-6 inline-flex min-h-12 items-center rounded-full bg-press px-5 font-medium text-white hover:bg-press-deep"
         >
-          Ver tarjetas
+          Ver productos
         </Link>
       </div>
     );

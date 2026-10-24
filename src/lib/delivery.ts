@@ -1,3 +1,4 @@
+import { leadDays } from "@/lib/lead-times";
 import { withIva } from "@/lib/tax";
 
 /** Ecuador continental no usa horario de verano. */
@@ -73,7 +74,10 @@ export const CARD_LEAD_DAYS: ReadonlyArray<{ upTo: number } & Record<DeliverySpe
   { upTo: 1000, express: 1, priority: 2, standard: 3 },
 ];
 
+/** Días hábiles de las tarjetas: los de la matriz para esa cantidad; si faltan, la tabla de arriba. */
 export function cardLeadDays(quantity: number, speed: DeliverySpeed = "standard"): number {
+  const fromMatrix = leadDays("TPR", quantity, speed);
+  if (fromMatrix !== null) return fromMatrix;
   const row = CARD_LEAD_DAYS.find((candidate) => quantity <= candidate.upTo) ?? CARD_LEAD_DAYS[CARD_LEAD_DAYS.length - 1];
   return row[speed];
 }

@@ -4,6 +4,7 @@ import { DELIVERY_OPTIONS, businessDaysLabel, cardLeadDays } from "@/lib/deliver
 import { EXTRA_KILO_CENTS, FIRST_KILO_CENTS } from "@/lib/ecuador";
 import { explain } from "@/lib/glossary";
 import { LAUNCH_PRODUCTS } from "@/lib/launch-products";
+import { leadTableRows } from "@/lib/lead-times";
 import { formatUsd } from "@/lib/money";
 import { QUOTE_VALID_DAYS } from "@/lib/quote";
 import { IVA_PERCENT } from "@/lib/tax";
@@ -55,7 +56,7 @@ const deliveryRows = DELIVERY_OPTIONS.map((option) => [
   option.cents === 0 ? "Incluido" : `+ ${formatUsd(option.cents)} por pedido`,
 ]);
 
-const leadRows = LAUNCH_PRODUCTS.map((product) => [product.name, product.leadTime]);
+const leadRows = leadTableRows([{ id: "TPR", name: PRODUCT.name }, ...LAUNCH_PRODUCTS]);
 
 const minimumRows = [
   [PRODUCT.name, `${QUANTITIES[0]} unidades`],
@@ -291,12 +292,11 @@ export const HELP_ARTICLES: HelpArticle[] = [
     keywords: ["tiempo", "plazo", "demora", "cuándo llega", "días", "urgente", "rápido"],
     popular: true,
     body: [
-      { type: "p", text: "Cada producto tiene su plazo según la cantidad. Los días hábiles cuentan desde que confirmamos el pago y tenemos tu archivo." },
-      { type: "p", text: `${PRODUCT.name}:` },
-      { type: "table", head: ["Nivel", "Plazo", "Recargo"], rows: deliveryRows },
-      { type: "p", text: "Plazo normal (Standard) de los demás productos:" },
-      { type: "table", head: ["Producto", "Plazo"], rows: leadRows },
-      { type: "tip", text: "Si lo necesitas antes, pide Priority o Express. En los productos que se cotizan, te confirmamos el plazo por WhatsApp." },
+      { type: "p", text: "El plazo depende del producto y de cuántas unidades pides. Los días hábiles cuentan desde que confirmamos el pago y tenemos tu archivo." },
+      { type: "table", head: ["Producto y cantidad", "Standard", "Priority", "Express"], rows: leadRows },
+      { type: "p", text: "Priority y Express suman un recargo una sola vez por pedido:" },
+      { type: "table", head: ["Nivel", "Recargo"], rows: deliveryRows.map(([name, , charge]) => [name, charge]) },
+      { type: "tip", text: "«A confirmar» quiere decir que ese nivel se coordina por WhatsApp según la carga de trabajo. En cada ficha ves el plazo de la cantidad que elijas." },
     ],
   },
   {

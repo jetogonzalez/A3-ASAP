@@ -119,7 +119,7 @@ export function MobileSearch() {
                     <path d="M12.5 4.5 7 10l5.5 5.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </button>
-                <div className="focus-shell flex h-12 min-w-0 flex-1 items-center rounded-full border-2 border-ink bg-sheet pr-1 pl-4">
+                <div className="focus-shell flex h-12 min-w-0 flex-1 items-center rounded-full border-2 border-ink bg-sheet pr-1 pl-4 has-[input:focus-visible]:outline-2 has-[input:focus-visible]:outline-offset-2 has-[input:focus-visible]:outline-brand">
                   <label htmlFor="buscar-movil" className="sr-only">
                     Buscar productos
                   </label>

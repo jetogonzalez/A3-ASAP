@@ -163,6 +163,25 @@
   box-shadow: inset 0 0 0 1px var(--line);
 }
 
+/* La cabecera de categoría lleva el tono de su familia; en oscuro, el papel oscuro. */
+:root[data-theme="dark"] .family-hero,
+:root[data-contrast="high"] .family-hero {
+  background: var(--paper-deep) !important;
+}
+
+/* Cada paso lleva una línea arriba con su color de la gama. */
+.step-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 4px;
+  background: var(--step);
+}
+
+:root[data-contrast="high"] .step-card::before {
+  background: var(--ink);
+}
+
 :root[data-contrast="high"] .step-ink {
   background: var(--ink) !important;
   color: var(--paper) !important;
@@ -499,9 +518,17 @@ details[open] > summary .disclosure-mark {
   color: var(--ink);
 }
 
-:focus-visible {
-  outline: 2px solid var(--brand);
-  outline-offset: 2px;
+/*
+ * Anillo de foco por defecto. Va en @layer base para que cada componente pueda
+ * ajustarlo con utilidades (redondearlo, meterlo hacia adentro en listas con
+ * overflow-hidden); fuera de una capa le ganaba a todo y salían recuadros
+ * cuadrados sobre piezas redondeadas.
+ */
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+  }
 }
 
 /*
@@ -888,46 +915,30 @@ label:has(:checked) > .method-logo {
 }
 
 /*
- * La barra de arriba de la portada: delgada, con el negro y los azules del
- * logo. Cada tramo se llena de izquierda a derecha, uno tras otro, como una
- * barra de carga; la portada aparece cuando va por el final (page.tsx).
+ * La barra de arriba de la portada: una sola línea que va del azul claro al
+ * azul oscuro del logo y se llena de izquierda a derecha, de corrido, como una
+ * barra de carga. La portada aparece cuando va por el final (page.tsx).
  */
 .color-bar {
-  --bar-1: #141414;
-  --bar-2: #1c2a99;
-  --bar-3: #2d43d6;
-  --bar-4: #4660ff;
-  display: flex;
+  --bar-from: #93a3ff;
+  --bar-mid: #4660ff;
+  --bar-to: #1c2a99;
   height: 4px;
+  background: var(--paper-deep);
 }
 
 :root[data-theme="dark"] .color-bar {
-  --bar-1: #2d43d6;
-  --bar-2: #4660ff;
-  --bar-3: #93a3ff;
-  --bar-4: #c2ccff;
+  --bar-from: #2d43d6;
+  --bar-mid: #6b80ff;
+  --bar-to: #c2ccff;
 }
 
 .color-bar > span {
-  flex: 1;
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--bar-from), var(--bar-mid) 55%, var(--bar-to));
   transform-origin: left center;
-  animation: bar-load 380ms cubic-bezier(0.65, 0, 0.35, 1) both;
-}
-
-.color-bar > span:nth-child(1) {
-  background: var(--bar-1);
-}
-
-.color-bar > span:nth-child(2) {
-  background: var(--bar-2);
-}
-
-.color-bar > span:nth-child(3) {
-  background: var(--bar-3);
-}
-
-.color-bar > span:nth-child(4) {
-  background: var(--bar-4);
+  animation: bar-load 620ms cubic-bezier(0.65, 0, 0.35, 1) both;
 }
 
 @keyframes bar-load {
@@ -988,4 +999,84 @@ label:has(:checked) > .method-logo {
 .card-settle {
   transform: rotate(-3deg);
   animation: card-settle 900ms cubic-bezier(0.22, 1, 0.36, 1) 120ms both;
+}
+
+/* ---------- Temporadas (lib/seasons.ts) ---------- */
+/* Lo marcado con data-season-only se ve solo en su temporada; «normal» cuando no hay ninguna. */
+[data-season-only] {
+  display: none;
+}
+
+:root:not([data-season]) [data-season-only="normal"],
+:root[data-season="fiestas-quito"] [data-season-only="fiestas-quito"],
+:root[data-season="navidad"] [data-season-only="navidad"] {
+  display: revert;
+}
+
+aside.season-banner[data-season-only] {
+  display: none;
+}
+
+:root[data-season="fiestas-quito"] aside.season-banner[data-season-only="fiestas-quito"],
+:root[data-season="navidad"] aside.season-banner[data-season-only="navidad"] {
+  display: block;
+}
+
+.season-banner {
+  background: var(--season-band, var(--ink));
+  color: #ffffff;
+}
+
+/* Fiestas de Quito: rojo y azul. */
+:root[data-season="fiestas-quito"] {
+  --season-band: linear-gradient(90deg, #b3121b, #1f4fb3);
+  --season-a: #d7262f;
+  --season-b: #1f5fbf;
+}
+
+:root[data-season="fiestas-quito"] .color-bar {
+  --bar-from: #d7262f;
+  --bar-mid: #8a2bb0;
+  --bar-to: #1f5fbf;
+}
+
+/* Navidad: verde, rojo y dorado. */
+:root[data-season="navidad"] {
+  --season-band: linear-gradient(90deg, #12632f, #a50e26);
+  --season-a: #1b7a3e;
+  --season-b: #c8102e;
+  --season-c: #d4a017;
+}
+
+:root[data-season="navidad"] .color-bar {
+  --bar-from: #1b7a3e;
+  --bar-mid: #c8102e;
+  --bar-to: #d4a017;
+}
+
+:root[data-season] .season-dot {
+  background: var(--season-a) !important;
+}
+
+/* Confeti suave en el fondo de la portada, con los colores de la temporada. */
+:root[data-season] .cutting-mat::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.55;
+  background-image:
+    radial-gradient(circle at 12% 22%, var(--season-a) 0 3px, transparent 4px),
+    radial-gradient(circle at 28% 78%, var(--season-b) 0 2.5px, transparent 3.5px),
+    radial-gradient(circle at 46% 12%, var(--season-c, var(--season-a)) 0 2px, transparent 3px),
+    radial-gradient(circle at 63% 88%, var(--season-a) 0 2.5px, transparent 3.5px),
+    radial-gradient(circle at 82% 18%, var(--season-b) 0 3px, transparent 4px),
+    radial-gradient(circle at 94% 64%, var(--season-c, var(--season-b)) 0 2px, transparent 3px),
+    radial-gradient(circle at 6% 58%, var(--season-b) 0 2px, transparent 3px),
+    radial-gradient(circle at 38% 46%, var(--season-c, var(--season-a)) 0 1.5px, transparent 2.5px);
+  background-size: 520px 360px;
+}
+
+:root[data-contrast="high"] .cutting-mat::before {
+  display: none;
 }

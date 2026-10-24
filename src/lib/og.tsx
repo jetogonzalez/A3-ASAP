@@ -19,8 +19,6 @@ export const OG = {
   line: "#e3e6ea",
   paper: "#f6f7f9",
   brand: "#4660ff",
-  /* Los mismos tramos de la barra de la portada: negro y azules del logo. */
-  bar: ["#141414", "#1c2a99", "#2d43d6", "#4660ff"],
 };
 
 const dir = join(process.cwd(), "src/assets/og");
@@ -50,13 +48,7 @@ export async function ogLogo(): Promise<string> {
   return `data:image/svg+xml;base64,${svg.toString("base64")}`;
 }
 
-/* La barra de arriba, igual que en la portada. */
+/* La barra de arriba, igual que en la portada: azul que se va oscureciendo. */
 export function OgColorBar() {
-  return (
-    <div style={{ display: "flex", width: "100%", height: 8 }}>
-      {OG.bar.map((color) => (
-        <div key={color} style={{ flex: 1, background: color }} />
-      ))}
-    </div>
-  );
+  return <div style={{ display: "flex", width: "100%", height: 8, backgroundImage: "linear-gradient(90deg, #93a3ff, #4660ff 55%, #1c2a99)" }} />;
 }

@@ -6,7 +6,10 @@ import { useId, useState } from "react";
 import { articleHref, helpCategory, searchHelp } from "@/lib/help-center";
 
 /*
- * El buscador del centro de ayuda. Muestra resultados mientras escribes, como
+ * El buscador del centro de ayuda. El anillo de foco lo lleva la píldora
+ * entera (focus-shell), no el campo de adentro: si no, sale un recuadro
+ * cuadrado dentro del borde redondeado.
+ * Muestra resultados mientras escribes, como
  * los centros de ayuda grandes. Con el teclado: flechas para moverse, Enter
  * para abrir el resultado marcado (o ver todos), Escape para cerrar. Sin
  * JavaScript sigue funcionando: el formulario va a /ayuda?q=…
@@ -36,7 +39,7 @@ export function HelpSearch({ initial = "", autoFocus = false }: { initial?: stri
       <label htmlFor="buscar-ayuda" className="sr-only">
         Buscar en la ayuda
       </label>
-      <div className="flex h-14 items-center rounded-full border-2 border-ink bg-sheet pr-1.5 pl-5 shadow-[0_18px_40px_-24px_rgba(20,20,40,0.45)] has-[input:focus-visible]:outline-3 has-[input:focus-visible]:outline-offset-2 has-[input:focus-visible]:outline-brand">
+      <div className="focus-shell flex h-14 items-center rounded-full border-2 border-ink bg-sheet pr-1.5 pl-5 shadow-[0_18px_40px_-24px_rgba(20,20,40,0.45)] has-[input:focus-visible]:outline-2 has-[input:focus-visible]:outline-offset-2 has-[input:focus-visible]:outline-brand">
         <svg width="20" height="20" viewBox="0 0 16 16" fill="none" aria-hidden="true" className="shrink-0 text-ink-soft">
           <circle cx="7" cy="7" r="4.25" stroke="currentColor" strokeWidth="1.6" />
           <path d="M10.2 10.2 13 13" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
@@ -73,7 +76,7 @@ export function HelpSearch({ initial = "", autoFocus = false }: { initial?: stri
               setOpen(false);
             }
           }}
-          className="h-full min-w-0 flex-1 bg-transparent px-3 text-base outline-none placeholder:text-ink-soft focus-visible:outline-none"
+          className="h-full min-w-0 flex-1 bg-transparent px-3 text-base outline-none placeholder:text-ink-soft"
         />
         <button type="submit" className="press inline-flex min-h-11 shrink-0 cursor-pointer items-center rounded-full bg-press px-5 text-sm font-semibold text-white hover:bg-press-deep">
           Buscar
@@ -90,7 +93,7 @@ export function HelpSearch({ initial = "", autoFocus = false }: { initial?: stri
                     href={articleHref(article)}
                     onMouseDown={(event) => event.preventDefault()}
                     onClick={() => setOpen(false)}
-                    className={`block px-4 py-3 ${index === active ? "bg-paper-deep" : "hover:bg-paper-deep"}`}
+                    className={`block px-4 py-3 focus-visible:-outline-offset-4 ${index === active ? "bg-paper-deep" : "hover:bg-paper-deep"}`}
                   >
                     <span className="block font-semibold">{article.title}</span>
                     <span className="block truncate text-sm text-ink-soft">

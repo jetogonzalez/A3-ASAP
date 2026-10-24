@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BrandLogo } from "@/components/brand-logo";
+import { SeasonSwitcher } from "@/components/season-switcher";
 
 export function SiteFooter() {
   return (
@@ -32,6 +33,9 @@ export function SiteFooter() {
             Privacidad
           </Link>
         </div>
+      </div>
+      <div className="mx-auto w-full max-w-6xl border-t border-line px-4 py-4 md:px-8">
+        <SeasonSwitcher />
       </div>
     </footer>
   );

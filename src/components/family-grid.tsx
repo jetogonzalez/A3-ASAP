@@ -72,7 +72,7 @@ export function FamilyGrid() {
                     {launchProductsFor(family.slug).length > 0 ? null : <WhatsappLogo size={13} brand />}
                     {launchProductsFor(family.slug).length > 0
                       ? `${launchProductsFor(family.slug).length} productos`
-                      : "Cotiza"}
+                      : "Por cotización"}
                   </span>
                 )}
               </span>

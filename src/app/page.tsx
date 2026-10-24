@@ -9,6 +9,7 @@ import { ProductRail, RailItem } from "@/components/product-rail";
 import { WhatsappLogo } from "@/components/whatsapp-logo";
 import { PRODUCT, QUANTITIES, defaultConfiguration, productHref, type Configuration } from "@/lib/catalog";
 import { FAQS } from "@/lib/faq";
+import { SEASONS } from "@/lib/seasons";
 import { FAMILIES } from "@/lib/families";
 import { LAUNCH_PRODUCTS, launchProductHref } from "@/lib/launch-products";
 import { formatShortDate } from "@/lib/delivery";
@@ -37,20 +38,22 @@ const STEPS = [
   { title: "Paga y listo", text: "Por WhatsApp, con transferencia o Deuna. Lo llevamos a tu puerta." },
 ] as const;
 
-/* Los cuatro pasos llevan las tintas de imprenta: cian, magenta, amarillo y negro. */
-const STEP_INKS = [
-  { background: "#00749f", color: "#ffffff" },
-  { background: "#c2006c", color: "#ffffff" },
-  { background: "#ffd400", color: "#141414" },
-  { background: "#141414", color: "#ffffff" },
-] as const;
+/*
+ * Los cuatro pasos van en una gama que sale del azul del logo y avanza por
+ * índigo y violeta hasta el azul noche: cada círculo se funde con el color del
+ * paso siguiente, como un recorrido. El número blanco pasa AA en todos.
+ */
+const STEP_COLORS = ["#4660ff", "#5b3ee0", "#7b3fe4", "#1c2a99"] as const;
+const STEP_INKS = STEP_COLORS.map((color, index) => ({
+  background: `linear-gradient(135deg, ${color}, ${STEP_COLORS[Math.min(index + 1, STEP_COLORS.length - 1)]})`,
+  color: "#ffffff",
+}));
 
 /*
- * La barra de arriba: delgada, con el negro y los azules del logo, del más
- * oscuro al azul de marca. Se llena de izquierda a derecha como una barra de
- * carga y, cuando va terminando, aparece el resto de la portada.
+ * La barra de arriba: una sola línea azul que se va oscureciendo y se llena
+ * de izquierda a derecha como una barra de carga. Cuando va terminando,
+ * aparece el resto de la portada.
  */
-const BAR_SEGMENTS = 4;
 /** Cuándo empieza a aparecer la portada, en ms: la barra va por el último tramo. */
 const AFTER_BAR = 420;
 
@@ -93,9 +96,7 @@ export default function HomePage() {
       {/* ---------- Portada ---------- */}
       <section className="cutting-mat relative overflow-hidden" aria-labelledby="hero-title">
         <div className="color-bar" aria-hidden="true">
-          {Array.from({ length: BAR_SEGMENTS }, (_, index) => (
-            <span key={index} style={{ animationDelay: `${index * 110}ms` }} />
-          ))}
+          <span />
         </div>
         <div className="relative mx-auto grid w-full max-w-6xl items-center gap-12 px-5 pt-14 pb-14 md:px-8 md:pt-20 md:pb-20 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <div>
@@ -103,15 +104,25 @@ export default function HomePage() {
               className="reveal-up inline-flex items-center gap-2 rounded-full border border-line bg-sheet px-3 py-1 text-sm font-medium text-ink-soft"
               style={{ animationDelay: `${AFTER_BAR}ms` }}
             >
-              <span className="size-2 rounded-full bg-speed-standard" aria-hidden="true" />
-              Imprenta en línea en Quito y los valles
+              <span className="season-dot size-2 rounded-full bg-speed-standard" aria-hidden="true" />
+              {/* Un texto por temporada; el CSS deja ver el de la activa (lib/seasons.ts). */}
+              {SEASONS.map((season) => (
+                <span key={season.id} data-season-only={season.id} data-nosnippet={season.id === "normal" ? undefined : ""}>
+                  {season.badge}
+                </span>
+              ))}
             </p>
             <h1
               id="hero-title"
               className="reveal-up mt-5 max-w-xl text-[2.6rem] leading-[1.02] font-semibold tracking-[-0.03em] text-balance sm:text-6xl"
               style={{ animationDelay: `${AFTER_BAR + 90}ms` }}
             >
-              Imprime lo de tu marca, sin complicarte.
+              {SEASONS.map((season) => (
+                /* Las de temporada van con data-nosnippet: Google solo toma el título normal. */
+                <span key={season.id} data-season-only={season.id} data-nosnippet={season.id === "normal" ? undefined : ""}>
+                  {season.title}
+                </span>
+              ))}
             </h1>
             <p className="reveal-up mt-5 max-w-md text-lg leading-7 text-ink-soft" style={{ animationDelay: `${AFTER_BAR + 180}ms` }}>
               Tazas, camisetas, gorras, etiquetas, cuadernos, tarjetas y más con tu logo. Los armas aquí en pocos pasos y te los llevamos a la puerta en Quito y los valles.
@@ -130,7 +141,7 @@ export default function HomePage() {
                 className="press inline-flex min-h-12 items-center gap-2 rounded-full border border-line bg-sheet px-5 font-semibold text-ink hover:border-ink/30"
               >
                 <WhatsappLogo size={20} brand />
-                Te ayudamos a elegir
+                Pedir ayuda para elegir
               </a>
             </div>
           </div>
@@ -254,9 +265,13 @@ export default function HomePage() {
         </h2>
         <ol className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {STEPS.map((step, index) => (
-            <li key={step.title} className="rounded-[22px] border border-line bg-sheet p-5">
+            <li
+              key={step.title}
+              className="step-card relative overflow-hidden rounded-[22px] border border-line bg-sheet p-5"
+              style={{ "--step": STEP_COLORS[index] } as React.CSSProperties}
+            >
               <span
-                className="step-ink grid size-10 place-items-center rounded-full text-base font-semibold tabular-nums"
+                className="step-ink grid size-11 place-items-center rounded-full text-base font-semibold tabular-nums shadow-[0_10px_20px_-10px_var(--step)]"
                 style={STEP_INKS[index]}
               >
                 {index + 1}
@@ -295,7 +310,7 @@ export default function HomePage() {
           <div className="mt-8 divide-y divide-line overflow-hidden rounded-[22px] border border-line bg-sheet">
             {FAQS.slice(0, 6).map((faq) => (
               <details key={faq.question} className="group px-5">
-                <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 py-4 font-semibold [&::-webkit-details-marker]:hidden">
+                <summary className="-mx-2 flex min-h-14 cursor-pointer list-none rounded-xl px-2 focus-visible:-outline-offset-2 items-center justify-between gap-4 py-4 font-semibold [&::-webkit-details-marker]:hidden">
                   {faq.question}
                   <span className="grid size-7 shrink-0 place-items-center rounded-full bg-paper-deep transition-transform duration-200 group-open:rotate-45" aria-hidden="true">
                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
@@ -327,7 +342,7 @@ export default function HomePage() {
             className="press inline-flex min-h-12 shrink-0 items-center gap-2 rounded-full bg-press px-6 font-semibold text-white hover:bg-press-deep"
           >
             <WhatsappLogo size={20} />
-            Escríbenos por WhatsApp
+            Escribir por WhatsApp
           </a>
         </div>
       </section>

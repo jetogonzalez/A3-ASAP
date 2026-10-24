@@ -1,3 +1,4 @@
+import { leadHours, leadLabel, varies } from "@/lib/lead-times";
 /*
  * Productos de lanzamiento: cada uno tiene su página y se arma eligiendo
  * opciones, cantidad y entrega. Salen de la matriz de productos
@@ -25,10 +26,16 @@ export type LaunchProduct = {
   summary: string;
   options: readonly LaunchOption[];
   quantities: readonly number[];
+  /**
+   * Resumen del plazo Standard para la cantidad mínima («8 días hábiles»,
+   * «desde 3 días hábiles» si cambia con la cantidad). Se calcula con la tabla
+   * de plazos de la matriz (lib/lead-times.ts); el texto escrito aquí abajo
+   * solo se usa si la matriz no trae ese producto.
+   */
   leadTime: string;
 };
 
-export const LAUNCH_PRODUCTS: readonly LaunchProduct[] = [
+const PRODUCTS: readonly LaunchProduct[] = [
   {
     id: "ESF",
     slug: "esferos",
@@ -190,6 +197,12 @@ export const LAUNCH_PRODUCTS: readonly LaunchProduct[] = [
     leadTime: "5 días en adelante",
   },
 ];
+
+export const LAUNCH_PRODUCTS: readonly LaunchProduct[] = PRODUCTS.map((product) => {
+  const hours = leadHours(product.id, product.quantities[0], "standard");
+  if (hours === null) return product;
+  return { ...product, leadTime: `${varies(product.id) ? "desde " : ""}${leadLabel(hours)}` };
+});
 
 export function launchProductBySlug(slug: string): LaunchProduct | undefined {
   return LAUNCH_PRODUCTS.find((product) => product.slug === slug);
