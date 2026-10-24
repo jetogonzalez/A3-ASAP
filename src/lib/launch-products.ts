@@ -68,7 +68,7 @@ const PRODUCTS: readonly LaunchProduct[] = [
     slug: "tazas-mugs",
     name: "Tazas y mugs",
     family: "promocionales",
-    summary: "Tazas con fotos, frases o tu logo, desde 5 unidades.",
+    summary: "Tazas con fotos, frases o tu logo.",
     options: [
       { id: "impresion", label: "Impresión", choices: ["Sublimación", "UV DTF"] },
       { id: "tintas", label: "Tintas", choices: ["Full color"] },
@@ -170,7 +170,7 @@ const PRODUCTS: readonly LaunchProduct[] = [
     slug: "calendarios",
     name: "Calendarios",
     family: "papeleria",
-    summary: "Calendarios de escritorio con tu marca para todo el año.",
+    summary: "Calendarios de escritorio para todo el año.",
     options: [
       { id: "tipo", label: "Tipo", choices: ["Sobre mesa (12 páginas)", "Plegado"] },
       { id: "tamano", label: "Tamaño", choices: ["15 × 21 cm", "30 × 10 cm"] },
@@ -186,7 +186,7 @@ const PRODUCTS: readonly LaunchProduct[] = [
     slug: "cuadernos",
     name: "Cuadernos",
     family: "papeleria",
-    summary: "Cuadernos con portada de tu marca, en A5 o A4.",
+    summary: "Cuadernos con portada personalizada, en A5 o A4.",
     options: [
       { id: "tamano", label: "Tamaño", choices: ["A5", "A4"] },
       { id: "portada", label: "Portada", choices: ["Blanda", "Dura"] },

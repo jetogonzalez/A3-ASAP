@@ -21,7 +21,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
   const summary = launch?.summary ?? "Couché 300 g, mate o brillante, con acabados. Precio final al instante.";
   const chips = launch
     ? [`Desde ${launch.quantities[0].toLocaleString("es-EC")} u.`, `Producción ${launch.leadTime}`]
-    : [`100 desde ${formatUsd(quote({ ...defaultConfiguration("85x55"), quantity: 100 }).printingCents)}`, "Pídelo en línea"];
+    : [`100 desde ${formatUsd(quote({ ...defaultConfiguration("85x55"), quantity: 100 }).printingCents)}`, "Pídelas en línea"];
 
   const [fonts, logo, photo] = await Promise.all([ogFonts(), ogLogo(), ogPhoto(launch ? launch.slug : PRODUCT.slug)]);
 

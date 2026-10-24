@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { BrandLogo } from "@/components/brand-logo";
-import { FamilyGrid } from "@/components/family-grid";
 import { CardsTile } from "@/components/cards-tile";
 import { LaunchProductTile } from "@/components/launch-product-tile";
 import { ProductPhoto, SeasonalProductPhoto } from "@/components/product-photo";
@@ -34,10 +33,10 @@ export const metadata: Metadata = {
 /* El inicio es para alguien que nunca imprimió nada: frases cortas, un paso a la vez. */
 
 const STEPS = [
-  { title: "Elige qué imprimir", text: "Tazas, camisetas, etiquetas, cuadernos, tarjetas y más." },
+  { title: "Elige qué imprimir", text: "Busca por categoría, por ocasión o en el buscador." },
   { title: "Arma tu pedido", text: "Opciones, cantidad y fecha de entrega. Ves el resumen antes de pedir." },
   { title: "Sube tu diseño", text: "En PDF, EPS o AI, o desde Canva. La web revisa tu archivo." },
-  { title: "Paga y listo", text: "Por WhatsApp, con transferencia o Deuna. Lo llevamos a tu puerta." },
+  { title: "Confirma y recibe", text: "Te escribimos para coordinar el pago y la entrega." },
 ] as const;
 
 /*
@@ -70,7 +69,7 @@ function occasionItem(slug: string): { slug: string; name: string; detail: strin
 const OCCASIONS = [
   {
     title: "Tu emprendimiento",
-    text: "Que cada pedido salga con tu marca.",
+    text: "Que cada pedido salga con tu sello.",
     products: ["etiquetas", "papel-regalo", "tarjetas-de-regalo", PRODUCT.slug].map(occasionItem),
   },
   {
@@ -125,7 +124,11 @@ export default function HomePage() {
               ))}
             </h1>
             <p className="reveal-up mt-5 max-w-md text-lg leading-7 text-ink-soft" style={{ animationDelay: `${AFTER_BAR + 180}ms` }}>
-              Tazas, camisetas, gorras, etiquetas, cuadernos, tarjetas y más con tu logo. Los armas aquí en pocos pasos y te los llevamos a la puerta en Quito y los valles.
+              {SEASONS.map((season) => (
+                <span key={season.id} data-season-only={season.id} data-nosnippet={season.id === "normal" ? undefined : ""}>
+                  {season.subtitle}
+                </span>
+              ))}
             </p>
             <div className="reveal-up mt-8 flex flex-wrap items-center gap-3" style={{ animationDelay: `${AFTER_BAR + 270}ms` }}>
               <Link
@@ -173,7 +176,7 @@ export default function HomePage() {
           <Perk icon={<TagIcon />} title="Desde 5 unidades" text="Pedidos pequeños o grandes" />
           <Perk icon={<TruckIcon />} title="Entrega a domicilio" text="Quito y los valles" />
           <Perk icon={<WhatsappLogo size={22} />} title="Pagas por WhatsApp" text="Transferencia o Deuna" />
-          <Perk icon={<BrushIcon />} title="Tu diseño como quieras" text="Canva, archivo o chat" />
+          <Perk icon={<BrushIcon />} title="Sin costos escondidos" text="IVA y envío claros desde el inicio" />
         </ul>
       </section>
 
@@ -187,8 +190,11 @@ export default function HomePage() {
             <h2 id="todo-titulo" className="text-3xl font-semibold tracking-tight md:text-4xl">
               Todo lo que imprimimos
             </h2>
-            <p className="mt-2 max-w-lg leading-7 text-ink-soft">{LAUNCH_PRODUCTS.length + 1} productos para tu marca. Elige uno y ármalo a tu medida.</p>
+            <p className="mt-2 max-w-lg leading-7 text-ink-soft">{LAUNCH_PRODUCTS.length + 1} productos. Elige uno y ármalo a tu medida.</p>
           </div>
+          <Link href="/productos" className="inline-flex min-h-11 items-center rounded-md text-sm font-semibold text-brand-deep underline-offset-4 hover:underline">
+            Ver por categoría →
+          </Link>
         </div>
         <div className="mt-8">
           <ProductRail label="Productos">
@@ -210,26 +216,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ---------- Catálogo ---------- */}
-      <section id="que-imprimir" className="mx-auto w-full max-w-6xl scroll-mt-28 px-5 py-16 md:px-8 md:py-20" aria-labelledby="que-imprimir-titulo">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h2 id="que-imprimir-titulo" className="text-3xl font-semibold tracking-tight md:text-4xl">
-              Por categoría
-            </h2>
-            <p className="mt-2 max-w-lg leading-7 text-ink-soft">Promocionales, textil, empaque, papelería y tarjetas, todo con tu marca.</p>
-          </div>
-          <Link href="/productos" className="inline-flex min-h-11 items-center text-sm font-semibold text-brand underline-offset-4 hover:underline">
-            Ver todo
-          </Link>
-        </div>
-        <div className="mt-8">
-          <FamilyGrid />
-        </div>
-      </section>
-
       {/* ---------- Para qué ---------- */}
-      <section className="bg-paper-deep" aria-labelledby="para-que">
+      <section data-season-only="normal" className="bg-paper-deep" aria-labelledby="para-que">
         <div className="mx-auto w-full max-w-6xl px-5 py-16 md:px-8 md:py-20">
           <h2 id="para-que" className="text-3xl font-semibold tracking-tight md:text-4xl">
             ¿Para qué lo necesitas?
@@ -311,7 +299,7 @@ export default function HomePage() {
             Preguntas frecuentes
           </h2>
           <div className="mt-8 divide-y divide-line overflow-hidden rounded-[22px] border border-line bg-sheet">
-            {FAQS.slice(0, 6).map((faq) => (
+            {FAQS.slice(1, 7).map((faq) => (
               <details key={faq.question} className="group px-5">
                 <summary className="-mx-2 flex min-h-14 cursor-pointer list-none rounded-xl px-2 focus-visible:-outline-offset-2 items-center justify-between gap-4 py-4 font-semibold [&::-webkit-details-marker]:hidden">
                   {faq.question}

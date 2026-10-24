@@ -17,7 +17,7 @@ export const FAMILIES: Family[] = [
     slug: "promocionales",
     label: "Promocionales",
     live: false,
-    note: "Esferos, toma todos y tazas con tu marca.",
+    note: "Esferos, toma todos y tazas.",
   },
   {
     slug: "textil",
@@ -41,7 +41,7 @@ export const FAMILIES: Family[] = [
     slug: "papeleria",
     label: "Papelería",
     live: false,
-    note: "Calendarios y cuadernos con tu marca.",
+    note: "Calendarios y cuadernos.",
   },
   {
     slug: "pegatinas",
