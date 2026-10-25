@@ -40,6 +40,26 @@ import valentinTarjetasDePresentacion from "@/assets/productos/san-valentin/tarj
 import valentinGorras from "@/assets/productos/san-valentin/gorras.webp";
 import valentinEtiquetas from "@/assets/productos/san-valentin/etiquetas.webp";
 import valentinCuadernos from "@/assets/productos/san-valentin/cuadernos.webp";
+import madreTazasMugs from "@/assets/productos/dia-madre/tazas-mugs.webp";
+import madreTarjetasDePresentacion from "@/assets/productos/dia-madre/tarjetas-de-presentacion.webp";
+import madreGorras from "@/assets/productos/dia-madre/gorras.webp";
+import madreEtiquetas from "@/assets/productos/dia-madre/etiquetas.webp";
+import madreCuadernos from "@/assets/productos/dia-madre/cuadernos.webp";
+import padreTazasMugs from "@/assets/productos/dia-padre/tazas-mugs.webp";
+import padreTarjetasDePresentacion from "@/assets/productos/dia-padre/tarjetas-de-presentacion.webp";
+import padreGorras from "@/assets/productos/dia-padre/gorras.webp";
+import padreEtiquetas from "@/assets/productos/dia-padre/etiquetas.webp";
+import padreCuadernos from "@/assets/productos/dia-padre/cuadernos.webp";
+import clasesTazasMugs from "@/assets/productos/regreso-clases/tazas-mugs.webp";
+import clasesTarjetasDePresentacion from "@/assets/productos/regreso-clases/tarjetas-de-presentacion.webp";
+import clasesGorras from "@/assets/productos/regreso-clases/gorras.webp";
+import clasesEtiquetas from "@/assets/productos/regreso-clases/etiquetas.webp";
+import clasesCuadernos from "@/assets/productos/regreso-clases/cuadernos.webp";
+import finTazasMugs from "@/assets/productos/fin-de-ano/tazas-mugs.webp";
+import finTarjetasDePresentacion from "@/assets/productos/fin-de-ano/tarjetas-de-presentacion.webp";
+import finGorras from "@/assets/productos/fin-de-ano/gorras.webp";
+import finEtiquetas from "@/assets/productos/fin-de-ano/etiquetas.webp";
+import finCuadernos from "@/assets/productos/fin-de-ano/cuadernos.webp";
 
 /*
  * Fotos de referencia de cada producto (y de las familias que aún no tienen): mockups de estudio generados con
@@ -138,6 +158,34 @@ const SEASON_PHOTOS: Record<string, Record<string, StaticImageData>> = {
     "gorras": quitoGorras,
     "etiquetas": quitoEtiquetas,
     "cuadernos": quitoCuadernos,
+  },
+  "dia-madre": {
+    "tazas-mugs": madreTazasMugs,
+    "tarjetas-de-presentacion": madreTarjetasDePresentacion,
+    "gorras": madreGorras,
+    "etiquetas": madreEtiquetas,
+    "cuadernos": madreCuadernos,
+  },
+  "dia-padre": {
+    "tazas-mugs": padreTazasMugs,
+    "tarjetas-de-presentacion": padreTarjetasDePresentacion,
+    "gorras": padreGorras,
+    "etiquetas": padreEtiquetas,
+    "cuadernos": padreCuadernos,
+  },
+  "regreso-clases": {
+    "tazas-mugs": clasesTazasMugs,
+    "tarjetas-de-presentacion": clasesTarjetasDePresentacion,
+    "gorras": clasesGorras,
+    "etiquetas": clasesEtiquetas,
+    "cuadernos": clasesCuadernos,
+  },
+  "fin-de-ano": {
+    "tazas-mugs": finTazasMugs,
+    "tarjetas-de-presentacion": finTarjetasDePresentacion,
+    "gorras": finGorras,
+    "etiquetas": finEtiquetas,
+    "cuadernos": finCuadernos,
   },
 };
 
