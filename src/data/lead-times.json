@@ -1,34 +1,34 @@
 {
   "CAL": [
     {
+      "cantidad": 25,
+      "express": null,
+      "priority": null,
+      "standard": 120
+    },
+    {
       "cantidad": 50,
       "express": null,
       "priority": null,
-      "standard": 72
+      "standard": 120
     },
     {
       "cantidad": 100,
       "express": null,
       "priority": null,
-      "standard": 72
+      "standard": 120
     },
     {
       "cantidad": 250,
       "express": null,
       "priority": null,
-      "standard": 72
+      "standard": 120
     },
     {
       "cantidad": 500,
       "express": null,
       "priority": null,
-      "standard": 72
-    },
-    {
-      "cantidad": 1000,
-      "express": null,
-      "priority": null,
-      "standard": 72
+      "standard": 120
     }
   ],
   "CAM": [
@@ -36,31 +36,31 @@
       "cantidad": 25,
       "express": null,
       "priority": null,
-      "standard": 192
+      "standard": 120
     },
     {
       "cantidad": 50,
       "express": null,
       "priority": null,
-      "standard": 192
+      "standard": 120
     },
     {
       "cantidad": 100,
       "express": null,
       "priority": null,
-      "standard": 192
+      "standard": 120
     },
     {
       "cantidad": 250,
       "express": null,
       "priority": null,
-      "standard": 192
+      "standard": 120
     },
     {
       "cantidad": 500,
       "express": null,
       "priority": null,
-      "standard": 192
+      "standard": 120
     }
   ],
   "CUA": [
@@ -100,25 +100,25 @@
       "cantidad": 100,
       "express": null,
       "priority": null,
-      "standard": 192
+      "standard": 120
     },
     {
       "cantidad": 250,
       "express": null,
       "priority": null,
-      "standard": 192
+      "standard": 120
     },
     {
       "cantidad": 500,
       "express": null,
       "priority": null,
-      "standard": 192
+      "standard": 120
     },
     {
       "cantidad": 1000,
       "express": null,
       "priority": null,
-      "standard": 192
+      "standard": 120
     }
   ],
   "ETQ": [
@@ -126,63 +126,63 @@
       "cantidad": 50,
       "express": null,
       "priority": null,
-      "standard": 72
+      "standard": 120
     },
     {
       "cantidad": 100,
       "express": null,
       "priority": null,
-      "standard": 72
+      "standard": 120
     },
     {
       "cantidad": 250,
       "express": null,
       "priority": null,
-      "standard": 72
+      "standard": 120
     },
     {
       "cantidad": 500,
       "express": null,
       "priority": null,
-      "standard": 72
+      "standard": 120
     },
     {
       "cantidad": 1000,
       "express": null,
       "priority": null,
-      "standard": 72
+      "standard": 120
     }
   ],
   "GOR": [
     {
-      "cantidad": 25,
-      "express": null,
-      "priority": null,
-      "standard": 192
-    },
-    {
       "cantidad": 50,
       "express": null,
       "priority": null,
-      "standard": 192
+      "standard": 120
     },
     {
       "cantidad": 100,
       "express": null,
       "priority": null,
-      "standard": 192
+      "standard": 120
     },
     {
       "cantidad": 250,
       "express": null,
       "priority": null,
-      "standard": 192
+      "standard": 120
     },
     {
       "cantidad": 500,
       "express": null,
       "priority": null,
-      "standard": 192
+      "standard": 120
+    },
+    {
+      "cantidad": 1000,
+      "express": null,
+      "priority": null,
+      "standard": 120
     }
   ],
   "PRG": [
@@ -190,101 +190,89 @@
       "cantidad": 100,
       "express": null,
       "priority": null,
-      "standard": 72
+      "standard": 120
     },
     {
       "cantidad": 250,
       "express": null,
       "priority": null,
-      "standard": 72
+      "standard": 120
     },
     {
       "cantidad": 500,
       "express": null,
       "priority": null,
-      "standard": 72
+      "standard": 120
     },
     {
       "cantidad": 1000,
       "express": null,
       "priority": null,
-      "standard": 72
+      "standard": 120
     }
   ],
   "TAZ": [
     {
-      "cantidad": 5,
+      "cantidad": 25,
       "express": null,
       "priority": null,
-      "standard": 192
-    },
-    {
-      "cantidad": 10,
-      "express": null,
-      "priority": null,
-      "standard": 192
+      "standard": 120
     },
     {
       "cantidad": 50,
       "express": null,
       "priority": null,
-      "standard": 192
+      "standard": 120
     },
     {
       "cantidad": 100,
       "express": null,
       "priority": null,
-      "standard": 192
+      "standard": 120
     },
     {
       "cantidad": 250,
       "express": null,
       "priority": null,
-      "standard": 192
+      "standard": 120
     },
     {
       "cantidad": 500,
       "express": null,
       "priority": null,
-      "standard": 192
+      "standard": 120
     }
   ],
   "TMT": [
     {
-      "cantidad": 5,
+      "cantidad": 25,
       "express": null,
       "priority": null,
-      "standard": 192
-    },
-    {
-      "cantidad": 10,
-      "express": null,
-      "priority": null,
-      "standard": 192
+      "standard": 120
     },
     {
       "cantidad": 50,
       "express": null,
       "priority": null,
-      "standard": 192
+      "standard": 120
     },
     {
       "cantidad": 100,
       "express": null,
       "priority": null,
-      "standard": 192
+      "standard": 120
     },
     {
       "cantidad": 250,
       "express": null,
       "priority": null,
-      "standard": 192
+      "standard": 120
     },
     {
       "cantidad": 500,
       "express": null,
       "priority": null,
-      "standard": 192
+      "standard": 120
     }
   ],
   "TOT": [
@@ -292,31 +280,31 @@
       "cantidad": 25,
       "express": null,
       "priority": null,
-      "standard": 192
+      "standard": 120
     },
     {
       "cantidad": 50,
       "express": null,
       "priority": null,
-      "standard": 192
+      "standard": 120
     },
     {
       "cantidad": 100,
       "express": null,
       "priority": null,
-      "standard": 192
+      "standard": 120
     },
     {
       "cantidad": 250,
       "express": null,
       "priority": null,
-      "standard": 192
+      "standard": 120
     },
     {
       "cantidad": 500,
       "express": null,
       "priority": null,
-      "standard": 192
+      "standard": 120
     }
   ],
   "TPR": [
@@ -353,34 +341,40 @@
   ],
   "TRJ": [
     {
+      "cantidad": 10,
+      "express": null,
+      "priority": null,
+      "standard": 120
+    },
+    {
+      "cantidad": 25,
+      "express": null,
+      "priority": null,
+      "standard": 120
+    },
+    {
       "cantidad": 50,
       "express": null,
       "priority": null,
-      "standard": 72
+      "standard": 120
     },
     {
       "cantidad": 100,
       "express": null,
       "priority": null,
-      "standard": 72
+      "standard": 120
     },
     {
       "cantidad": 250,
       "express": null,
       "priority": null,
-      "standard": 72
+      "standard": 120
     },
     {
       "cantidad": 500,
       "express": null,
       "priority": null,
-      "standard": 72
-    },
-    {
-      "cantidad": 1000,
-      "express": null,
-      "priority": null,
-      "standard": 72
+      "standard": 120
     }
   ]
 }

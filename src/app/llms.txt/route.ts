@@ -5,6 +5,7 @@ import { FAMILIES, familyBySlug } from "@/lib/families";
 import { FAQS } from "@/lib/faq";
 import { HELP_CATEGORIES, articleHref, articlesIn } from "@/lib/help-center";
 import { explain } from "@/lib/glossary";
+import { formatUnitPrice, launchPriceFrom } from "@/lib/launch-prices";
 import { LAUNCH_PRODUCTS } from "@/lib/launch-products";
 import { formatUsd } from "@/lib/money";
 import { quote } from "@/lib/pricing";
@@ -30,13 +31,18 @@ function cardsPrices(): string {
   }).join("\n");
 }
 
+function priceLine(product: (typeof LAUNCH_PRODUCTS)[number]): string {
+  const from = launchPriceFrom(product.id, product.quantities);
+  return from !== null ? `Desde ${formatUnitPrice(from)} por unidad + IVA (referencial; el total se confirma por WhatsApp).` : "Precio por cotización.";
+}
+
 function launchSection(): string {
   return FAMILIES.filter((family) => LAUNCH_PRODUCTS.some((product) => product.family === family.slug))
     .map((family) => {
       const items = LAUNCH_PRODUCTS.filter((product) => product.family === family.slug)
         .map((product) => {
           const options = product.options.map((option) => `${option.label.toLowerCase()}: ${option.choices.join(", ")}`).join("; ");
-          return `- [${product.name}](${absoluteUrl(`/producto/${product.slug}`)}): ${product.summary} Opciones: ${options}. Desde ${product.quantities[0]} unidades. Producción: ${product.leadTime}. Precio por cotización.`;
+          return `- [${product.name}](${absoluteUrl(`/producto/${product.slug}`)}): ${product.summary} Opciones: ${options}. Desde ${product.quantities[0]} unidades. Producción: ${product.leadTime}. ${priceLine(product)}`;
         })
         .join("\n");
       return `### ${family.label}\n\n${items}`;
@@ -89,7 +95,7 @@ export function GET() {
 ${cardsPrices()}
 - El precio final, con acabados y envío, se calcula al instante en la web.
 
-## Otros productos (se cotizan por WhatsApp)
+## Otros productos (precio referencial por unidad; se piden por WhatsApp)
 
 ${launchSection()}
 

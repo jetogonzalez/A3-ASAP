@@ -2,10 +2,10 @@ import { leadHours, leadLabel, varies } from "@/lib/lead-times";
 /*
  * Productos de lanzamiento: cada uno tiene su página y se arma eligiendo
  * opciones, cantidad y entrega. Salen de la matriz de productos
- * (Matriz_Productos_ASAP.xlsx, hojas Productos y Opciones); si se cambia algo
- * allá, se cambia aquí. Todavía no llevan precio: la matriz no los tiene, y el
- * precio que ve el cliente lo calcula solo el servidor. El pedido sale por
- * WhatsApp con todo lo elegido y la tienda responde con precio y plazo.
+ * (Matriz_Productos_ASAP.xlsx, hojas Productos, Opciones y Precios); si se
+ * cambia algo allá, se cambia aquí. Muestran un precio referencial por unidad
+ * sin IVA (lib/launch-prices.ts); el pedido sale por WhatsApp con todo lo
+ * elegido y la tienda confirma el total y el plazo.
  */
 
 export type LaunchOption = {
@@ -41,9 +41,9 @@ const PRODUCTS: readonly LaunchProduct[] = [
     slug: "esferos",
     name: "Esferos",
     family: "promocionales",
-    summary: "Esferos con tu logo estampado, en versión económica o premium.",
+    summary: "Esferos con tu logo estampado: promocionales, económicos o premium.",
     options: [
-      { id: "tipo", label: "Tipo", choices: ["Económico", "Premium"] },
+      { id: "tipo", label: "Tipo", choices: ["Promocional", "Económico", "Premium"] },
       { id: "impresion", label: "Impresión", choices: ["Estampado"] },
     ],
     quantities: [100, 250, 500, 1000],
@@ -84,6 +84,7 @@ const PRODUCTS: readonly LaunchProduct[] = [
     summary: "Prendas estampadas en DTF para equipos, eventos o tu marca.",
     options: [
       { id: "prenda", label: "Prenda", choices: ["Camiseta", "Hoodie"] },
+      { id: "lados", label: "Lados", choices: ["1 lado", "2 lados"] },
       { id: "talla", label: "Tallas", choices: ["S", "M", "L", "XL", "Varias tallas"] },
       { id: "tintas", label: "Tintas", choices: ["Full color"] },
       { id: "impresion", label: "Impresión", choices: ["DTF"] },
@@ -96,13 +97,14 @@ const PRODUCTS: readonly LaunchProduct[] = [
     slug: "gorras",
     name: "Gorras",
     family: "textil",
-    summary: "Gorras talla única con tu logo al frente.",
+    summary: "Gorras dry fit o camioneras, talla única, con tu logo al frente.",
     options: [
+      { id: "tipo", label: "Tipo", choices: ["Dry fit", "Camionero"] },
       { id: "talla", label: "Talla", choices: ["Única"] },
       { id: "tintas", label: "Tintas", choices: ["Full color"] },
       { id: "impresion", label: "Impresión", choices: ["DTF"] },
     ],
-    quantities: [25, 50, 100, 250, 500],
+    quantities: [50, 100, 250, 500],
     leadTime: "8 días",
   },
   {
@@ -152,9 +154,9 @@ const PRODUCTS: readonly LaunchProduct[] = [
   {
     id: "TRJ",
     slug: "tarjetas-de-regalo",
-    name: "Tarjetas de regalo",
+    name: "Tarjetas de agradecimiento",
     family: "empaque",
-    summary: "Tarjetas de agradecimiento para acompañar cada compra.",
+    summary: "Tarjetas para dar las gracias en cada compra o regalo.",
     options: [
       { id: "tamano", label: "Tamaño", choices: ["A6", "A5", "9 × 5 cm plegada"] },
       { id: "papel", label: "Papel", choices: ["Couché 300 g", "Cartulina fina"] },

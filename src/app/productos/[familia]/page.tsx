@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: FamilyPageProps): Promise<Met
   return pageMetadata({
     title: `${family.label} con tu marca en Quito`,
     description: hasProducts
-      ? `${family.note} Con tu marca, se cotizan por WhatsApp y se entregan en Quito y los valles.`
+      ? `${family.note} Con tu marca y precio por unidad; se piden por WhatsApp y se entregan en Quito y los valles.`
       : `${family.note} Todavía no abrimos esta categoría.`,
     path: `/productos/${family.slug}`,
   });

@@ -2,6 +2,7 @@ import { PRODUCT, QUANTITIES, defaultConfiguration } from "@/lib/catalog";
 import { COMPANY } from "@/lib/company";
 import type { Faq } from "@/lib/faq";
 import type { LaunchProduct } from "@/lib/launch-products";
+import { launchPriceFrom, launchPriceTo } from "@/lib/launch-prices";
 import { quote } from "@/lib/pricing";
 import { absoluteUrl } from "@/lib/site";
 
@@ -134,6 +135,22 @@ export function cardsProductGraph(): Json {
   };
 }
 
+/* Rango de precio por unidad SIN IVA de la matriz (lib/launch-prices.ts). */
+function launchOffer(product: LaunchProduct): Json {
+  const low = launchPriceFrom(product.id, product.quantities);
+  const high = launchPriceTo(product.id, product.quantities);
+  if (low === null || high === null) return {};
+  return {
+    offers: {
+      "@type": "AggregateOffer",
+      priceCurrency: "USD",
+      lowPrice: low.toFixed(3),
+      highPrice: high.toFixed(3),
+      priceSpecification: { "@type": "UnitPriceSpecification", priceCurrency: "USD", valueAddedTaxIncluded: false },
+    },
+  };
+}
+
 export function launchProductGraph(product: LaunchProduct, familyLabel?: string): Json {
   const path = `/producto/${product.slug}`;
   return {
@@ -148,6 +165,7 @@ export function launchProductGraph(product: LaunchProduct, familyLabel?: string)
         image: absoluteUrl(`${path}/opengraph-image`),
         url: absoluteUrl(path),
         brand: { "@id": ORG_ID },
+        ...launchOffer(product),
         additionalProperty: product.options.map((option) => ({
           "@type": "PropertyValue",
           name: option.label,

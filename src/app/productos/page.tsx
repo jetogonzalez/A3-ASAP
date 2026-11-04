@@ -11,7 +11,7 @@ import { launchProductsFor, searchLaunchProducts } from "@/lib/launch-products";
 
 export const metadata: Metadata = pageMetadata({
   title: "Productos personalizados",
-  description: "Tarjetas de presentación en línea y, por cotización, esferos, tomatodos, tazas, camisetas, hoodies, gorras, tote bags, etiquetas, papel de regalo, calendarios y cuadernos con tu marca.",
+  description: "Tarjetas de presentación en línea y esferos, tomatodos, tazas, camisetas, hoodies, gorras, tote bags, etiquetas, papel de regalo, calendarios y cuadernos con tu marca, con precio por unidad.",
   path: "/productos",
 });
 
@@ -38,7 +38,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
           ? `No hay resultados para “${q}”. Mira las categorías o escríbenos por WhatsApp y te ayudamos a encontrarlo.`
           : q
             ? `Resultados para “${q}”.`
-            : "Todo con tu marca. Las tarjetas se pagan aquí mismo; lo demás lo armas y te lo cotizamos por WhatsApp."}
+            : "Todo con tu marca. Las tarjetas se pagan aquí mismo; lo demás lo armas, ves el precio por unidad y te confirmamos el total por WhatsApp."}
       </p>
 
       {q && matches ? (

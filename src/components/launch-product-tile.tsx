@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { ProductPhoto } from "@/components/product-photo";
 import { inkFor } from "@/lib/palette";
+import { formatUnitPrice, launchPriceFrom } from "@/lib/launch-prices";
 import { launchProductHref, type LaunchProduct } from "@/lib/launch-products";
 
 /** Tarjeta de un producto de lanzamiento: lleva a su página para armarlo. */
 export function LaunchProductTile({ product, familyLabel }: { product: LaunchProduct; familyLabel?: string }) {
   const ink = inkFor(product.family);
+  const priceFrom = launchPriceFrom(product.id, product.quantities);
   return (
     <Link
       href={launchProductHref(product)}
@@ -37,6 +39,11 @@ export function LaunchProductTile({ product, familyLabel }: { product: LaunchPro
           </span>
         </span>
         <span className="text-sm leading-5 text-ink-soft">{product.summary}</span>
+        {priceFrom !== null ? (
+          <span className="mt-1 text-sm">
+            Desde <span className="font-semibold tabular-nums">{formatUnitPrice(priceFrom)}</span> c/u + IVA
+          </span>
+        ) : null}
         <span className="mt-auto flex flex-wrap gap-1.5 pt-3 text-xs font-semibold">
           <span className="family-chip rounded-full px-2.5 py-1" style={{ background: ink.tint, color: ink.deep }}>
             Desde {product.quantities[0].toLocaleString("es-EC")} u.

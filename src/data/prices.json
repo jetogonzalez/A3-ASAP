@@ -1,0 +1,784 @@
+{
+  "CAL": [
+    {
+      "variante": "Plegado 30 × 10 cm",
+      "cantidad": 25,
+      "precio": 3.0229
+    },
+    {
+      "variante": "Plegado 30 × 10 cm",
+      "cantidad": 50,
+      "precio": 2.1043
+    },
+    {
+      "variante": "Plegado 30 × 10 cm",
+      "cantidad": 100,
+      "precio": 1.6736
+    },
+    {
+      "variante": "Plegado 30 × 10 cm",
+      "cantidad": 250,
+      "precio": 1.002
+    },
+    {
+      "variante": "Plegado 30 × 10 cm",
+      "cantidad": 500,
+      "precio": 0.911
+    },
+    {
+      "variante": "Plegado A5",
+      "cantidad": 25,
+      "precio": 2.7371
+    },
+    {
+      "variante": "Plegado A5",
+      "cantidad": 50,
+      "precio": 1.9614
+    },
+    {
+      "variante": "Plegado A5",
+      "cantidad": 100,
+      "precio": 1.6021
+    },
+    {
+      "variante": "Plegado A5",
+      "cantidad": 250,
+      "precio": 0.9734
+    },
+    {
+      "variante": "Plegado A5",
+      "cantidad": 500,
+      "precio": 0.8967
+    },
+    {
+      "variante": "Sobre mesa A5 · 1 lado",
+      "cantidad": 25,
+      "precio": 5.7143
+    },
+    {
+      "variante": "Sobre mesa A5 · 1 lado",
+      "cantidad": 50,
+      "precio": 4.4714
+    },
+    {
+      "variante": "Sobre mesa A5 · 1 lado",
+      "cantidad": 100,
+      "precio": 3.5643
+    },
+    {
+      "variante": "Sobre mesa A5 · 1 lado",
+      "cantidad": 250,
+      "precio": 3.2343
+    },
+    {
+      "variante": "Sobre mesa A5 · 1 lado",
+      "cantidad": 500,
+      "precio": 3.1329
+    },
+    {
+      "variante": "Sobre mesa A5 · 2 lados",
+      "cantidad": 25,
+      "precio": 8.3714
+    },
+    {
+      "variante": "Sobre mesa A5 · 2 lados",
+      "cantidad": 50,
+      "precio": 6.4429
+    },
+    {
+      "variante": "Sobre mesa A5 · 2 lados",
+      "cantidad": 100,
+      "precio": 6.0071
+    },
+    {
+      "variante": "Sobre mesa A5 · 2 lados",
+      "cantidad": 250,
+      "precio": 5.6771
+    },
+    {
+      "variante": "Sobre mesa A5 · 2 lados",
+      "cantidad": 500,
+      "precio": 5.5757
+    },
+    {
+      "variante": "Sobre mesa A6 · 1 lado",
+      "cantidad": 25,
+      "precio": 3.9571
+    },
+    {
+      "variante": "Sobre mesa A6 · 1 lado",
+      "cantidad": 50,
+      "precio": 2.7143
+    },
+    {
+      "variante": "Sobre mesa A6 · 1 lado",
+      "cantidad": 100,
+      "precio": 2.2786
+    },
+    {
+      "variante": "Sobre mesa A6 · 1 lado",
+      "cantidad": 250,
+      "precio": 1.9486
+    },
+    {
+      "variante": "Sobre mesa A6 · 1 lado",
+      "cantidad": 500,
+      "precio": 1.8471
+    },
+    {
+      "variante": "Sobre mesa A6 · 2 lados",
+      "cantidad": 25,
+      "precio": 4.8571
+    },
+    {
+      "variante": "Sobre mesa A6 · 2 lados",
+      "cantidad": 50,
+      "precio": 3.8714
+    },
+    {
+      "variante": "Sobre mesa A6 · 2 lados",
+      "cantidad": 100,
+      "precio": 3.4357
+    },
+    {
+      "variante": "Sobre mesa A6 · 2 lados",
+      "cantidad": 250,
+      "precio": 3.1057
+    },
+    {
+      "variante": "Sobre mesa A6 · 2 lados",
+      "cantidad": 500,
+      "precio": 3.0043
+    }
+  ],
+  "CAM": [
+    {
+      "variante": "Camiseta 1 lado",
+      "cantidad": 25,
+      "precio": 11.4
+    },
+    {
+      "variante": "Camiseta 1 lado",
+      "cantidad": 50,
+      "precio": 10.6571
+    },
+    {
+      "variante": "Camiseta 1 lado",
+      "cantidad": 100,
+      "precio": 9.9143
+    },
+    {
+      "variante": "Camiseta 1 lado",
+      "cantidad": 250,
+      "precio": 9.4143
+    },
+    {
+      "variante": "Camiseta 1 lado",
+      "cantidad": 500,
+      "precio": 9.2
+    },
+    {
+      "variante": "Camiseta 2 lados",
+      "cantidad": 25,
+      "precio": 14.3
+    },
+    {
+      "variante": "Camiseta 2 lados",
+      "cantidad": 50,
+      "precio": 13.0857
+    },
+    {
+      "variante": "Camiseta 2 lados",
+      "cantidad": 100,
+      "precio": 11.8143
+    },
+    {
+      "variante": "Camiseta 2 lados",
+      "cantidad": 250,
+      "precio": 11.1286
+    },
+    {
+      "variante": "Camiseta 2 lados",
+      "cantidad": 500,
+      "precio": 10.8429
+    },
+    {
+      "variante": "Hoodie 1 lado",
+      "cantidad": 25,
+      "precio": 28.0857
+    },
+    {
+      "variante": "Hoodie 1 lado",
+      "cantidad": 50,
+      "precio": 27.0429
+    },
+    {
+      "variante": "Hoodie 1 lado",
+      "cantidad": 100,
+      "precio": 25.8571
+    },
+    {
+      "variante": "Hoodie 1 lado",
+      "cantidad": 250,
+      "precio": 25.2571
+    },
+    {
+      "variante": "Hoodie 2 lados",
+      "cantidad": 25,
+      "precio": 30.9429
+    },
+    {
+      "variante": "Hoodie 2 lados",
+      "cantidad": 50,
+      "precio": 29.3857
+    },
+    {
+      "variante": "Hoodie 2 lados",
+      "cantidad": 100,
+      "precio": 27.9
+    },
+    {
+      "variante": "Hoodie 2 lados",
+      "cantidad": 250,
+      "precio": 27.1429
+    }
+  ],
+  "CUA": [
+    {
+      "variante": "A4",
+      "cantidad": 50,
+      "precio": 5.4286
+    },
+    {
+      "variante": "A4",
+      "cantidad": 100,
+      "precio": 5.2571
+    },
+    {
+      "variante": "A4",
+      "cantidad": 250,
+      "precio": 4.6
+    },
+    {
+      "variante": "A4",
+      "cantidad": 500,
+      "precio": 4.2714
+    },
+    {
+      "variante": "A4",
+      "cantidad": 1000,
+      "precio": 3.9429
+    },
+    {
+      "variante": "A5",
+      "cantidad": 50,
+      "precio": 3.4429
+    },
+    {
+      "variante": "A5",
+      "cantidad": 100,
+      "precio": 3.3429
+    },
+    {
+      "variante": "A5",
+      "cantidad": 250,
+      "precio": 3.1
+    },
+    {
+      "variante": "A5",
+      "cantidad": 500,
+      "precio": 2.9714
+    },
+    {
+      "variante": "A5",
+      "cantidad": 1000,
+      "precio": 2.7714
+    }
+  ],
+  "ESF": [
+    {
+      "variante": "Económico",
+      "cantidad": 100,
+      "precio": 1.0571
+    },
+    {
+      "variante": "Económico",
+      "cantidad": 250,
+      "precio": 0.8286
+    },
+    {
+      "variante": "Económico",
+      "cantidad": 500,
+      "precio": 0.6429
+    },
+    {
+      "variante": "Económico",
+      "cantidad": 1000,
+      "precio": 0.6143
+    },
+    {
+      "variante": "Premium",
+      "cantidad": 100,
+      "precio": 1.8
+    },
+    {
+      "variante": "Premium",
+      "cantidad": 250,
+      "precio": 1.5143
+    },
+    {
+      "variante": "Premium",
+      "cantidad": 500,
+      "precio": 1.3857
+    },
+    {
+      "variante": "Premium",
+      "cantidad": 1000,
+      "precio": 1.3429
+    },
+    {
+      "variante": "Promocional",
+      "cantidad": 100,
+      "precio": 0.9
+    },
+    {
+      "variante": "Promocional",
+      "cantidad": 250,
+      "precio": 0.6429
+    },
+    {
+      "variante": "Promocional",
+      "cantidad": 500,
+      "precio": 0.5286
+    },
+    {
+      "variante": "Promocional",
+      "cantidad": 1000,
+      "precio": 0.4714
+    }
+  ],
+  "ETQ": [
+    {
+      "variante": "3 × 3 cm",
+      "cantidad": 50,
+      "precio": 0.1086
+    },
+    {
+      "variante": "3 × 3 cm",
+      "cantidad": 100,
+      "precio": 0.0743
+    },
+    {
+      "variante": "3 × 3 cm",
+      "cantidad": 250,
+      "precio": 0.0729
+    },
+    {
+      "variante": "3 × 3 cm",
+      "cantidad": 500,
+      "precio": 0.0457
+    },
+    {
+      "variante": "3 × 3 cm",
+      "cantidad": 1000,
+      "precio": 0.0329
+    },
+    {
+      "variante": "5 × 5 cm",
+      "cantidad": 50,
+      "precio": 0.1843
+    },
+    {
+      "variante": "5 × 5 cm",
+      "cantidad": 100,
+      "precio": 0.17
+    },
+    {
+      "variante": "5 × 5 cm",
+      "cantidad": 250,
+      "precio": 0.0914
+    },
+    {
+      "variante": "5 × 5 cm",
+      "cantidad": 500,
+      "precio": 0.0671
+    },
+    {
+      "variante": "5 × 5 cm",
+      "cantidad": 1000,
+      "precio": 0.0514
+    },
+    {
+      "variante": "6 × 6 cm",
+      "cantidad": 50,
+      "precio": 0.2243
+    },
+    {
+      "variante": "6 × 6 cm",
+      "cantidad": 100,
+      "precio": 0.1814
+    },
+    {
+      "variante": "6 × 6 cm",
+      "cantidad": 250,
+      "precio": 0.1
+    },
+    {
+      "variante": "6 × 6 cm",
+      "cantidad": 500,
+      "precio": 0.0757
+    },
+    {
+      "variante": "6 × 6 cm",
+      "cantidad": 1000,
+      "precio": 0.06
+    }
+  ],
+  "GOR": [
+    {
+      "variante": "Camionero",
+      "cantidad": 50,
+      "precio": 4.3143
+    },
+    {
+      "variante": "Camionero",
+      "cantidad": 100,
+      "precio": 3.8143
+    },
+    {
+      "variante": "Camionero",
+      "cantidad": 250,
+      "precio": 3.5286
+    },
+    {
+      "variante": "Camionero",
+      "cantidad": 500,
+      "precio": 3.3571
+    },
+    {
+      "variante": "Camionero",
+      "cantidad": 1000,
+      "precio": 3.2714
+    },
+    {
+      "variante": "Dry fit",
+      "cantidad": 50,
+      "precio": 4.3714
+    },
+    {
+      "variante": "Dry fit",
+      "cantidad": 100,
+      "precio": 3.8714
+    },
+    {
+      "variante": "Dry fit",
+      "cantidad": 250,
+      "precio": 3.5857
+    },
+    {
+      "variante": "Dry fit",
+      "cantidad": 500,
+      "precio": 3.4143
+    },
+    {
+      "variante": "Dry fit",
+      "cantidad": 1000,
+      "precio": 3.3286
+    }
+  ],
+  "PRG": [
+    {
+      "variante": "45 × 32 cm",
+      "cantidad": 100,
+      "precio": 0.7429
+    },
+    {
+      "variante": "45 × 32 cm",
+      "cantidad": 250,
+      "precio": 0.4571
+    },
+    {
+      "variante": "45 × 32 cm",
+      "cantidad": 500,
+      "precio": 0.2571
+    },
+    {
+      "variante": "45 × 32 cm",
+      "cantidad": 1000,
+      "precio": 0.1571
+    },
+    {
+      "variante": "68 × 48 cm",
+      "cantidad": 100,
+      "precio": 1.3671
+    },
+    {
+      "variante": "68 × 48 cm",
+      "cantidad": 250,
+      "precio": 0.61
+    },
+    {
+      "variante": "68 × 48 cm",
+      "cantidad": 500,
+      "precio": 0.3443
+    },
+    {
+      "variante": "68 × 48 cm",
+      "cantidad": 1000,
+      "precio": 0.2114
+    }
+  ],
+  "TAZ": [
+    {
+      "variante": "Estándar",
+      "cantidad": 25,
+      "precio": 3.7714
+    },
+    {
+      "variante": "Estándar",
+      "cantidad": 50,
+      "precio": 3.0571
+    },
+    {
+      "variante": "Estándar",
+      "cantidad": 100,
+      "precio": 2.7857
+    },
+    {
+      "variante": "Estándar",
+      "cantidad": 250,
+      "precio": 2.6714
+    },
+    {
+      "variante": "Estándar",
+      "cantidad": 500,
+      "precio": 2.4857
+    }
+  ],
+  "TMT": [
+    {
+      "variante": "Metálico",
+      "cantidad": 25,
+      "precio": 8.2571
+    },
+    {
+      "variante": "Metálico",
+      "cantidad": 50,
+      "precio": 7.3286
+    },
+    {
+      "variante": "Metálico",
+      "cantidad": 100,
+      "precio": 6.8571
+    },
+    {
+      "variante": "Metálico",
+      "cantidad": 250,
+      "precio": 6.4857
+    },
+    {
+      "variante": "Metálico",
+      "cantidad": 500,
+      "precio": 6.2857
+    },
+    {
+      "variante": "Plástico",
+      "cantidad": 25,
+      "precio": 6.6143
+    },
+    {
+      "variante": "Plástico",
+      "cantidad": 50,
+      "precio": 5.4714
+    },
+    {
+      "variante": "Plástico",
+      "cantidad": 100,
+      "precio": 4.9286
+    },
+    {
+      "variante": "Plástico",
+      "cantidad": 250,
+      "precio": 4.5429
+    },
+    {
+      "variante": "Plástico",
+      "cantidad": 500,
+      "precio": 4.1429
+    }
+  ],
+  "TOT": [
+    {
+      "variante": "30 × 40 cm",
+      "cantidad": 25,
+      "precio": 5.8
+    },
+    {
+      "variante": "30 × 40 cm",
+      "cantidad": 50,
+      "precio": 5.0857
+    },
+    {
+      "variante": "30 × 40 cm",
+      "cantidad": 100,
+      "precio": 4.3714
+    },
+    {
+      "variante": "30 × 40 cm",
+      "cantidad": 250,
+      "precio": 4.1286
+    },
+    {
+      "variante": "30 × 40 cm",
+      "cantidad": 500,
+      "precio": 4.0571
+    },
+    {
+      "variante": "44 × 34 cm",
+      "cantidad": 25,
+      "precio": 6.8857
+    },
+    {
+      "variante": "44 × 34 cm",
+      "cantidad": 50,
+      "precio": 5.8571
+    },
+    {
+      "variante": "44 × 34 cm",
+      "cantidad": 100,
+      "precio": 5.6857
+    },
+    {
+      "variante": "44 × 34 cm",
+      "cantidad": 250,
+      "precio": 5.4
+    },
+    {
+      "variante": "44 × 34 cm",
+      "cantidad": 500,
+      "precio": 5.1286
+    }
+  ],
+  "TRJ": [
+    {
+      "variante": "A5 · 1 lado",
+      "cantidad": 10,
+      "precio": 0.68
+    },
+    {
+      "variante": "A5 · 1 lado",
+      "cantidad": 25,
+      "precio": 0.4823
+    },
+    {
+      "variante": "A5 · 1 lado",
+      "cantidad": 50,
+      "precio": 0.394
+    },
+    {
+      "variante": "A5 · 1 lado",
+      "cantidad": 100,
+      "precio": 0.3511
+    },
+    {
+      "variante": "A5 · 1 lado",
+      "cantidad": 250,
+      "precio": 0.2893
+    },
+    {
+      "variante": "A5 · 1 lado",
+      "cantidad": 500,
+      "precio": 0.2562
+    },
+    {
+      "variante": "A5 · 2 lados",
+      "cantidad": 10,
+      "precio": 1.0743
+    },
+    {
+      "variante": "A5 · 2 lados",
+      "cantidad": 25,
+      "precio": 0.7783
+    },
+    {
+      "variante": "A5 · 2 lados",
+      "cantidad": 50,
+      "precio": 0.7023
+    },
+    {
+      "variante": "A5 · 2 lados",
+      "cantidad": 100,
+      "precio": 0.5926
+    },
+    {
+      "variante": "A5 · 2 lados",
+      "cantidad": 250,
+      "precio": 0.5125
+    },
+    {
+      "variante": "A5 · 2 lados",
+      "cantidad": 500,
+      "precio": 0.4218
+    },
+    {
+      "variante": "A6 · 1 lado",
+      "cantidad": 10,
+      "precio": 0.6371
+    },
+    {
+      "variante": "A6 · 1 lado",
+      "cantidad": 25,
+      "precio": 0.3246
+    },
+    {
+      "variante": "A6 · 1 lado",
+      "cantidad": 50,
+      "precio": 0.2697
+    },
+    {
+      "variante": "A6 · 1 lado",
+      "cantidad": 100,
+      "precio": 0.197
+    },
+    {
+      "variante": "A6 · 1 lado",
+      "cantidad": 250,
+      "precio": 0.1746
+    },
+    {
+      "variante": "A6 · 1 lado",
+      "cantidad": 500,
+      "precio": 0.1446
+    },
+    {
+      "variante": "A6 · 2 lados",
+      "cantidad": 10,
+      "precio": 0.8114
+    },
+    {
+      "variante": "A6 · 2 lados",
+      "cantidad": 25,
+      "precio": 0.5349
+    },
+    {
+      "variante": "A6 · 2 lados",
+      "cantidad": 50,
+      "precio": 0.4177
+    },
+    {
+      "variante": "A6 · 2 lados",
+      "cantidad": 100,
+      "precio": 0.3177
+    },
+    {
+      "variante": "A6 · 2 lados",
+      "cantidad": 250,
+      "precio": 0.2935
+    },
+    {
+      "variante": "A6 · 2 lados",
+      "cantidad": 500,
+      "precio": 0.2562
+    }
+  ]
+}

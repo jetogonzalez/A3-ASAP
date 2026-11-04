@@ -35,7 +35,7 @@ export const FAMILIES: Family[] = [
     slug: "empaque",
     label: "Empaque y etiquetas",
     live: false,
-    note: "Papel de regalo, etiquetas y tarjetas de regalo.",
+    note: "Papel de regalo, etiquetas y tarjetas de agradecimiento.",
   },
   {
     slug: "papeleria",

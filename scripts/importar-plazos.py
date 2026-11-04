@@ -10,6 +10,13 @@ Uso:
 
 Después: npm test y publicar. Si una celda de horas está vacía, ese nivel
 queda «a confirmar» para esa cantidad.
+
+Reglas (las mismas en importar-precios.py):
+- ALIASES: productos de la matriz que en la web son uno solo (las dos gorras).
+- SKIP: productos que todavía no están en la web (MUGS, hasta aclarar si es
+  otro producto o reemplaza a Tazas).
+- KEEP: productos cuyo plazo se deja como está en la web hasta que el equipo
+  lo confirme (tarjetas: la matriz dice 120 h Standard; la web, 72 h).
 """
 import json
 import sys
@@ -18,6 +25,9 @@ from pathlib import Path
 import openpyxl
 
 LEVELS = ("express", "priority", "standard")
+ALIASES = {"GODF": "GOR", "GOC": "GOR"}
+SKIP = {"MUG"}
+KEEP = {"TPR"}
 
 
 def main(path: str) -> None:
@@ -33,18 +43,26 @@ def main(path: str) -> None:
         product, quantity, active = row[col["product_id"]], row[col["cantidad"]], row[col["activo"]]
         if not product or not quantity or str(active).strip().upper() == "NO":
             continue
-        entry = table.setdefault(str(product), {}).setdefault(int(quantity), {level: None for level in LEVELS})
+        product = ALIASES.get(str(product), str(product))
+        if product in SKIP or product in KEEP:
+            continue
+        entry = table.setdefault(product, {}).setdefault(int(quantity), {level: None for level in LEVELS})
         for level in LEVELS:
             hours = row[col[f"horas_{level}"]]
             if isinstance(hours, (int, float)) and hours > 0:
                 current = entry[level]
                 entry[level] = int(hours) if current is None else max(current, int(hours))
 
+    target = Path(__file__).resolve().parent.parent / "src" / "data" / "lead-times.json"
+    current = json.loads(target.read_text(encoding="utf-8")) if target.exists() else {}
     output = {
         product: [{"cantidad": quantity, **levels} for quantity, levels in sorted(rows.items())]
-        for product, rows in sorted(table.items())
+        for product, rows in table.items()
     }
-    target = Path(__file__).resolve().parent.parent / "src" / "data" / "lead-times.json"
+    for product in KEEP:
+        if product in current:
+            output[product] = current[product]
+    output = dict(sorted(output.items()))
     target.write_text(json.dumps(output, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"Listo: {sum(len(rows) for rows in output.values())} filas de {len(output)} productos en {target}")
 
