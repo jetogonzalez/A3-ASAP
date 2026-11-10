@@ -1,7 +1,8 @@
+import { formatUsd } from "@/lib/money";
 import Link from "next/link";
 import { ProductPhoto } from "@/components/product-photo";
 import { inkFor } from "@/lib/palette";
-import { launchProductHref, type LaunchProduct } from "@/lib/launch-products";
+import { launchProductHref, type LaunchProduct, launchFromCents } from "@/lib/launch-products";
 
 /** Tarjeta de un producto de lanzamiento: lleva a su página para armarlo. */
 export function LaunchProductTile({ product, familyLabel }: { product: LaunchProduct; familyLabel?: string }) {
@@ -39,7 +40,7 @@ export function LaunchProductTile({ product, familyLabel }: { product: LaunchPro
         <span className="text-sm leading-5 text-ink-soft">{product.summary}</span>
         <span className="mt-auto flex flex-wrap gap-1.5 pt-3 text-xs font-semibold">
           <span className="family-chip rounded-full px-2.5 py-1" style={{ background: ink.tint, color: ink.deep }}>
-            Desde {product.quantities[0].toLocaleString("es-EC")} u.
+            {launchFromCents(product) ? `Desde ${formatUsd(launchFromCents(product) ?? 0)} c/u` : `Desde ${product.quantities[0].toLocaleString("es-EC")} u.`}
           </span>
           <span className="rounded-full bg-paper-deep px-2.5 py-1 text-ink-soft">{product.leadTime}</span>
         </span>

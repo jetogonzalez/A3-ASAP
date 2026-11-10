@@ -22,6 +22,7 @@ export const MOCKUP_ZONES: Record<string, MockupZone> = {
   "tazas-mugs": { left: 41, top: 39, width: 16, height: 21 },
   "camisetas-hoodies": { left: 52, top: 39, width: 14, height: 15 },
   gorras: { left: 50.5, top: 36, width: 12.5, height: 15.5, rotate: -10 },
+  "gorras-camionero": { left: 50.5, top: 36, width: 12.5, height: 15.5, rotate: -10 },
   "tote-bags": { left: 40, top: 54, width: 21, height: 25 },
   "papel-regalo": { left: 60, top: 32, width: 8, height: 9, round: true },
   etiquetas: { left: 37, top: 35, width: 10, height: 12, round: true },

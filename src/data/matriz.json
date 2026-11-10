@@ -1,0 +1,2364 @@
+{
+ "version": "1.4",
+ "updated": "2026-10-24",
+ "ivaPercent": 15,
+ "speeds": {
+  "standard": {
+   "name": "Standard",
+   "surchargePercent": 0
+  },
+  "priority": {
+   "name": "Priority",
+   "surchargePercent": 50
+  },
+  "express": {
+   "name": "Express",
+   "surchargePercent": 75
+  }
+ },
+ "products": [
+  {
+   "id": "ESF",
+   "slug": "esferos",
+   "name": "Esferos",
+   "category": "Promocionales",
+   "summary": "Esferos con tu logo estampado, en versión económica o premium.",
+   "quantities": [
+    100,
+    250,
+    500,
+    1000
+   ],
+   "minimum": 100,
+   "priority": true,
+   "express": true,
+   "variants": [
+    {
+     "code": "PROM",
+     "name": "Promocional",
+     "hours": {
+      "standard": 120,
+      "priority": 96,
+      "express": 72
+     },
+     "unitCents": {
+      "100": 90.0,
+      "250": 64.2857,
+      "500": 52.8571,
+      "1000": 47.1429
+     }
+    },
+    {
+     "code": "ECO",
+     "name": "Económico",
+     "hours": {
+      "standard": 120,
+      "priority": 96,
+      "express": 72
+     },
+     "unitCents": {
+      "100": 105.7143,
+      "250": 82.8571,
+      "500": 64.2857,
+      "1000": 61.4286
+     }
+    },
+    {
+     "code": "PRE",
+     "name": "Premium",
+     "hours": {
+      "standard": 120,
+      "priority": 96,
+      "express": 72
+     },
+     "unitCents": {
+      "100": 180.0,
+      "250": 151.4286,
+      "500": 138.5714,
+      "1000": 134.2857
+     }
+    }
+   ]
+  },
+  {
+   "id": "TMT",
+   "slug": "toma-todos",
+   "name": "Toma todos",
+   "category": "Promocionales",
+   "summary": "Botellas de plástico o metal con tu diseño a todo color.",
+   "quantities": [
+    5,
+    10,
+    25,
+    50,
+    100,
+    250,
+    500
+   ],
+   "minimum": 5,
+   "priority": true,
+   "express": true,
+   "variants": [
+    {
+     "code": "PLA",
+     "name": "Plástico",
+     "hours": {
+      "standard": 120,
+      "priority": 96,
+      "express": 72
+     },
+     "unitCents": {
+      "5": 815.7143,
+      "10": 732.8571,
+      "25": 661.4286,
+      "50": 547.1429,
+      "100": 492.8571,
+      "250": 454.2857,
+      "500": 414.2857
+     }
+    },
+    {
+     "code": "MET",
+     "name": "Metálico",
+     "hours": {
+      "standard": 120,
+      "priority": 96,
+      "express": 72
+     },
+     "unitCents": {
+      "5": 927.1429,
+      "10": 871.4286,
+      "25": 825.7143,
+      "50": 732.8571,
+      "100": 685.7143,
+      "250": 648.5714,
+      "500": 628.5714
+     }
+    }
+   ]
+  },
+  {
+   "id": "TAZ",
+   "slug": "tazas-mugs",
+   "name": "Tazas y mugs",
+   "category": "Promocionales",
+   "summary": "Tazas con fotos, frases o tu logo",
+   "quantities": [
+    5,
+    10,
+    25,
+    50,
+    100,
+    250,
+    500
+   ],
+   "minimum": 5,
+   "priority": true,
+   "express": true,
+   "variants": [
+    {
+     "code": "STD",
+     "name": "Estándar",
+     "hours": {
+      "standard": 120,
+      "priority": 96,
+      "express": 72
+     },
+     "unitCents": {
+      "5": 444.2857,
+      "10": 404.2857,
+      "25": 377.1429,
+      "50": 305.7143,
+      "100": 278.5714,
+      "250": 267.1429,
+      "500": 248.5714
+     }
+    }
+   ]
+  },
+  {
+   "id": "CAM",
+   "slug": "camisetas-hoodies",
+   "name": "Camisetas y hoodies",
+   "category": "Textil",
+   "summary": "Prendas estampadas en DTF para equipos, eventos o tu marca.",
+   "quantities": [
+    25,
+    50,
+    100,
+    250,
+    500
+   ],
+   "minimum": 25,
+   "priority": true,
+   "express": true,
+   "variants": [
+    {
+     "code": "CAM1L",
+     "name": "Camiseta 1 lado",
+     "hours": {
+      "standard": 120,
+      "priority": 96,
+      "express": 72
+     },
+     "unitCents": {
+      "25": 1140.0,
+      "50": 1065.7143,
+      "100": 991.4286,
+      "250": 941.4286,
+      "500": 920.0
+     }
+    },
+    {
+     "code": "CAM2L",
+     "name": "Camiseta 2 lados",
+     "hours": {
+      "standard": 120,
+      "priority": 96,
+      "express": 72
+     },
+     "unitCents": {
+      "25": 1430.0,
+      "50": 1308.5714,
+      "100": 1181.4286,
+      "250": 1112.8571,
+      "500": 1084.2857
+     }
+    },
+    {
+     "code": "HOO1L",
+     "name": "Hoodie 1 lado",
+     "hours": {
+      "standard": 120,
+      "priority": 96,
+      "express": 72
+     },
+     "unitCents": {
+      "25": 2808.5714,
+      "50": 2704.2857,
+      "100": 2585.7143,
+      "250": 2525.7143,
+      "500": 2478.5714
+     }
+    },
+    {
+     "code": "HOO2L",
+     "name": "Hoodie 2 lados",
+     "hours": {
+      "standard": 120,
+      "priority": 96,
+      "express": 72
+     },
+     "unitCents": {
+      "25": 3094.2857,
+      "50": 2938.5714,
+      "100": 2790.0,
+      "250": 2714.2857,
+      "500": 2660.0
+     }
+    }
+   ]
+  },
+  {
+   "id": "GODF",
+   "slug": "gorras",
+   "name": "Gorras dry fit",
+   "category": "Textil",
+   "summary": "Gorras talla única con tu logo al frente.",
+   "quantities": [
+    50,
+    100,
+    250,
+    500,
+    1000
+   ],
+   "minimum": 50,
+   "priority": true,
+   "express": true,
+   "variants": [
+    {
+     "code": "STD",
+     "name": "Talla única",
+     "hours": {
+      "standard": 120,
+      "priority": 96,
+      "express": 72
+     },
+     "unitCents": {
+      "50": 437.1429,
+      "100": 387.1429,
+      "250": 358.5714,
+      "500": 341.4286,
+      "1000": 332.8571
+     }
+    }
+   ]
+  },
+  {
+   "id": "GOC",
+   "slug": "gorras-camionero",
+   "name": "Gorras camionero",
+   "category": "Textil",
+   "summary": "Gorras talla única con tu logo al frente.",
+   "quantities": [
+    50,
+    100,
+    250,
+    500,
+    1000
+   ],
+   "minimum": 50,
+   "priority": true,
+   "express": true,
+   "variants": [
+    {
+     "code": "STD",
+     "name": "Talla única",
+     "hours": {
+      "standard": 120,
+      "priority": 96,
+      "express": 72
+     },
+     "unitCents": {
+      "50": 431.4286,
+      "100": 381.4286,
+      "250": 352.8571,
+      "500": 335.7143,
+      "1000": 327.1429
+     }
+    }
+   ]
+  },
+  {
+   "id": "TOT",
+   "slug": "tote-bags",
+   "name": "Tote bags",
+   "category": "Textil",
+   "summary": "Bolsas de tela para tu tienda, ferias o regalos de marca.",
+   "quantities": [
+    25,
+    50,
+    100,
+    250,
+    500
+   ],
+   "minimum": 25,
+   "priority": true,
+   "express": true,
+   "variants": [
+    {
+     "code": "3040",
+     "name": "30 x 40 cm",
+     "hours": {
+      "standard": 120,
+      "priority": 96,
+      "express": 72
+     },
+     "unitCents": {
+      "25": 580.0,
+      "50": 508.5714,
+      "100": 437.1429,
+      "250": 412.8571,
+      "500": 405.7143
+     }
+    },
+    {
+     "code": "4434",
+     "name": "44 x 34 cm",
+     "hours": {
+      "standard": 120,
+      "priority": 96,
+      "express": 72
+     },
+     "unitCents": {
+      "25": 688.5714,
+      "50": 585.7143,
+      "100": 568.5714,
+      "250": 540.0,
+      "500": 512.8571
+     }
+    }
+   ]
+  },
+  {
+   "id": "PRG",
+   "slug": "papel-regalo",
+   "name": "Papel de regalo",
+   "category": "Empaques y etiquetas",
+   "summary": "Papel cera con tu patrón para envolver cada pedido.",
+   "quantities": [
+    100,
+    250,
+    500,
+    1000
+   ],
+   "minimum": 100,
+   "priority": true,
+   "express": true,
+   "variants": [
+    {
+     "code": "4532",
+     "name": "45 x 32 cm",
+     "hours": {
+      "standard": 120,
+      "priority": 72,
+      "express": 48
+     },
+     "unitCents": {
+      "100": 74.2857,
+      "250": 45.7143,
+      "500": 25.7143,
+      "1000": 15.7143
+     }
+    },
+    {
+     "code": "6848",
+     "name": "68 x 48 cm",
+     "hours": {
+      "standard": 120,
+      "priority": 72,
+      "express": 48
+     },
+     "unitCents": {
+      "100": 136.7143,
+      "250": 61.0,
+      "500": 34.4286,
+      "1000": 21.1429
+     }
+    }
+   ]
+  },
+  {
+   "id": "ETQ",
+   "slug": "etiquetas",
+   "name": "Etiquetas",
+   "category": "Empaques y etiquetas",
+   "summary": "Stickers adhesivos para sellar empaques o marcar productos.",
+   "quantities": [
+    50,
+    100,
+    250,
+    500,
+    1000
+   ],
+   "minimum": 50,
+   "priority": true,
+   "express": true,
+   "variants": [
+    {
+     "code": "3X3",
+     "name": "3 x 3 cm",
+     "hours": {
+      "standard": 120,
+      "priority": 72,
+      "express": 48
+     },
+     "unitCents": {
+      "50": 10.8571,
+      "100": 7.4286,
+      "250": 7.2857,
+      "500": 4.5714,
+      "1000": 3.2857
+     }
+    },
+    {
+     "code": "5X5",
+     "name": "5 x 5 cm",
+     "hours": {
+      "standard": 120,
+      "priority": 72,
+      "express": 48
+     },
+     "unitCents": {
+      "50": 18.4286,
+      "100": 17.0,
+      "250": 9.1429,
+      "500": 6.7143,
+      "1000": 5.1429
+     }
+    },
+    {
+     "code": "6X6",
+     "name": "6 x 6 cm",
+     "hours": {
+      "standard": 120,
+      "priority": 72,
+      "express": 48
+     },
+     "unitCents": {
+      "50": 22.4286,
+      "100": 18.1429,
+      "250": 10.0,
+      "500": 7.5714,
+      "1000": 6.0
+     }
+    }
+   ]
+  },
+  {
+   "id": "TRJ",
+   "slug": "tarjetas-de-regalo",
+   "name": "Tarjetas de agradecimiento",
+   "category": "Empaques y etiquetas",
+   "summary": "Tarjetas de agradecimiento para acompañar cada compra.",
+   "quantities": [
+    10,
+    25,
+    50,
+    100,
+    250,
+    500
+   ],
+   "minimum": 50,
+   "priority": true,
+   "express": true,
+   "variants": [
+    {
+     "code": "A5-1L",
+     "name": "A5-1LADO",
+     "hours": {
+      "standard": 120,
+      "priority": 72,
+      "express": 48
+     },
+     "unitCents": {
+      "10": 68.0,
+      "25": 48.2286,
+      "50": 39.4,
+      "100": 35.1143,
+      "250": 28.9257,
+      "500": 25.6229
+     }
+    },
+    {
+     "code": "A5-2L",
+     "name": "A5-2LADOS",
+     "hours": {
+      "standard": 120,
+      "priority": 72,
+      "express": 48
+     },
+     "unitCents": {
+      "10": 107.4286,
+      "25": 77.8286,
+      "50": 70.2286,
+      "100": 59.2571,
+      "250": 51.2457,
+      "500": 42.1829
+     }
+    },
+    {
+     "code": "A6-1L",
+     "name": "A6-1LADO",
+     "hours": {
+      "standard": 120,
+      "priority": 72,
+      "express": 48
+     },
+     "unitCents": {
+      "10": 63.7143,
+      "25": 32.4571,
+      "50": 26.9714,
+      "100": 19.7,
+      "250": 17.4629,
+      "500": 14.4629
+     }
+    },
+    {
+     "code": "A6-2L",
+     "name": "A6-2LADOS",
+     "hours": {
+      "standard": 120,
+      "priority": 72,
+      "express": 48
+     },
+     "unitCents": {
+      "10": 81.1429,
+      "25": 53.4857,
+      "50": 41.7714,
+      "100": 31.7714,
+      "250": 29.3486,
+      "500": 25.6229
+     }
+    }
+   ]
+  },
+  {
+   "id": "CAL",
+   "slug": "calendarios",
+   "name": "Calendarios",
+   "category": "Papelería",
+   "summary": "Calendarios de escritorio con tu marca para todo el año.",
+   "quantities": [
+    25,
+    50,
+    100,
+    250,
+    500
+   ],
+   "minimum": 50,
+   "priority": true,
+   "express": true,
+   "variants": [
+    {
+     "code": "MESA - A5 - 1L",
+     "name": "Sobre mesa (12 pág)",
+     "hours": {
+      "standard": 120,
+      "priority": 72,
+      "express": 48
+     },
+     "unitCents": {
+      "25": 571.4286,
+      "50": 447.1429,
+      "100": 356.4286,
+      "250": 323.4286,
+      "500": 313.2857
+     }
+    },
+    {
+     "code": "MESA - A5 - 2L",
+     "name": "Sobre mesa (12 pág)",
+     "hours": {
+      "standard": 120,
+      "priority": 72,
+      "express": 48
+     },
+     "unitCents": {
+      "25": 837.1429,
+      "50": 644.2857,
+      "100": 600.7143,
+      "250": 567.7143,
+      "500": 557.5714
+     }
+    },
+    {
+     "code": "MESA - A6 - 1L",
+     "name": "Sobre mesa (12 pág)",
+     "hours": {
+      "standard": 120,
+      "priority": 72,
+      "express": 48
+     },
+     "unitCents": {
+      "25": 395.7143,
+      "50": 271.4286,
+      "100": 227.8571,
+      "250": 194.8571,
+      "500": 184.7143
+     }
+    },
+    {
+     "code": "MESA - A6 - 2L",
+     "name": "Sobre mesa (12 pág)",
+     "hours": {
+      "standard": 120,
+      "priority": 72,
+      "express": 48
+     },
+     "unitCents": {
+      "25": 485.7143,
+      "50": 387.1429,
+      "100": 343.5714,
+      "250": 310.5714,
+      "500": 300.4286
+     }
+    },
+    {
+     "code": "PLEG-A5",
+     "name": "Plegado A5",
+     "hours": {
+      "standard": 120,
+      "priority": 72,
+      "express": 48
+     },
+     "unitCents": {
+      "25": 273.7143,
+      "50": 196.1429,
+      "100": 160.2143,
+      "250": 97.3429,
+      "500": 89.6714
+     }
+    },
+    {
+     "code": "PLEG 30X10",
+     "name": "Plegado 30 X 10 CM",
+     "hours": {
+      "standard": 120,
+      "priority": 72,
+      "express": 48
+     },
+     "unitCents": {
+      "25": 302.2857,
+      "50": 210.4286,
+      "100": 167.3571,
+      "250": 100.2,
+      "500": 91.1
+     }
+    }
+   ]
+  },
+  {
+   "id": "CUA",
+   "slug": "cuadernos",
+   "name": "Cuadernos",
+   "category": "Papelería",
+   "summary": "Cuadernos con portada de tu marca, en A5 o A4.",
+   "quantities": [
+    50,
+    100,
+    250,
+    500,
+    1000
+   ],
+   "minimum": 50,
+   "priority": true,
+   "express": true,
+   "variants": [
+    {
+     "code": "A5",
+     "name": "A5",
+     "hours": {
+      "standard": 120,
+      "priority": 96,
+      "express": 72
+     },
+     "unitCents": {
+      "50": 344.2857,
+      "100": 334.2857,
+      "250": 310.0,
+      "500": 297.1429,
+      "1000": 277.1429
+     }
+    },
+    {
+     "code": "A4",
+     "name": "A4",
+     "hours": {
+      "standard": 120,
+      "priority": 96,
+      "express": 72
+     },
+     "unitCents": {
+      "50": 542.8571,
+      "100": 525.7143,
+      "250": 460.0,
+      "500": 427.1429,
+      "1000": 394.2857
+     }
+    }
+   ]
+  },
+  {
+   "id": "TPR",
+   "slug": "tarjetas-de-presentacion",
+   "name": "Tarjetas de presentación",
+   "category": "Tarjetas",
+   "summary": "Couché 300 g, mate o brillante, a uno o dos lados. Laminado, UV selectivo y puntas redondeadas como acabados. Se piden en línea con precio al instante.",
+   "quantities": [
+    50,
+    100,
+    250,
+    500,
+    1000
+   ],
+   "minimum": 50,
+   "priority": true,
+   "express": true,
+   "variants": [
+    {
+     "code": "CLA1L",
+     "name": "Clásica · 1 lado",
+     "hours": {
+      "standard": 120,
+      "priority": 48,
+      "express": 24
+     },
+     "unitCents": {
+      "50": 12.7143,
+      "100": 8.1143,
+      "250": 6.9714,
+      "500": 5.6,
+      "1000": 5.3143
+     }
+    },
+    {
+     "code": "CLA2L",
+     "name": "Clásica · 2 lados",
+     "hours": {
+      "standard": 120,
+      "priority": 48,
+      "express": 24
+     },
+     "unitCents": {
+      "50": 16.2286,
+      "100": 13.3714,
+      "250": 11.2,
+      "500": 10.3429,
+      "1000": 9.0286
+     }
+    },
+    {
+     "code": "CUA1L",
+     "name": "Cuadrada · 1 lado",
+     "hours": {
+      "standard": 120,
+      "priority": 48,
+      "express": 24
+     },
+     "unitCents": {
+      "50": 12.7429,
+      "100": 8.1286,
+      "250": 5.3943,
+      "500": 3.94,
+      "1000": 3.5357
+     }
+    },
+    {
+     "code": "CUA2L",
+     "name": "Cuadrada · 2 lados",
+     "hours": {
+      "standard": 120,
+      "priority": 48,
+      "express": 24
+     },
+     "unitCents": {
+      "50": 16.2286,
+      "100": 10.7429,
+      "250": 8.3543,
+      "500": 7.0229,
+      "1000": 6.5
+     }
+    }
+   ]
+  }
+ ],
+ "finishes": [
+  {
+   "product": "PRG",
+   "variant": "4532",
+   "quantity": 100,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "PRG",
+   "variant": "4532",
+   "quantity": 100,
+   "finish": "corte",
+   "cents": 500
+  },
+  {
+   "product": "PRG",
+   "variant": "4532",
+   "quantity": 250,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "PRG",
+   "variant": "4532",
+   "quantity": 250,
+   "finish": "corte",
+   "cents": 500
+  },
+  {
+   "product": "PRG",
+   "variant": "4532",
+   "quantity": 500,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "PRG",
+   "variant": "4532",
+   "quantity": 500,
+   "finish": "corte",
+   "cents": 500
+  },
+  {
+   "product": "PRG",
+   "variant": "4532",
+   "quantity": 1000,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "PRG",
+   "variant": "4532",
+   "quantity": 1000,
+   "finish": "corte",
+   "cents": 500
+  },
+  {
+   "product": "PRG",
+   "variant": "6848",
+   "quantity": 100,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "PRG",
+   "variant": "6848",
+   "quantity": 100,
+   "finish": "corte",
+   "cents": 500
+  },
+  {
+   "product": "PRG",
+   "variant": "6848",
+   "quantity": 250,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "PRG",
+   "variant": "6848",
+   "quantity": 250,
+   "finish": "corte",
+   "cents": 500
+  },
+  {
+   "product": "PRG",
+   "variant": "6848",
+   "quantity": 500,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "PRG",
+   "variant": "6848",
+   "quantity": 500,
+   "finish": "corte",
+   "cents": 500
+  },
+  {
+   "product": "PRG",
+   "variant": "6848",
+   "quantity": 1000,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "PRG",
+   "variant": "6848",
+   "quantity": 1000,
+   "finish": "corte",
+   "cents": 500
+  },
+  {
+   "product": "ETQ",
+   "variant": "3X3",
+   "quantity": 50,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "ETQ",
+   "variant": "3X3",
+   "quantity": 50,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "ETQ",
+   "variant": "3X3",
+   "quantity": 100,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "ETQ",
+   "variant": "3X3",
+   "quantity": 100,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "ETQ",
+   "variant": "3X3",
+   "quantity": 250,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "ETQ",
+   "variant": "3X3",
+   "quantity": 250,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "ETQ",
+   "variant": "3X3",
+   "quantity": 500,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "ETQ",
+   "variant": "3X3",
+   "quantity": 500,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "ETQ",
+   "variant": "3X3",
+   "quantity": 1000,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "ETQ",
+   "variant": "3X3",
+   "quantity": 1000,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "ETQ",
+   "variant": "5X5",
+   "quantity": 50,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "ETQ",
+   "variant": "5X5",
+   "quantity": 50,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "ETQ",
+   "variant": "5X5",
+   "quantity": 100,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "ETQ",
+   "variant": "5X5",
+   "quantity": 100,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "ETQ",
+   "variant": "5X5",
+   "quantity": 250,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "ETQ",
+   "variant": "5X5",
+   "quantity": 250,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "ETQ",
+   "variant": "5X5",
+   "quantity": 500,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "ETQ",
+   "variant": "5X5",
+   "quantity": 500,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "ETQ",
+   "variant": "5X5",
+   "quantity": 1000,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "ETQ",
+   "variant": "5X5",
+   "quantity": 1000,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "ETQ",
+   "variant": "6X6",
+   "quantity": 50,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "ETQ",
+   "variant": "6X6",
+   "quantity": 50,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "ETQ",
+   "variant": "6X6",
+   "quantity": 100,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "ETQ",
+   "variant": "6X6",
+   "quantity": 100,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "ETQ",
+   "variant": "6X6",
+   "quantity": 250,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "ETQ",
+   "variant": "6X6",
+   "quantity": 250,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "ETQ",
+   "variant": "6X6",
+   "quantity": 500,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "ETQ",
+   "variant": "6X6",
+   "quantity": 500,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "ETQ",
+   "variant": "6X6",
+   "quantity": 1000,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "ETQ",
+   "variant": "6X6",
+   "quantity": 1000,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "TRJ",
+   "variant": "A5-1L",
+   "quantity": 10,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "TRJ",
+   "variant": "A5-1L",
+   "quantity": 10,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "TRJ",
+   "variant": "A5-1L",
+   "quantity": 10,
+   "finish": "corte",
+   "cents": 300
+  },
+  {
+   "product": "TRJ",
+   "variant": "A5-1L",
+   "quantity": 25,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "TRJ",
+   "variant": "A5-1L",
+   "quantity": 25,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "TRJ",
+   "variant": "A5-1L",
+   "quantity": 25,
+   "finish": "corte",
+   "cents": 300
+  },
+  {
+   "product": "TRJ",
+   "variant": "A5-1L",
+   "quantity": 50,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "TRJ",
+   "variant": "A5-1L",
+   "quantity": 50,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "TRJ",
+   "variant": "A5-1L",
+   "quantity": 50,
+   "finish": "corte",
+   "cents": 300
+  },
+  {
+   "product": "TRJ",
+   "variant": "A5-1L",
+   "quantity": 100,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "TRJ",
+   "variant": "A5-1L",
+   "quantity": 100,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "TRJ",
+   "variant": "A5-1L",
+   "quantity": 100,
+   "finish": "corte",
+   "cents": 300
+  },
+  {
+   "product": "TRJ",
+   "variant": "A5-1L",
+   "quantity": 250,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "TRJ",
+   "variant": "A5-1L",
+   "quantity": 250,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "TRJ",
+   "variant": "A5-1L",
+   "quantity": 250,
+   "finish": "corte",
+   "cents": 300
+  },
+  {
+   "product": "TRJ",
+   "variant": "A5-1L",
+   "quantity": 500,
+   "finish": "laminado",
+   "cents": 882
+  },
+  {
+   "product": "TRJ",
+   "variant": "A5-1L",
+   "quantity": 500,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "TRJ",
+   "variant": "A5-1L",
+   "quantity": 500,
+   "finish": "corte",
+   "cents": 500
+  },
+  {
+   "product": "TRJ",
+   "variant": "A5-2L",
+   "quantity": 10,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "TRJ",
+   "variant": "A5-2L",
+   "quantity": 10,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "TRJ",
+   "variant": "A5-2L",
+   "quantity": 10,
+   "finish": "corte",
+   "cents": 300
+  },
+  {
+   "product": "TRJ",
+   "variant": "A5-2L",
+   "quantity": 25,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "TRJ",
+   "variant": "A5-2L",
+   "quantity": 25,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "TRJ",
+   "variant": "A5-2L",
+   "quantity": 25,
+   "finish": "corte",
+   "cents": 300
+  },
+  {
+   "product": "TRJ",
+   "variant": "A5-2L",
+   "quantity": 50,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "TRJ",
+   "variant": "A5-2L",
+   "quantity": 50,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "TRJ",
+   "variant": "A5-2L",
+   "quantity": 50,
+   "finish": "corte",
+   "cents": 300
+  },
+  {
+   "product": "TRJ",
+   "variant": "A5-2L",
+   "quantity": 100,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "TRJ",
+   "variant": "A5-2L",
+   "quantity": 100,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "TRJ",
+   "variant": "A5-2L",
+   "quantity": 100,
+   "finish": "corte",
+   "cents": 300
+  },
+  {
+   "product": "TRJ",
+   "variant": "A5-2L",
+   "quantity": 250,
+   "finish": "laminado",
+   "cents": 882
+  },
+  {
+   "product": "TRJ",
+   "variant": "A5-2L",
+   "quantity": 250,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "TRJ",
+   "variant": "A5-2L",
+   "quantity": 250,
+   "finish": "corte",
+   "cents": 500
+  },
+  {
+   "product": "TRJ",
+   "variant": "A5-2L",
+   "quantity": 500,
+   "finish": "laminado",
+   "cents": 1764
+  },
+  {
+   "product": "TRJ",
+   "variant": "A5-2L",
+   "quantity": 500,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "TRJ",
+   "variant": "A5-2L",
+   "quantity": 500,
+   "finish": "corte",
+   "cents": 500
+  },
+  {
+   "product": "TRJ",
+   "variant": "A6-1L",
+   "quantity": 10,
+   "finish": "laminado",
+   "cents": 200
+  },
+  {
+   "product": "TRJ",
+   "variant": "A6-1L",
+   "quantity": 10,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "TRJ",
+   "variant": "A6-1L",
+   "quantity": 10,
+   "finish": "corte",
+   "cents": 300
+  },
+  {
+   "product": "TRJ",
+   "variant": "A6-1L",
+   "quantity": 25,
+   "finish": "laminado",
+   "cents": 400
+  },
+  {
+   "product": "TRJ",
+   "variant": "A6-1L",
+   "quantity": 25,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "TRJ",
+   "variant": "A6-1L",
+   "quantity": 25,
+   "finish": "corte",
+   "cents": 300
+  },
+  {
+   "product": "TRJ",
+   "variant": "A6-1L",
+   "quantity": 50,
+   "finish": "laminado",
+   "cents": 700
+  },
+  {
+   "product": "TRJ",
+   "variant": "A6-1L",
+   "quantity": 50,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "TRJ",
+   "variant": "A6-1L",
+   "quantity": 50,
+   "finish": "corte",
+   "cents": 300
+  },
+  {
+   "product": "TRJ",
+   "variant": "A6-1L",
+   "quantity": 100,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "TRJ",
+   "variant": "A6-1L",
+   "quantity": 100,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "TRJ",
+   "variant": "A6-1L",
+   "quantity": 100,
+   "finish": "corte",
+   "cents": 300
+  },
+  {
+   "product": "TRJ",
+   "variant": "A6-1L",
+   "quantity": 250,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "TRJ",
+   "variant": "A6-1L",
+   "quantity": 250,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "TRJ",
+   "variant": "A6-1L",
+   "quantity": 250,
+   "finish": "corte",
+   "cents": 300
+  },
+  {
+   "product": "TRJ",
+   "variant": "A6-1L",
+   "quantity": 500,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "TRJ",
+   "variant": "A6-1L",
+   "quantity": 500,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "TRJ",
+   "variant": "A6-1L",
+   "quantity": 500,
+   "finish": "corte",
+   "cents": 300
+  },
+  {
+   "product": "TRJ",
+   "variant": "A6-2L",
+   "quantity": 10,
+   "finish": "laminado",
+   "cents": 400
+  },
+  {
+   "product": "TRJ",
+   "variant": "A6-2L",
+   "quantity": 10,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "TRJ",
+   "variant": "A6-2L",
+   "quantity": 10,
+   "finish": "corte",
+   "cents": 300
+  },
+  {
+   "product": "TRJ",
+   "variant": "A6-2L",
+   "quantity": 25,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "TRJ",
+   "variant": "A6-2L",
+   "quantity": 25,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "TRJ",
+   "variant": "A6-2L",
+   "quantity": 25,
+   "finish": "corte",
+   "cents": 300
+  },
+  {
+   "product": "TRJ",
+   "variant": "A6-2L",
+   "quantity": 50,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "TRJ",
+   "variant": "A6-2L",
+   "quantity": 50,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "TRJ",
+   "variant": "A6-2L",
+   "quantity": 50,
+   "finish": "corte",
+   "cents": 300
+  },
+  {
+   "product": "TRJ",
+   "variant": "A6-2L",
+   "quantity": 100,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "TRJ",
+   "variant": "A6-2L",
+   "quantity": 100,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "TRJ",
+   "variant": "A6-2L",
+   "quantity": 100,
+   "finish": "corte",
+   "cents": 300
+  },
+  {
+   "product": "TRJ",
+   "variant": "A6-2L",
+   "quantity": 250,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "TRJ",
+   "variant": "A6-2L",
+   "quantity": 250,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "TRJ",
+   "variant": "A6-2L",
+   "quantity": 250,
+   "finish": "corte",
+   "cents": 300
+  },
+  {
+   "product": "TRJ",
+   "variant": "A6-2L",
+   "quantity": 500,
+   "finish": "laminado",
+   "cents": 882
+  },
+  {
+   "product": "TRJ",
+   "variant": "A6-2L",
+   "quantity": 500,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "TRJ",
+   "variant": "A6-2L",
+   "quantity": 500,
+   "finish": "corte",
+   "cents": 500
+  },
+  {
+   "product": "CAL",
+   "variant": "MESA - A5 - 1L",
+   "quantity": 25,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "CAL",
+   "variant": "MESA - A5 - 1L",
+   "quantity": 50,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "CAL",
+   "variant": "MESA - A5 - 1L",
+   "quantity": 100,
+   "finish": "laminado",
+   "cents": 900
+  },
+  {
+   "product": "CAL",
+   "variant": "MESA - A5 - 1L",
+   "quantity": 250,
+   "finish": "laminado",
+   "cents": 2250
+  },
+  {
+   "product": "CAL",
+   "variant": "MESA - A5 - 1L",
+   "quantity": 500,
+   "finish": "laminado",
+   "cents": 4500
+  },
+  {
+   "product": "CAL",
+   "variant": "MESA - A5 - 2L",
+   "quantity": 25,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "CAL",
+   "variant": "MESA - A5 - 2L",
+   "quantity": 50,
+   "finish": "laminado",
+   "cents": 900
+  },
+  {
+   "product": "CAL",
+   "variant": "MESA - A5 - 2L",
+   "quantity": 100,
+   "finish": "laminado",
+   "cents": 1800
+  },
+  {
+   "product": "CAL",
+   "variant": "MESA - A5 - 2L",
+   "quantity": 250,
+   "finish": "laminado",
+   "cents": 4500
+  },
+  {
+   "product": "CAL",
+   "variant": "MESA - A5 - 2L",
+   "quantity": 500,
+   "finish": "laminado",
+   "cents": 9000
+  },
+  {
+   "product": "CAL",
+   "variant": "MESA - A6 - 1L",
+   "quantity": 25,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "CAL",
+   "variant": "MESA - A6 - 1L",
+   "quantity": 50,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "CAL",
+   "variant": "MESA - A6 - 1L",
+   "quantity": 100,
+   "finish": "laminado",
+   "cents": 900
+  },
+  {
+   "product": "CAL",
+   "variant": "MESA - A6 - 1L",
+   "quantity": 250,
+   "finish": "laminado",
+   "cents": 2250
+  },
+  {
+   "product": "CAL",
+   "variant": "MESA - A6 - 1L",
+   "quantity": 500,
+   "finish": "laminado",
+   "cents": 4500
+  },
+  {
+   "product": "CAL",
+   "variant": "MESA - A6 - 2L",
+   "quantity": 25,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "CAL",
+   "variant": "MESA - A6 - 2L",
+   "quantity": 50,
+   "finish": "laminado",
+   "cents": 900
+  },
+  {
+   "product": "CAL",
+   "variant": "MESA - A6 - 2L",
+   "quantity": 100,
+   "finish": "laminado",
+   "cents": 1800
+  },
+  {
+   "product": "CAL",
+   "variant": "MESA - A6 - 2L",
+   "quantity": 250,
+   "finish": "laminado",
+   "cents": 4500
+  },
+  {
+   "product": "CAL",
+   "variant": "MESA - A6 - 2L",
+   "quantity": 500,
+   "finish": "laminado",
+   "cents": 9000
+  },
+  {
+   "product": "CAL",
+   "variant": "PLEG-A5",
+   "quantity": 25,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "CAL",
+   "variant": "PLEG-A5",
+   "quantity": 25,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "CAL",
+   "variant": "PLEG-A5",
+   "quantity": 50,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "CAL",
+   "variant": "PLEG-A5",
+   "quantity": 50,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "CAL",
+   "variant": "PLEG-A5",
+   "quantity": 100,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "CAL",
+   "variant": "PLEG-A5",
+   "quantity": 100,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "CAL",
+   "variant": "PLEG-A5",
+   "quantity": 250,
+   "finish": "laminado",
+   "cents": 1785
+  },
+  {
+   "product": "CAL",
+   "variant": "PLEG-A5",
+   "quantity": 250,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "CAL",
+   "variant": "PLEG-A5",
+   "quantity": 500,
+   "finish": "laminado",
+   "cents": 3535
+  },
+  {
+   "product": "CAL",
+   "variant": "PLEG-A5",
+   "quantity": 500,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "CAL",
+   "variant": "PLEG 30X15",
+   "quantity": 25,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "CAL",
+   "variant": "PLEG 30X15",
+   "quantity": 25,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "CAL",
+   "variant": "PLEG 30X15",
+   "quantity": 50,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "CAL",
+   "variant": "PLEG 30X15",
+   "quantity": 50,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "CAL",
+   "variant": "PLEG 30X15",
+   "quantity": 100,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "CAL",
+   "variant": "PLEG 30X15",
+   "quantity": 100,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "CAL",
+   "variant": "PLEG 30X15",
+   "quantity": 250,
+   "finish": "laminado",
+   "cents": 1785
+  },
+  {
+   "product": "CAL",
+   "variant": "PLEG 30X15",
+   "quantity": 250,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "CAL",
+   "variant": "PLEG 30X15",
+   "quantity": 500,
+   "finish": "laminado",
+   "cents": 3535
+  },
+  {
+   "product": "CAL",
+   "variant": "PLEG 30X15",
+   "quantity": 500,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "TPR",
+   "variant": "CLA1L",
+   "quantity": 50,
+   "finish": "laminado",
+   "cents": 200
+  },
+  {
+   "product": "TPR",
+   "variant": "CLA1L",
+   "quantity": 50,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "TPR",
+   "variant": "CLA1L",
+   "quantity": 50,
+   "finish": "corte",
+   "cents": 300
+  },
+  {
+   "product": "TPR",
+   "variant": "CLA1L",
+   "quantity": 100,
+   "finish": "laminado",
+   "cents": 400
+  },
+  {
+   "product": "TPR",
+   "variant": "CLA1L",
+   "quantity": 100,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "TPR",
+   "variant": "CLA1L",
+   "quantity": 100,
+   "finish": "corte",
+   "cents": 300
+  },
+  {
+   "product": "TPR",
+   "variant": "CLA1L",
+   "quantity": 250,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "TPR",
+   "variant": "CLA1L",
+   "quantity": 250,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "TPR",
+   "variant": "CLA1L",
+   "quantity": 250,
+   "finish": "corte",
+   "cents": 300
+  },
+  {
+   "product": "TPR",
+   "variant": "CLA1L",
+   "quantity": 500,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "TPR",
+   "variant": "CLA1L",
+   "quantity": 500,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "TPR",
+   "variant": "CLA1L",
+   "quantity": 500,
+   "finish": "corte",
+   "cents": 300
+  },
+  {
+   "product": "TPR",
+   "variant": "CLA1L",
+   "quantity": 1000,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "TPR",
+   "variant": "CLA1L",
+   "quantity": 1000,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "TPR",
+   "variant": "CLA1L",
+   "quantity": 1000,
+   "finish": "corte",
+   "cents": 300
+  },
+  {
+   "product": "TPR",
+   "variant": "CLA2L",
+   "quantity": 50,
+   "finish": "laminado",
+   "cents": 400
+  },
+  {
+   "product": "TPR",
+   "variant": "CLA2L",
+   "quantity": 50,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "TPR",
+   "variant": "CLA2L",
+   "quantity": 50,
+   "finish": "corte",
+   "cents": 300
+  },
+  {
+   "product": "TPR",
+   "variant": "CLA2L",
+   "quantity": 100,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "TPR",
+   "variant": "CLA2L",
+   "quantity": 100,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "TPR",
+   "variant": "CLA2L",
+   "quantity": 100,
+   "finish": "corte",
+   "cents": 300
+  },
+  {
+   "product": "TPR",
+   "variant": "CLA2L",
+   "quantity": 250,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "TPR",
+   "variant": "CLA2L",
+   "quantity": 250,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "TPR",
+   "variant": "CLA2L",
+   "quantity": 250,
+   "finish": "corte",
+   "cents": 300
+  },
+  {
+   "product": "TPR",
+   "variant": "CLA2L",
+   "quantity": 500,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "TPR",
+   "variant": "CLA2L",
+   "quantity": 500,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "TPR",
+   "variant": "CLA2L",
+   "quantity": 500,
+   "finish": "corte",
+   "cents": 300
+  },
+  {
+   "product": "TPR",
+   "variant": "CLA2L",
+   "quantity": 1000,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "TPR",
+   "variant": "CLA2L",
+   "quantity": 1000,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "TPR",
+   "variant": "CLA2L",
+   "quantity": 1000,
+   "finish": "corte",
+   "cents": 300
+  },
+  {
+   "product": "TPR",
+   "variant": "CUA1L",
+   "quantity": 50,
+   "finish": "laminado",
+   "cents": 200
+  },
+  {
+   "product": "TPR",
+   "variant": "CUA1L",
+   "quantity": 50,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "TPR",
+   "variant": "CUA1L",
+   "quantity": 50,
+   "finish": "corte",
+   "cents": 300
+  },
+  {
+   "product": "TPR",
+   "variant": "CUA1L",
+   "quantity": 100,
+   "finish": "laminado",
+   "cents": 300
+  },
+  {
+   "product": "TPR",
+   "variant": "CUA1L",
+   "quantity": 100,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "TPR",
+   "variant": "CUA1L",
+   "quantity": 100,
+   "finish": "corte",
+   "cents": 300
+  },
+  {
+   "product": "TPR",
+   "variant": "CUA1L",
+   "quantity": 250,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "TPR",
+   "variant": "CUA1L",
+   "quantity": 250,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "TPR",
+   "variant": "CUA1L",
+   "quantity": 250,
+   "finish": "corte",
+   "cents": 300
+  },
+  {
+   "product": "TPR",
+   "variant": "CUA1L",
+   "quantity": 500,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "TPR",
+   "variant": "CUA1L",
+   "quantity": 500,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "TPR",
+   "variant": "CUA1L",
+   "quantity": 500,
+   "finish": "corte",
+   "cents": 300
+  },
+  {
+   "product": "TPR",
+   "variant": "CUA1L",
+   "quantity": 1000,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "TPR",
+   "variant": "CUA1L",
+   "quantity": 1000,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "TPR",
+   "variant": "CUA1L",
+   "quantity": 1000,
+   "finish": "corte",
+   "cents": 300
+  },
+  {
+   "product": "TPR",
+   "variant": "CUA2L",
+   "quantity": 50,
+   "finish": "laminado",
+   "cents": 400
+  },
+  {
+   "product": "TPR",
+   "variant": "CUA2L",
+   "quantity": 50,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "TPR",
+   "variant": "CUA2L",
+   "quantity": 50,
+   "finish": "corte",
+   "cents": 300
+  },
+  {
+   "product": "TPR",
+   "variant": "CUA2L",
+   "quantity": 100,
+   "finish": "laminado",
+   "cents": 600
+  },
+  {
+   "product": "TPR",
+   "variant": "CUA2L",
+   "quantity": 100,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "TPR",
+   "variant": "CUA2L",
+   "quantity": 100,
+   "finish": "corte",
+   "cents": 300
+  },
+  {
+   "product": "TPR",
+   "variant": "CUA2L",
+   "quantity": 250,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "TPR",
+   "variant": "CUA2L",
+   "quantity": 250,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "TPR",
+   "variant": "CUA2L",
+   "quantity": 250,
+   "finish": "corte",
+   "cents": 300
+  },
+  {
+   "product": "TPR",
+   "variant": "CUA2L",
+   "quantity": 500,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "TPR",
+   "variant": "CUA2L",
+   "quantity": 500,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "TPR",
+   "variant": "CUA2L",
+   "quantity": 500,
+   "finish": "corte",
+   "cents": 300
+  },
+  {
+   "product": "TPR",
+   "variant": "CUA2L",
+   "quantity": 1000,
+   "finish": "laminado",
+   "cents": 800
+  },
+  {
+   "product": "TPR",
+   "variant": "CUA2L",
+   "quantity": 1000,
+   "finish": "uv",
+   "cents": 3500
+  },
+  {
+   "product": "TPR",
+   "variant": "CUA2L",
+   "quantity": 1000,
+   "finish": "corte",
+   "cents": 300
+  }
+ ]
+}

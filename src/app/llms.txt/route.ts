@@ -5,7 +5,7 @@ import { FAMILIES, familyBySlug } from "@/lib/families";
 import { FAQS } from "@/lib/faq";
 import { HELP_CATEGORIES, articleHref, articlesIn } from "@/lib/help-center";
 import { explain } from "@/lib/glossary";
-import { LAUNCH_PRODUCTS } from "@/lib/launch-products";
+import { LAUNCH_PRODUCTS, launchFromCents } from "@/lib/launch-products";
 import { formatUsd } from "@/lib/money";
 import { quote } from "@/lib/pricing";
 import { absoluteUrl } from "@/lib/site";
@@ -36,7 +36,7 @@ function launchSection(): string {
       const items = LAUNCH_PRODUCTS.filter((product) => product.family === family.slug)
         .map((product) => {
           const options = product.options.map((option) => `${option.label.toLowerCase()}: ${option.choices.join(", ")}`).join("; ");
-          return `- [${product.name}](${absoluteUrl(`/producto/${product.slug}`)}): ${product.summary} Opciones: ${options}. Desde ${product.quantities[0]} unidades. Producción: ${product.leadTime}. Precio por cotización.`;
+          return `- [${product.name}](${absoluteUrl(`/producto/${product.slug}`)}): ${product.summary} Opciones: ${options}. Desde ${product.quantities[0]} unidades. Producción: ${product.leadTime}. ${launchFromCents(product) ? `Desde ${formatUsd(launchFromCents(product) ?? 0)} por unidad con IVA.` : "Precio por cotización."}`;
         })
         .join("\n");
       return `### ${family.label}\n\n${items}`;
@@ -99,7 +99,7 @@ Próximamente: ${upcoming}.
 
 El plazo depende del producto y de la cantidad. Tarjetas de presentación:
 
-${DELIVERY_OPTIONS.map((option) => `- ${option.name}: ${businessDaysLabel(cardLeadDays(100, option.id))}${option.cents === 0 ? ", incluido" : `, recargo de ${formatUsd(option.cents)} por pedido`}.`).join("\n")}
+${DELIVERY_OPTIONS.map((option) => `- ${option.name}: ${businessDaysLabel(cardLeadDays(100, option.id))}${option.percent === 0 ? ", incluido" : `, recargo del ${option.percent} % del subtotal de impresión, una vez por pedido`}.`).join("\n")}
 - Los demás productos tienen su propio plazo (aparece en cada uno, arriba). Priority y Express se confirman por WhatsApp.
 - Si un pedido lleva varios productos, llega cuando está listo el que más demora.
 - Los días cuentan desde que se confirma el pago y está el archivo.

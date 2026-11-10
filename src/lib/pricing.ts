@@ -1,16 +1,22 @@
-import {
-  PRICE_BOOK,
-  SIZES,
-  type Configuration,
-  type Quantity,
-  type SizeId,
-} from "@/lib/catalog";
-import { toCents } from "@/lib/money";
+import { SIZES, cardVariantCode, type Configuration, type Quantity, type SizeId, type Sides } from "@/lib/catalog";
+import { deliveryOption, surchargeCents } from "@/lib/delivery";
+import { finishCentsWithoutIva, runCentsWithoutIva, type FinishId } from "@/lib/matriz";
 import { withIva } from "@/lib/tax";
 
-/** Un valor de la hoja PVP, sin IVA, convertido al precio final con IVA. */
-const sheetCents = (amount: string) => withIva(toCents(amount));
-import { deliveryOption } from "@/lib/delivery";
+/*
+ * Precios de las tarjetas: salen de la matriz (producto TPR). La impresión a
+ * 1 o 2 lados son variantes distintas; laminado, UV y puntas son recargos por
+ * tirada de la hoja ACABADOS. Todo viene sin IVA y aquí se le suma.
+ */
+const CARD = "TPR";
+
+function cardRunCents(sizeId: SizeId, sides: Sides, quantity: Quantity): number {
+  return withIva(runCentsWithoutIva(CARD, cardVariantCode(sizeId, sides), quantity) ?? 0);
+}
+
+function cardFinishCents(sizeId: SizeId, sides: Sides, quantity: Quantity, finish: FinishId): number {
+  return withIva(finishCentsWithoutIva(CARD, cardVariantCode(sizeId, sides), quantity, finish) ?? 0);
+}
 
 export type QuoteLine = {
   label: string;
@@ -37,13 +43,13 @@ export type Quote = {
 };
 
 export function quote(config: Configuration): Quote {
-  const tier = PRICE_BOOK[config.sizeId][config.quantity];
-  const baseCents = sheetCents(config.sides === 1 ? tier.one : tier.two);
-  const laminateCents = config.laminate === "none" ? 0 : sheetCents(tier.laminate);
-  const uvCents = config.uv ? sheetCents(tier.uv) : 0;
-  const cornersCents = config.rounded ? sheetCents(tier.corners) : 0;
-  const deliveryCents = deliveryOption(config.delivery).cents;
+  const { sizeId, sides, quantity } = config;
+  const baseCents = cardRunCents(sizeId, sides, quantity);
+  const laminateCents = config.laminate === "none" ? 0 : cardFinishCents(sizeId, sides, quantity, "laminado");
+  const uvCents = config.uv ? cardFinishCents(sizeId, sides, quantity, "uv") : 0;
+  const cornersCents = config.rounded ? cardFinishCents(sizeId, sides, quantity, "corte") : 0;
   const printingCents = baseCents + laminateCents + uvCents + cornersCents;
+  const deliveryCents = surchargeCents(config.delivery, printingCents);
   const totalCents = printingCents + deliveryCents;
 
   const lines: QuoteLine[] = [
@@ -90,15 +96,15 @@ export function quote(config: Configuration): Quote {
 }
 
 export function fromPrice(sizeId: SizeId): number {
-  return sheetCents(PRICE_BOOK[sizeId][50].one);
+  return cardRunCents(sizeId, 1, 50);
 }
 
-export function addonCents(sizeId: SizeId, quantity: Quantity) {
-  const tier = PRICE_BOOK[sizeId][quantity];
+/** Lo que suma cada acabado con el tamaño, los lados y la cantidad elegidos. */
+export function addonCents(sizeId: SizeId, quantity: Quantity, sides: Sides = 1) {
   return {
-    laminate: sheetCents(tier.laminate),
-    uv: sheetCents(tier.uv),
-    corners: sheetCents(tier.corners),
+    laminate: cardFinishCents(sizeId, sides, quantity, "laminado"),
+    uv: cardFinishCents(sizeId, sides, quantity, "uv"),
+    corners: cardFinishCents(sizeId, sides, quantity, "corte"),
   };
 }
 

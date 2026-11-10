@@ -22,7 +22,7 @@ import {
   type SizeId,
   type DeliveryId,
 } from "@/lib/catalog";
-import { DELIVERY_OPTIONS, businessDaysLabel, deliveryWindow, formatLongDate } from "@/lib/delivery";
+import { DELIVERY_OPTIONS, businessDaysLabel, deliveryWindow, formatLongDate, surchargeCents } from "@/lib/delivery";
 import { EXTRA_KILO_CENTS, FIRST_KILO_CENTS, shippingQuote } from "@/lib/ecuador";
 import { formatUsd } from "@/lib/money";
 import { upload } from "@vercel/blob/client";
@@ -166,7 +166,7 @@ export function Configurator({
   /* Lo que paga por esta tanda: impresión, entrega y envío. El envío va dentro del total, no aparte. */
   const shipping = shippingQuote(packageGrams(config));
   const grandCents = priced.totalCents + shipping.cents;
-  const addons = addonCents(config.sizeId, config.quantity);
+  const addons = addonCents(config.sizeId, config.quantity, config.sides);
   const size = SIZES[config.sizeId];
   /* Base para comparar el precio por unidad de cada tirada. */
   const smallestRun = useMemo(() => quote({ ...config, quantity: QUANTITIES[0] }), [config]);
@@ -708,6 +708,7 @@ export function Configurator({
           state={stepState("entrega")}
           hasArtwork={artworkReady}
           onChange={(delivery) => choose("entrega", { delivery })}
+          printingCents={priced.printingCents}
         />
         <div ref={summaryRef} data-step="resumen" className="scroll-mt-4">
           <QuoteSummary
@@ -790,8 +791,11 @@ function DeliveryChoices({
   hasArtwork,
   onChange,
   state,
+  printingCents,
 }: {
   orderedAt: string;
+  /** El recargo es un porcentaje de lo que cuesta imprimir. */
+  printingCents: number;
   /** El plazo depende de cuántas tarjetas son. */
   quantity: number;
   state: StepState;
@@ -803,7 +807,7 @@ function DeliveryChoices({
     <fieldset data-step="entrega" disabled={state.status === "locked"} className={`step scroll-mt-4 ${state.status === "locked" ? "is-locked" : ""}`}>
       <StepLegend state={state} legend="Fecha de entrega estimada" />
       <p className="mt-1 mb-3 text-sm leading-6 text-ink-soft">
-        El plazo depende de cuántas tarjetas pides. Adelantarlo cuesta más: el recargo va una vez por pedido y se suma al total.
+        Adelantarlo cuesta más: Priority suma el 50 % y Express el 75 % de la impresión, una vez por pedido.
         {hasArtwork ? "" : " Sin archivo, la cuenta empieza cuando lo envíes."}
       </p>
       <div className="grid gap-2" role="radiogroup" aria-label="Fecha de entrega estimada">
@@ -850,8 +854,9 @@ function DeliveryChoices({
                     Más rápida
                   </span>
                 ) : null}
-                <span className={`text-sm font-medium tabular-nums ${option.cents === 0 ? "text-moss" : ""}`}>
-                  {option.cents === 0 ? "Incluido" : `+ ${formatUsd(option.cents)}`}
+                <span className={`text-right text-sm font-medium tabular-nums ${option.percent === 0 ? "text-moss" : ""}`}>
+                  {option.percent === 0 ? "Incluido" : `+ ${formatUsd(surchargeCents(option.id, printingCents))}`}
+                  {option.percent === 0 ? null : <span className="block text-xs font-normal text-ink-soft">{option.percent} % del subtotal</span>}
                 </span>
               </span>
             </label>

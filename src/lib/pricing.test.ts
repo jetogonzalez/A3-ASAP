@@ -41,12 +41,12 @@ describe("quote", () => {
       rounded: true,
       delivery: "standard",
     });
-    /* Hoja PVP sin IVA: 7.26 + 4.80 + 42 + 3.60. Cada valor lleva su 15 %. */
-    assert.equal(priced.baseCents, 835);
-    assert.equal(priced.laminateCents, 552);
-    assert.equal(priced.uvCents, 4830);
-    assert.equal(priced.cornersCents, 414);
-    assert.equal(priced.totalCents, 6631);
+    /* Matriz v1.4 (TPR, CLA2L, 50 u.) sin IVA: 8.11 + 4 + 35 + 3. Cada valor lleva su 15 %. */
+    assert.equal(priced.baseCents, 933);
+    assert.equal(priced.laminateCents, 460);
+    assert.equal(priced.uvCents, 4025);
+    assert.equal(priced.cornersCents, 345);
+    assert.equal(priced.totalCents, 5763);
   });
 
   it("usa la tabla cuadrada de 100 unidades", () => {
@@ -60,7 +60,7 @@ describe("quote", () => {
       rounded: false,
       delivery: "standard",
     });
-    assert.equal(priced.totalCents, 836);
+    assert.equal(priced.totalCents, 935);
   });
 
   it("suma el recargo de la entrega exprés", () => {
@@ -74,8 +74,9 @@ describe("quote", () => {
       rounded: false,
       delivery: "express",
     });
-    assert.equal(priced.deliveryCents, 1725);
-    assert.equal(priced.totalCents, 2561);
+    /* Express: 75 % del subtotal de impresión. */
+    assert.equal(priced.deliveryCents, Math.round(935 * 0.75));
+    assert.equal(priced.totalCents, 935 + 701);
   });
 });
 
@@ -88,5 +89,43 @@ describe("código de producto", () => {
       skuFor({ ...defaultConfiguration("55x55"), quantity: 1000, sides: 1, paper: "brillante", laminate: "brillante", uv: true, rounded: true }),
       "TPR-5555-1L-B-LB-UV-R-1000",
     );
+  });
+});
+
+describe("productos de la matriz", async () => {
+  const { LAUNCH_PRODUCTS, launchQuote } = await import("./launch-products");
+  const find = (slug: string) => {
+    const product = LAUNCH_PRODUCTS.find((candidate) => candidate.slug === slug);
+    assert.ok(product);
+    return product;
+  };
+
+  it("todos los productos tienen precio con sus opciones de inicio", () => {
+    for (const product of LAUNCH_PRODUCTS) {
+      const selection = Object.fromEntries(product.options.map((option) => [option.id, option.choices[0]]));
+      assert.ok(launchQuote(product, selection, product.quantities[0], "standard"), `${product.name} sin precio`);
+    }
+  });
+
+  it("toma la variante de la prenda y los lados, con IVA", () => {
+    const hoodie = find("camisetas-hoodies");
+    const priced = launchQuote(hoodie, { prenda: "Hoodie", lados: "2 lados", talla: "M", tintas: "Full color", impresion: "DTF" }, 25, "standard");
+    /* HOO2L, 25 u.: 30.9429 sin IVA por unidad. */
+    assert.equal(priced?.variant, "HOO2L");
+    assert.equal(priced?.runCents, Math.round(Math.round(3094.29 * 25) * 1.15));
+  });
+
+  it("suma el laminado del calendario y el 75 % de Express", () => {
+    const calendar = find("calendarios");
+    const selection = { tipo: "Sobre mesa (12 páginas)", tamano: "A5 (15 × 21 cm)", impresion: "Tiro", acabado: "Laminado", tintas: "Full color", papel: "Couché 300 g" };
+    const priced = launchQuote(calendar, selection, 100, "express");
+    assert.equal(priced?.extras[0]?.cents, 1035);
+    assert.equal(priced?.deliveryCents, Math.round((priced?.printingCents ?? 0) * 0.75));
+  });
+
+  it("lo que la matriz no tiene se cotiza por WhatsApp", () => {
+    const thanks = find("tarjetas-de-regalo");
+    const selection = { tamano: "9 × 5 cm plegada", papel: "Couché 300 g", impresion: "Tiro", corte: "Recto", tintas: "Full color" };
+    assert.equal(launchQuote(thanks, selection, 50, "standard"), null);
   });
 });

@@ -52,7 +52,7 @@ export const HELP_CATEGORIES: HelpCategory[] = [
 const deliveryRows = DELIVERY_OPTIONS.map((option) => [
   option.name,
   businessDaysLabel(cardLeadDays(100, option.id)),
-  option.cents === 0 ? "Incluido" : `+ ${formatUsd(option.cents)} por pedido`,
+  option.percent === 0 ? "Incluido" : `+ ${option.percent} % del subtotal, una vez por pedido`,
 ]);
 
 const leadRows = LAUNCH_PRODUCTS.map((product) => [product.name, product.leadTime]);
@@ -310,8 +310,8 @@ export const HELP_ARTICLES: HelpArticle[] = [
         type: "list",
         items: [
           "Standard: el plazo normal, incluido en el precio.",
-          `Priority: lo adelantamos. Recargo de ${formatUsd(DELIVERY_OPTIONS[1].cents)} con IVA.`,
-          `Express: para urgencias. Recargo de ${formatUsd(DELIVERY_OPTIONS[2].cents)} con IVA.`,
+          `Priority: lo adelantamos. Suma el ${DELIVERY_OPTIONS[1].percent} % del subtotal de impresión.`,
+          `Express: para urgencias. Suma el ${DELIVERY_OPTIONS[2].percent} % del subtotal de impresión.`,
         ],
       },
       { type: "p", text: "El recargo se cobra una sola vez por pedido, aunque lleve varios productos." },

@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: Pick<ProductPageProps, "param
     const family = familyBySlug(launch.family);
     return pageMetadata({
       title: `${launch.name} con tu marca en Quito`,
-      description: `${launch.summary} Desde ${launch.quantities[0]} unidades, producción en ${launch.leadTime}${family ? ` · ${family.label}` : ""}. Cotiza por WhatsApp con entrega en Quito y los valles.`,
+      description: `${launch.summary} Desde ${launch.quantities[0]} unidades, producción en ${launch.leadTime}${family ? ` · ${family.label}` : ""}. Precio con IVA en línea y entrega en Quito y los valles.`,
       path: `/producto/${launch.slug}`,
     });
   }

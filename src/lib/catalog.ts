@@ -28,35 +28,10 @@ export type Configuration = {
   delivery: DeliveryId;
 };
 
-type Tier = {
-  one: string;
-  two: string;
-  laminate: string;
-  uv: string;
-  corners: string;
-};
-
-/**
- * PVP en USD, tomados de la hoja «valor PVP».
- * La impresión a 1 lado y a 2 lados son alternativas, no se suman.
- * Laminado, UV y puntas sí se suman.
- */
-export const PRICE_BOOK: Record<SizeId, Record<Quantity, Tier>> = {
-  "85x55": {
-    50: { one: "5.6472", two: "7.2576", laminate: "4.8", uv: "42", corners: "3.6" },
-    100: { one: "7.2576", two: "12.1152", laminate: "9.6", uv: "42", corners: "3.6" },
-    250: { one: "14.544", two: "24.312", laminate: "9.6", uv: "42", corners: "7.2" },
-    500: { one: "24.312", two: "46.224", laminate: "9.6", uv: "42", corners: "7.2" },
-    1000: { one: "46.224", two: "80.544", laminate: "9.6", uv: "42", corners: "12" },
-  },
-  "55x55": {
-    50: { one: "5.6472", two: "7.2576", laminate: "4.8", uv: "42", corners: "3.6" },
-    100: { one: "7.2708", two: "9.6864", laminate: "9.6", uv: "42", corners: "3.6" },
-    250: { one: "10.9008", two: "17.7384", laminate: "9.6", uv: "42", corners: "7.2" },
-    500: { one: "16.6428", two: "30.8856", laminate: "9.6", uv: "42", corners: "7.2" },
-    1000: { one: "29.79", two: "57.18", laminate: "9.6", uv: "42", corners: "12" },
-  },
-};
+/** La variante de la matriz (hoja PRECIOS, producto TPR) para un tamaño y lados. */
+export function cardVariantCode(sizeId: SizeId, sides: Sides): string {
+  return `${sizeId === "85x55" ? "CLA" : "CUA"}${sides}L`;
+}
 
 export const SIZES: Record<
   SizeId,

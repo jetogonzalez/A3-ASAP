@@ -1,5 +1,5 @@
 import type { Configuration } from "@/lib/catalog";
-import { deliveryInDays, fastestDelivery, orderLeadDays } from "@/lib/delivery";
+import { deliveryInDays, fastestDelivery, orderLeadDays, surchargeCents } from "@/lib/delivery";
 import { shippingQuote, type ShippingQuote } from "@/lib/ecuador";
 import { quote, type QuoteLine } from "@/lib/pricing";
 import { ivaBreakdown } from "@/lib/tax";
@@ -38,7 +38,7 @@ export function orderTotals(configs: Configuration[], orderedAtIso: string): Ord
   const delivery: OrderDelivery = {
     id: speed.id,
     name: speed.name,
-    cents: configs.length > 0 ? speed.cents : 0,
+    cents: configs.length > 0 ? surchargeCents(speed.id, printingCents) : 0,
     days: window.days,
     earliest: window.earliest,
     latest: window.latest,

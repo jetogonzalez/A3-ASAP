@@ -63,6 +63,7 @@ function scene(id: string, p: Palette, uid: string) {
     case "CAM":
       return <Tee p={p} />;
     case "GOR":
+    case "GOC":
       return <Cap p={p} />;
     case "TOT":
       return <Tote p={p} />;

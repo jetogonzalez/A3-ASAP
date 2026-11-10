@@ -4,7 +4,6 @@ import { pageMetadata } from "@/lib/site";
 import { DELIVERY_OPTIONS, businessDaysLabel, cardLeadDays } from "@/lib/delivery";
 import { LAUNCH_PRODUCTS } from "@/lib/launch-products";
 import { SHIPPING_TABLE } from "@/lib/ecuador";
-import { formatUsd } from "@/lib/money";
 
 export const metadata: Metadata = pageMetadata({
   title: "Envío en Quito y los valles",
@@ -62,7 +61,7 @@ export default function ShippingPage() {
               <td className="py-3 pr-4">
                 {businessDaysLabel(cardLeadDays(100, option.id))}
               </td>
-              <td className="py-3">{option.cents === 0 ? "Incluido" : `+ ${formatUsd(option.cents)}`}</td>
+              <td className="py-3">{option.percent === 0 ? "Incluido" : `+ ${option.percent} % del subtotal`}</td>
             </tr>
           ))}
         </tbody>

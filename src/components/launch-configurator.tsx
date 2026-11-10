@@ -21,7 +21,9 @@ import { ProductMockup } from "@/components/product-mockup";
 import { ProductPhoto } from "@/components/product-photo";
 import { StickyColumn } from "@/components/sticky-column";
 import { WhatsappLogo } from "@/components/whatsapp-logo";
-import { formatUnits, launchRequestMessage, type LaunchProduct, type LaunchSelection } from "@/lib/launch-products";
+import { formatUnits, launchQuote, launchRequestMessage, type LaunchProduct, type LaunchQuote, type LaunchSelection } from "@/lib/launch-products";
+import { DELIVERY_OPTIONS, businessDaysLabel } from "@/lib/delivery";
+import { formatUsd } from "@/lib/money";
 import { ARTWORK_FORMATS_LABEL, MAX_ARTWORK_BYTES, MAX_ARTWORK_MB, artworkContentType, isCanvaUrl, mayPreviewArtwork } from "@/lib/artwork";
 import { renderArtworkPages } from "@/lib/pdf-preview";
 import { readArtworkFacts } from "@/lib/preflight";
@@ -38,11 +40,8 @@ import { whatsappHref } from "@/lib/whatsapp";
  * como aún no hay precio, el pedido sale por WhatsApp con todo escrito.
  */
 
-const SPEEDS = [
-  { id: "Standard", detail: "Precio base de producción", note: "Incluido" },
-  { id: "Priority", detail: "Lo adelantamos, con recargo", note: "Con recargo" },
-  { id: "Express", detail: "Para urgencias, tarifa premium", note: "Premium" },
-] as const;
+/* Los tres niveles con su recargo en % (matriz, hoja Tiempos). */
+const SPEEDS = DELIVERY_OPTIONS;
 
 /* Las mismas formas de mandar el arte que en tarjetas, más pedir ayuda. */
 const DESIGN_METHODS = [
@@ -182,7 +181,9 @@ export function LaunchConfigurator({ product, uploadsEnabled }: { product: Launc
 
   const missing = steps.filter((step) => !picked.has(step));
   const firstMissing = steps.findIndex((step) => !picked.has(step));
-  const message = launchRequestMessage({ product, selection, quantity, speed, design: designLine, notes });
+  const message = launchRequestMessage({ product, selection, quantity, speed, design: designLine, notes }, formatUsd);
+  /* El precio sale de la matriz en el navegador; la tienda lo confirma en el chat. */
+  const priced = launchQuote(product, selection, quantity, speed);
 
   /* La barra de abajo se retira en escritorio cuando el resumen entra en pantalla. */
   const summaryRef = useRef<HTMLDivElement>(null);
@@ -294,7 +295,7 @@ export function LaunchConfigurator({ product, uploadsEnabled }: { product: Launc
             state={stepState("cantidad")}
             legend="Cantidad"
             value={picked.has("cantidad") ? `${quantity.toLocaleString("es-EC")} u.` : undefined}
-            hint="Unidades por pedido. Mientras más pides, menos cuesta cada una: el precio te lo confirmamos por WhatsApp."
+            hint="Unidades por pedido. Mientras más pides, menos cuesta cada una. Precios con IVA."
           >
             <div className="grid gap-2 sm:grid-cols-2" role="radiogroup" aria-label="Cantidad">
               {product.quantities.map((amount, index) => {
@@ -319,6 +320,7 @@ export function LaunchConfigurator({ product, uploadsEnabled }: { product: Launc
                         {amount.toLocaleString("es-EC")} u.
                       </span>
                     </span>
+                    <QuantityPrice product={product} selection={selection} quantity={amount} />
                   </label>
                 );
               })}
@@ -329,8 +331,8 @@ export function LaunchConfigurator({ product, uploadsEnabled }: { product: Launc
             step="entrega"
             state={stepState("entrega")}
             legend="Entrega"
-            value={picked.has("entrega") ? speed : undefined}
-            hint={`Producción normal: ${product.leadTime}. Si lo necesitas antes, lo adelantamos.`}
+            value={picked.has("entrega") ? DELIVERY_OPTIONS.find((option) => option.id === speed)?.name : undefined}
+            hint={`Producción normal: ${product.leadTime}. Priority suma el ${SPEEDS[1].percent} % y Express el ${SPEEDS[2].percent} % de la impresión.`}
           >
             <div className="grid gap-2" role="radiogroup" aria-label="Entrega">
               {SPEEDS.map((option, index) => {
@@ -352,8 +354,10 @@ export function LaunchConfigurator({ product, uploadsEnabled }: { product: Launc
                       />
                       <DeliveryIcon speed={option.id} />
                       <span className="min-w-0">
-                        <span className={`block ${checked ? "font-semibold" : "font-medium"}`}>{option.id}</span>
-                        <span className="mt-0.5 block text-sm text-ink-soft">{option.detail}</span>
+                        <span className={`block ${checked ? "font-semibold" : "font-medium"}`}>{option.name}</span>
+                        <span className="mt-0.5 block text-sm text-ink-soft">
+                          {speedDays(product, selection, quantity, option.id)}
+                        </span>
                       </span>
                     </span>
                     <span className="flex shrink-0 flex-col items-end gap-1">
@@ -362,7 +366,9 @@ export function LaunchConfigurator({ product, uploadsEnabled }: { product: Launc
                           Más rápida
                         </span>
                       ) : null}
-                      <span className={`text-sm font-medium ${index === 0 ? "text-moss" : ""}`}>{option.note}</span>
+                      <span className={`text-right text-sm font-medium tabular-nums ${index === 0 ? "text-moss" : ""}`}>
+                        {speedNote(product, selection, quantity, option.id)}
+                      </span>
                     </span>
                   </label>
                 );
@@ -375,10 +381,11 @@ export function LaunchConfigurator({ product, uploadsEnabled }: { product: Launc
               product={product}
               rows={[
                 ...choosable.map((option) => ({ label: option.label, value: selection[option.id] })),
-                { label: "Entrega", value: speed },
+                { label: "Entrega", value: DELIVERY_OPTIONS.find((option) => option.id === speed)?.name ?? speed },
                 { label: "Diseño", value: designLabel },
               ]}
               quantity={quantity}
+              priced={priced}
               missing={missing.map((step) => stepNames[step])}
               message={message}
               uploading={uploading}
@@ -399,11 +406,11 @@ export function LaunchConfigurator({ product, uploadsEnabled }: { product: Launc
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 pb-[env(safe-area-inset-bottom)]">
           <div className="min-w-0">
             <p className="truncate text-xs text-ink-soft">
-              {product.name} · precio por confirmar
+              {product.name} · {priced ? `${missing.length > 0 ? "desde " : ""}con IVA, sin envío` : "precio por confirmar"}
               <span className="hidden lg:inline"> · {caption}</span>
             </p>
-            <p key={`${quantity}-${speed}`} className="price-tick font-display text-2xl leading-none" aria-live="polite">
-              {missing.length === steps.length ? product.name : `${formatUnits(quantity)} · ${speed}`}
+            <p key={`${quantity}-${speed}-${priced?.totalCents ?? 0}`} className="price-tick font-display text-2xl leading-none" aria-live="polite">
+              {priced ? formatUsd(priced.totalCents) : missing.length === steps.length ? product.name : formatUnits(quantity)}
             </p>
           </div>
           {uploading ? (
@@ -769,6 +776,7 @@ function LaunchSummary({
   product,
   rows,
   quantity,
+  priced,
   missing,
   message,
   uploading,
@@ -776,6 +784,7 @@ function LaunchSummary({
   product: LaunchProduct;
   rows: { label: string; value: string }[];
   quantity: number;
+  priced: LaunchQuote | null;
   missing: string[];
   message: string;
   uploading: boolean;
@@ -812,15 +821,43 @@ function LaunchSummary({
       </ul>
 
       <div className="border-t border-line bg-paper-deep/70 px-5 py-5">
+        {priced && !open ? (
+          <dl className="mb-4 space-y-1.5 border-b border-line pb-4 text-sm">
+            <div className="flex justify-between gap-4">
+              <dt className="text-ink-soft">Impresión · {formatUnits(quantity)}</dt>
+              <dd className="tabular-nums">{formatUsd(priced.runCents)}</dd>
+            </div>
+            {priced.extras.map((extra) => (
+              <div key={extra.label} className="flex justify-between gap-4">
+                <dt className="text-ink-soft">{extra.label}</dt>
+                <dd className="tabular-nums">{formatUsd(extra.cents)}</dd>
+              </div>
+            ))}
+            <div className="flex justify-between gap-4">
+              <dt className="text-ink-soft">Entrega</dt>
+              <dd className="tabular-nums">{priced.deliveryCents === 0 ? "Incluida" : formatUsd(priced.deliveryCents)}</dd>
+            </div>
+          </dl>
+        ) : null}
         <div className="flex items-end justify-between gap-4">
           <div className="min-w-0">
-            <p className="text-base font-semibold">Precio</p>
-            <p className="mt-0.5 text-sm text-ink-soft">Con IVA, por WhatsApp</p>
+            <p className="text-base font-semibold">{priced ? (open ? "Desde" : "Total") : "Precio"}</p>
+            <p className="mt-0.5 text-sm text-ink-soft">{priced ? "Con IVA, sin el envío" : "Con IVA, por WhatsApp"}</p>
           </div>
-          <p className="text-right text-xl font-medium leading-tight tracking-tight">Te lo confirmamos</p>
+          {priced ? (
+            <p key={priced.totalCents} className="price-tick text-[2.4rem] font-medium leading-none tracking-tight tabular-nums">
+              {formatUsd(priced.totalCents)}
+            </p>
+          ) : (
+            <p className="text-right text-xl font-medium leading-tight tracking-tight">Te lo confirmamos</p>
+          )}
         </div>
         <p className="mt-2 text-xs leading-5 text-ink-soft">
-          Se abre WhatsApp con este resumen ya escrito. Te respondemos con el precio y la fecha de entrega.
+          {priced
+            ? `${formatUsd(priced.unitCents)} por unidad. El envío en Quito y los valles se suma según el peso. ${
+                priced.pending.length > 0 ? `${priced.pending.join(", ")} se confirma en el chat. ` : ""
+              }Al pedir se abre WhatsApp con todo escrito.`
+            : "Esa combinación todavía no tiene precio en línea. Se abre WhatsApp con este resumen y te respondemos con el precio y la fecha."}
         </p>
         {open || uploading ? (
           <p className="mt-5 hidden min-h-12 w-full items-center justify-center rounded-full border border-line bg-paper-deep px-5 text-base font-medium text-ink-soft lg:flex">
@@ -832,6 +869,30 @@ function LaunchSummary({
       </div>
     </section>
   );
+}
+
+/** El precio de esa cantidad con lo ya elegido, para comparar en los recuadros. */
+function QuantityPrice({ product, selection, quantity }: { product: LaunchProduct; selection: LaunchSelection; quantity: number }) {
+  const priced = launchQuote(product, selection, quantity, "standard");
+  if (!priced) return null;
+  return (
+    <span className="shrink-0 text-right tabular-nums">
+      <span className="block text-sm font-semibold">{formatUsd(priced.printingCents)}</span>
+      <span className="block text-xs text-ink-soft">{formatUsd(priced.unitCents)} c/u</span>
+    </span>
+  );
+}
+
+function speedDays(product: LaunchProduct, selection: LaunchSelection, quantity: number, speed: string): string {
+  const priced = launchQuote(product, selection, quantity, speed);
+  return priced ? businessDaysLabel(priced.days) : speed === "standard" ? `Producción ${product.leadTime}` : "Te confirmamos el plazo";
+}
+
+function speedNote(product: LaunchProduct, selection: LaunchSelection, quantity: number, speed: string): string {
+  const option = DELIVERY_OPTIONS.find((candidate) => candidate.id === speed);
+  if (!option || option.percent === 0) return "Incluido";
+  const priced = launchQuote(product, selection, quantity, speed);
+  return priced ? `+ ${formatUsd(priced.deliveryCents)}` : `+ ${option.percent} %`;
 }
 
 function OrderLink({ message, className }: { message: string; className: string }) {
@@ -858,8 +919,8 @@ function LaunchNotes({ product }: { product: LaunchProduct }) {
   ];
   const faq = [
     {
-      q: "¿Cuándo sé el precio?",
-      a: "Al pedir se abre WhatsApp con todo lo que elegiste. Te respondemos con el precio con IVA y la fecha de entrega.",
+      q: "¿El precio que veo es el final?",
+      a: "Es el precio con IVA de la impresión y la entrega elegida. El envío en Quito y los valles se suma según el peso y te lo confirmamos en el chat de WhatsApp.",
     },
     {
       q: "¿Cómo envío mi diseño?",

@@ -14,7 +14,7 @@ import { IVA_PERCENT } from "@/lib/tax";
 
 export type Faq = { question: string; answer: string };
 
-const delivery = cardDeliverySummary(formatUsd).join("; ");
+const delivery = cardDeliverySummary().join("; ");
 
 /* Plazo normal de cada producto que se cotiza, agrupado: «Esferos, Toma todos…: 8 días». */
 const otherTimes = Object.entries(

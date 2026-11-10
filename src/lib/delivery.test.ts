@@ -8,10 +8,10 @@ import { cartGrams, packageGrams } from "./weight";
 
 describe("entrega", () => {
   it("cuenta días hábiles desde un viernes en Ecuador", () => {
-    /* Standard de tarjetas: 72 h = 3 días hábiles, sin contar el fin de semana. */
+    /* Standard de tarjetas (matriz v1.4): 120 h = 5 días hábiles, sin contar el fin de semana. */
     const window = deliveryWindow("2026-10-02T14:00:00.000Z");
-    assert.equal(window.days, 3);
-    assert.equal(formatLongDate(window.latest), "miércoles 7 de octubre");
+    assert.equal(window.days, 5);
+    assert.equal(formatLongDate(window.latest), "viernes 9 de octubre");
   });
 
   it("adelanta la fecha con Priority (48 h) y Express (24 h)", () => {
@@ -22,7 +22,7 @@ describe("entrega", () => {
   });
 
   it("en un pedido con varios productos toma el tiempo mayor", () => {
-    assert.equal(orderLeadDays([100, 1000], "standard"), 3);
+    assert.equal(orderLeadDays([100, 1000], "standard"), 5);
     assert.equal(orderLeadDays([], "express"), 1);
   });
 });

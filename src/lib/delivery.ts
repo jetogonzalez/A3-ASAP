@@ -1,4 +1,4 @@
-import { withIva } from "@/lib/tax";
+import { MATRIZ, hoursToBusinessDays, leadHours, type SpeedId } from "@/lib/matriz";
 
 /** Ecuador continental no usa horario de verano. */
 const ECUADOR_OFFSET_MS = 5 * 60 * 60 * 1000;
@@ -44,38 +44,44 @@ export function formatLongDate(isoDate: string): string {
 }
 
 /**
- * Tres niveles de entrega: Standard, Priority y Express. Desde la reunión del
- * 23 de octubre el plazo ya no es igual para todo: depende del producto y de
- * la cantidad (matriz v1.3, hoja Precios, columnas dias_hab_*). Aquí quedan el
- * nombre y el recargo, que va una sola vez por pedido y con IVA: $8 y $15 más
- * el 15 %. Nombres y colores son los del material de marca; el ícono de cada
- * uno está en components/delivery-icon.tsx.
+ * Tres niveles de entrega: Standard, Priority y Express. Desde la matriz v1.4
+ * el recargo ya no es fijo: es un porcentaje del subtotal de impresión
+ * (50 % Priority, 75 % Express), como Helloprint, y va una sola vez por pedido.
+ * El plazo depende del producto y la cantidad (hoja PRECIOS, horas_*). Nombres
+ * y colores son los del material de marca; el ícono de cada uno está en
+ * components/delivery-icon.tsx.
  */
-export const DELIVERY_OPTIONS = [
-  { id: "standard", name: "Standard", cents: 0 },
-  { id: "priority", name: "Priority", cents: withIva(800) },
-  { id: "express", name: "Express", cents: withIva(1500) },
-] as const;
+export const DELIVERY_OPTIONS = (["standard", "priority", "express"] as const).map((id) => ({
+  id,
+  name: MATRIZ.speeds[id]?.name ?? id,
+  percent: MATRIZ.speeds[id]?.surchargePercent ?? 0,
+}));
 
-export type DeliverySpeed = (typeof DELIVERY_OPTIONS)[number]["id"];
+export type DeliverySpeed = SpeedId;
 
 export function deliveryOption(id: string) {
   return DELIVERY_OPTIONS.find((option) => option.id === id) ?? DELIVERY_OPTIONS[0];
 }
 
-/*
- * Días hábiles hasta la puerta de las tarjetas, por cantidad y nivel. Cada
- * fila vale hasta esa cantidad. Express 24 h, Priority 48 h y Standard 72 h,
- * como se acordó; si una cantidad grande tarda más, se agrega otra fila.
- * Cuentan desde que se confirma el pago y está el archivo.
- */
-export const CARD_LEAD_DAYS: ReadonlyArray<{ upTo: number } & Record<DeliverySpeed, number>> = [
-  { upTo: 1000, express: 1, priority: 2, standard: 3 },
-];
+/** El recargo de entrega sobre un subtotal que ya trae IVA, así sale con IVA. */
+export function surchargeCents(id: string, subtotalCents: number): number {
+  return Math.round((subtotalCents * deliveryOption(id).percent) / 100);
+}
 
-export function cardLeadDays(quantity: number, speed: DeliverySpeed = "standard"): number {
-  const row = CARD_LEAD_DAYS.find((candidate) => quantity <= candidate.upTo) ?? CARD_LEAD_DAYS[CARD_LEAD_DAYS.length - 1];
-  return row[speed];
+/** «Incluido», «+ 50 %». */
+export function surchargeLabel(id: string): string {
+  const { percent } = deliveryOption(id);
+  return percent === 0 ? "Incluido" : `+ ${percent} %`;
+}
+
+/** Días hábiles hasta la puerta de un producto de la matriz con ese nivel. */
+export function productLeadDays(productId: string, variantCode: string, speed: DeliverySpeed = "standard"): number {
+  return hoursToBusinessDays(leadHours(productId, variantCode, speed));
+}
+
+/** Las tarjetas toman sus horas de la matriz (producto TPR). */
+export function cardLeadDays(_quantity: number, speed: DeliverySpeed = "standard"): number {
+  return productLeadDays("TPR", "CLA1L", speed);
 }
 
 export type DeliveryWindow = { days: number; earliest: string; latest: string };
@@ -114,10 +120,10 @@ export function businessDaysLabel(days: number): string {
   return `${days} ${days === 1 ? "día hábil" : "días hábiles"}`;
 }
 
-/** Una línea por nivel con el plazo de 100 tarjetas y su recargo, para Ayuda y llms.txt. */
-export function cardDeliverySummary(format: (cents: number) => string): string[] {
+/** Una línea por nivel con el plazo de las tarjetas y su recargo, para Ayuda y llms.txt. */
+export function cardDeliverySummary(): string[] {
   return DELIVERY_OPTIONS.map(
     (option) =>
-      `${option.name}: ${businessDaysLabel(cardLeadDays(100, option.id))}${option.cents === 0 ? " (incluido)" : ` (+ ${format(option.cents)})`}`,
+      `${option.name}: ${businessDaysLabel(cardLeadDays(100, option.id))}${option.percent === 0 ? " (incluido)" : ` (+ ${option.percent} % del subtotal)`}`,
   );
 }

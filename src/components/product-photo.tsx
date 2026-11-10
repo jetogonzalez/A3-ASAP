@@ -29,6 +29,8 @@ const PHOTOS: Record<string, StaticImageData> = {
   "esferos": esferos,
   "etiquetas": etiquetas,
   "gorras": gorras,
+  /* Foto propia pendiente (matriz: «Foto pendiente»): mientras, la de gorras. */
+  "gorras-camionero": gorras,
   "gran-formato": granFormato,
   "papel-regalo": papelRegalo,
   "pegatinas": pegatinas,

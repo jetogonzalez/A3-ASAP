@@ -33,6 +33,21 @@ La tienda vive en **https://estoesasap.com**. En canva.com/developers (app ASAP 
 - Redirect URLs: `https://estoesasap.com/api/canva/callback` y la de la vista previa, para probar ramas.
 - Return URL: `https://estoesasap.com/api/canva/regreso`. Canva acepta una sola: mientras se prueba una vista previa, va la dirección de esa vista previa.
 
+## Matriz de productos y precios
+
+Precios, cantidades, acabados, plazos y recargos de entrega salen de la matriz
+(`Matriz_Productos_ASAP.xlsx`). La web lee `src/data/matriz.json`, que se arma
+con:
+
+```bash
+python3 scripts/importar-matriz.py ruta/a/Matriz_Productos_ASAP.xlsx
+```
+
+Usa las hojas Productos, PRECIOS, ACABADOS, Tiempos y Config. Los precios van
+sin IVA y la web suma el 15 %. Qué combinación de opciones corresponde a qué
+variante está en `src/lib/launch-products.ts` (`VARIANTS`); las tarjetas de
+presentación usan el producto TPR (`cardVariantCode` en `src/lib/catalog.ts`).
+
 ## Variables de entorno
 
 | Variable | Para qué |

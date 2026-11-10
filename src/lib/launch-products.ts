@@ -1,10 +1,22 @@
+import { deliveryOption, surchargeCents } from "@/lib/delivery";
+import {
+  finishCentsWithoutIva,
+  fromUnitCents,
+  hoursToBusinessDays,
+  leadHours,
+  matrixProduct,
+  runCentsWithoutIva,
+  type SpeedId,
+} from "@/lib/matriz";
+import { withIva } from "@/lib/tax";
+
 /*
  * Productos de lanzamiento: cada uno tiene su página y se arma eligiendo
- * opciones, cantidad y entrega. Salen de la matriz de productos
- * (Matriz_Productos_ASAP.xlsx, hojas Productos y Opciones); si se cambia algo
- * allá, se cambia aquí. Todavía no llevan precio: la matriz no los tiene, y el
- * precio que ve el cliente lo calcula solo el servidor. El pedido sale por
- * WhatsApp con todo lo elegido y la tienda responde con precio y plazo.
+ * opciones, cantidad y entrega. Las opciones salen de la hoja Opciones de la
+ * matriz; precios, cantidades y plazos, de las hojas PRECIOS, ACABADOS y
+ * Tiempos (src/data/matriz.json). Aquí solo se dice qué combinación de
+ * opciones corresponde a qué variante de la matriz. El pedido sale por
+ * WhatsApp con todo lo elegido y el precio, y la tienda lo confirma.
  */
 
 export type LaunchOption = {
@@ -24,11 +36,17 @@ export type LaunchProduct = {
   /** Una frase que dice qué es, para la ficha y las tarjetas. */
   summary: string;
   options: readonly LaunchOption[];
+  /** product_id en la matriz, si no es el mismo id. */
+  matrixId?: string;
+  /** Opciones que suman un acabado de la hoja ACABADOS: opción → valor que lo activa. */
+  finishes?: ReadonlyArray<{ option: string; when: string; finish: "laminado" | "uv" | "corte"; label: string }>;
+  /** Lo que la matriz aún no tiene con precio: se avisa y se confirma en el chat. */
+  unpriced?: ReadonlyArray<{ option: string; when: string }>;
   quantities: readonly number[];
   leadTime: string;
 };
 
-export const LAUNCH_PRODUCTS: readonly LaunchProduct[] = [
+export const LAUNCH_PRODUCTS: LaunchProduct[] = [
   {
     id: "ESF",
     slug: "esferos",
@@ -36,7 +54,7 @@ export const LAUNCH_PRODUCTS: readonly LaunchProduct[] = [
     family: "promocionales",
     summary: "Esferos con tu logo estampado, en versión económica o premium.",
     options: [
-      { id: "tipo", label: "Tipo", choices: ["Económico", "Premium"] },
+      { id: "tipo", label: "Tipo", choices: ["Promocional", "Económico", "Premium"] },
       { id: "impresion", label: "Impresión", choices: ["Estampado"] },
     ],
     quantities: [100, 250, 500, 1000],
@@ -77,6 +95,7 @@ export const LAUNCH_PRODUCTS: readonly LaunchProduct[] = [
     summary: "Prendas estampadas en DTF para equipos, eventos o tu marca.",
     options: [
       { id: "prenda", label: "Prenda", choices: ["Camiseta", "Hoodie"] },
+      { id: "lados", label: "Estampado", choices: ["1 lado", "2 lados"] },
       { id: "talla", label: "Tallas", choices: ["S", "M", "L", "XL", "Varias tallas"] },
       { id: "tintas", label: "Tintas", choices: ["Full color"] },
       { id: "impresion", label: "Impresión", choices: ["DTF"] },
@@ -87,9 +106,24 @@ export const LAUNCH_PRODUCTS: readonly LaunchProduct[] = [
   {
     id: "GOR",
     slug: "gorras",
-    name: "Gorras",
+    name: "Gorras dry fit",
     family: "textil",
-    summary: "Gorras talla única con tu logo al frente.",
+    summary: "Gorras dry fit talla única con tu logo al frente.",
+    matrixId: "GODF",
+    options: [
+      { id: "talla", label: "Talla", choices: ["Única"] },
+      { id: "tintas", label: "Tintas", choices: ["Full color"] },
+      { id: "impresion", label: "Impresión", choices: ["DTF"] },
+    ],
+    quantities: [50, 100, 250, 500, 1000],
+    leadTime: "5 días",
+  },
+  {
+    id: "GOC",
+    slug: "gorras-camionero",
+    name: "Gorras camionero",
+    family: "textil",
+    summary: "Gorras camioneras talla única, con malla atrás y tu logo al frente.",
     options: [
       { id: "talla", label: "Talla", choices: ["Única"] },
       { id: "tintas", label: "Tintas", choices: ["Full color"] },
@@ -139,6 +173,7 @@ export const LAUNCH_PRODUCTS: readonly LaunchProduct[] = [
       { id: "tintas", label: "Tintas", choices: ["Full color", "Un color"] },
       { id: "papel", label: "Papel", choices: ["Adhesivo"] },
     ],
+    unpriced: [{ option: "corte", when: "Troquelado" }],
     quantities: [50, 100, 250, 500, 1000],
     leadTime: "48 a 72 horas",
   },
@@ -155,6 +190,7 @@ export const LAUNCH_PRODUCTS: readonly LaunchProduct[] = [
       { id: "corte", label: "Corte", choices: ["Recto", "Troquelado"] },
       { id: "tintas", label: "Tintas", choices: ["Full color", "Un color"] },
     ],
+    finishes: [{ option: "corte", when: "Troquelado", finish: "corte", label: "Troquelado" }],
     quantities: [50, 100, 250, 500, 1000],
     leadTime: "48 a 72 horas",
   },
@@ -166,11 +202,13 @@ export const LAUNCH_PRODUCTS: readonly LaunchProduct[] = [
     summary: "Calendarios de escritorio con tu marca para todo el año.",
     options: [
       { id: "tipo", label: "Tipo", choices: ["Sobre mesa (12 páginas)", "Plegado"] },
-      { id: "tamano", label: "Tamaño", choices: ["15 × 21 cm", "30 × 10 cm"] },
+      { id: "tamano", label: "Tamaño", choices: ["A5 (15 × 21 cm)", "A6 (10,5 × 15 cm)", "30 × 10 cm"] },
       { id: "impresion", label: "Impresión", choices: ["Tiro", "Tiro y retiro"] },
+      { id: "acabado", label: "Acabado", choices: ["Sin laminado", "Laminado"] },
       { id: "tintas", label: "Tintas", choices: ["Full color", "Un color"] },
-      { id: "papel", label: "Papel", choices: ["Couché 300 g, laminado"] },
+      { id: "papel", label: "Papel", choices: ["Couché 300 g"] },
     ],
+    finishes: [{ option: "acabado", when: "Laminado", finish: "laminado", label: "Laminado" }],
     quantities: [50, 100, 250, 500, 1000],
     leadTime: "72 horas",
   },
@@ -186,10 +224,57 @@ export const LAUNCH_PRODUCTS: readonly LaunchProduct[] = [
       { id: "tintas", label: "Tintas", choices: ["Full color", "Un color"] },
       { id: "papel", label: "Hojas", choices: ["Bond 90 g, tiro y retiro"] },
     ],
+    unpriced: [{ option: "portada", when: "Dura" }],
     quantities: [50, 100, 250, 500, 1000],
     leadTime: "5 días en adelante",
   },
 ];
+
+/*
+ * Qué variante de la hoja PRECIOS corresponde a lo elegido. Va aparte de los
+ * productos porque una función no puede viajar al navegador dentro de los
+ * datos. Null: esa combinación se cotiza por WhatsApp.
+ */
+const VARIANTS: Record<string, (s: LaunchSelection) => string | null> = {
+  ESF: (s) => ({ Promocional: "PROM", "Económico": "ECO", Premium: "PRE" })[s.tipo] ?? null,
+  TMT: (s) => (s.material === "Metálico" ? "MET" : "PLA"),
+  TAZ: () => "STD",
+  CAM: (s) => `${s.prenda === "Hoodie" ? "HOO" : "CAM"}${s.lados === "2 lados" ? "2" : "1"}L`,
+  GOR: () => "STD",
+  GOC: () => "STD",
+  TOT: (s) => (s.tamano === "44 × 34 cm" ? "4434" : "3040"),
+  PRG: (s) => (s.tamano === "68 × 48 cm" ? "6848" : "4532"),
+  ETQ: (s) => ({ "3 × 3 cm": "3X3", "5 × 5 cm": "5X5", "6 × 6 cm": "6X6" })[s.tamano] ?? null,
+  TRJ: (s) => (s.tamano === "A6" || s.tamano === "A5" ? `${s.tamano}-${s.impresion === "Tiro y retiro" ? "2L" : "1L"}` : null),
+  CAL: (s) => {
+    const size = s.tamano.startsWith("A5") ? "A5" : s.tamano.startsWith("A6") ? "A6" : "30X10";
+    if (s.tipo === "Plegado") return size === "A5" ? "PLEG-A5" : size === "30X10" ? "PLEG 30X10" : null;
+    if (size === "30X10") return null;
+    return `MESA - ${size} - ${s.impresion === "Tiro y retiro" ? "2L" : "1L"}`;
+  },
+  CUA: (s) => (s.tamano === "A4" ? "A4" : "A5"),
+};
+
+export function launchVariant(product: LaunchProduct, selection: LaunchSelection): string | null {
+  return VARIANTS[product.id]?.(selection) ?? null;
+}
+
+/*
+ * Cantidades y plazo de producción salen de la matriz: lo escrito arriba solo
+ * queda si el producto aún no está en ella.
+ */
+for (const product of LAUNCH_PRODUCTS as LaunchProduct[]) {
+  const row = matrixProduct(product.matrixId ?? product.id);
+  if (!row) continue;
+  product.quantities = row.quantities;
+  const days = hoursToBusinessDays(leadHours(row.id, row.variants[0]?.code ?? "", "standard"));
+  product.leadTime = `${days} ${days === 1 ? "día hábil" : "días hábiles"}`;
+}
+
+/** El precio unitario más bajo con IVA, para «desde $X c/u». */
+export function launchFromCents(product: LaunchProduct): number | null {
+  return fromUnitCents(product.matrixId ?? product.id);
+}
 
 export function launchProductBySlug(slug: string): LaunchProduct | undefined {
   return LAUNCH_PRODUCTS.find((product) => product.slug === slug);
@@ -241,20 +326,75 @@ export type LaunchRequest = {
   notes: string;
 };
 
-/** El mensaje de WhatsApp con todo lo que la tienda necesita para cotizar. */
-export function launchRequestMessage(request: LaunchRequest): string {
+export type LaunchQuote = {
+  variant: string;
+  /** La tirada con IVA. */
+  runCents: number;
+  /** Acabados elegidos con IVA. */
+  extras: Array<{ label: string; cents: number }>;
+  printingCents: number;
+  deliveryCents: number;
+  /** Impresión + entrega, con IVA. El envío se suma aparte por peso. */
+  totalCents: number;
+  unitCents: number;
+  /** Días hábiles hasta la puerta con la entrega elegida. */
+  days: number;
+  /** Algo elegido que la matriz aún no tiene con precio (se confirma en el chat). */
+  pending: string[];
+};
+
+/**
+ * El precio de lo elegido, con IVA, sacado de la matriz. Null cuando esa
+ * combinación no tiene precio cargado: entonces se cotiza por WhatsApp.
+ */
+export function launchQuote(product: LaunchProduct, selection: LaunchSelection, quantity: number, speed: string): LaunchQuote | null {
+  const productId = product.matrixId ?? product.id;
+  const variant = launchVariant(product, selection);
+  if (!variant) return null;
+  const run = runCentsWithoutIva(productId, variant, quantity);
+  if (run === null) return null;
+  const runCents = withIva(run);
+  const extras = (product.finishes ?? [])
+    .filter((item) => selection[item.option] === item.when)
+    .map((item) => ({ label: item.label, cents: withIva(finishCentsWithoutIva(productId, variant, quantity, item.finish) ?? 0) }));
+  const printingCents = runCents + extras.reduce((sum, item) => sum + item.cents, 0);
+  const speedId = deliveryOption(speed).id as SpeedId;
+  const deliveryCents = surchargeCents(speedId, printingCents);
+  return {
+    variant,
+    runCents,
+    extras,
+    printingCents,
+    deliveryCents,
+    totalCents: printingCents + deliveryCents,
+    unitCents: Math.round(printingCents / quantity),
+    days: hoursToBusinessDays(leadHours(productId, variant, speedId)),
+    pending: (product.unpriced ?? []).filter((item) => selection[item.option] === item.when).map((item) => item.when),
+  };
+}
+
+/** El mensaje de WhatsApp con todo lo elegido y el precio que vio el cliente. */
+export function launchRequestMessage(request: LaunchRequest, format: (cents: number) => string): string {
   const { product, selection } = request;
+  const priced = launchQuote(product, selection, request.quantity, request.speed);
   const lines = [
     "Hola ASAP, quiero pedir:",
     "",
     `Producto: ${product.name}`,
     ...product.options.map((option) => `${option.label}: ${selection[option.id] ?? option.choices[0]}`),
     `Cantidad: ${formatUnits(request.quantity)}`,
-    `Entrega: ${request.speed}`,
+    `Entrega: ${deliveryOption(request.speed).name}${priced ? ` (${priced.days} ${priced.days === 1 ? "día hábil" : "días hábiles"})` : ""}`,
     `Diseño: ${request.design}`,
   ];
+  if (priced) {
+    lines.push("", `Impresión: ${format(priced.runCents)}`);
+    for (const extra of priced.extras) lines.push(`${extra.label}: ${format(extra.cents)}`);
+    if (priced.deliveryCents > 0) lines.push(`Entrega ${deliveryOption(request.speed).name}: ${format(priced.deliveryCents)}`);
+    lines.push(`*Total con IVA: ${format(priced.totalCents)}* (sin envío)`);
+    if (priced.pending.length > 0) lines.push(`Por confirmar: ${priced.pending.join(", ")}`);
+  }
   const notes = request.notes.trim();
-  if (notes) lines.push(`Notas: ${notes}`);
-  lines.push("", "¿Me pasan precio y plazo?");
+  if (notes) lines.push("", `Notas: ${notes}`);
+  lines.push("", priced ? "¿Me confirman el envío y los datos para pagar?" : "¿Me pasan precio y plazo?");
   return lines.join("\n");
 }
